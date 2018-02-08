@@ -59,7 +59,7 @@ FLEX_TARGET(SMTlib2lexer SMTlib2lexer.lex
 	${CMAKE_CURRENT_BINARY_DIR}/SMTlib2lexer.cc
         COMPILE_FLAGS --always-interactive)
 ADD_FLEX_BISON_DEPENDENCY(SMTlib2lexer SMTlib2parser)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 add_executable(pagai ${TOP_SRC} 
