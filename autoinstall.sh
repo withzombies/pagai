@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 # Simple script to install PAGAI's dependencies, and then to compile
 # it.
