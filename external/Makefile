@@ -137,10 +137,10 @@ $(DEST_LINKS)/ppl: $(MAKEFILE_LIST)
 
 #### CUDD Installation
 $(DEST)/$(CUDD_ARCHIVE):
-	$(DOWNLOAD) "ftp://vlsi.colorado.edu/pub/$(CUDD_ARCHIVE)" "$@"
+	$(DOWNLOAD) "https://github.com/ivmai/cudd/archive/$(CUDD_ARCHIVE)" "$@"
 
-$(DEST)/cudd-$(CUDD_VERSION)/cudd/cudd.h Â$(DEST)/cudd-$(CUDD_VERSION)/Makefile: $(DEST)/$(CUDD_ARCHIVE)
-	cd $(DEST) && $(TAR) xzvf "$(CUDD_ARCHIVE)" && cd cudd-$(CUDD_VERSION) && patch -p1 < $(SOURCE)/cudd-$(CUDD_VERSION).patch && sed -i -e 's@make @$(MAKE) @' Makefile
+$(DEST)/cudd-$(CUDD_VERSION)/cudd/cudd.h $(DEST)/cudd-$(CUDD_VERSION)/Makefile: $(DEST)/$(CUDD_ARCHIVE)
+	cd $(DEST) && $(TAR) xzvf "$(CUDD_ARCHIVE)" && mv cudd-cudd-$(CUDD_VERSION) cudd-$(CUDD_VERSION) && cd cudd-$(CUDD_VERSION) && patch -p1 < $(SOURCE)/cudd-$(CUDD_VERSION).patch && sed -i -e 's@make @$(MAKE) @' Makefile
 	touch -c $@
 
 $(CUDD_COMPILED): $(DEST)/cudd-$(CUDD_VERSION)/cudd/cudd.h
