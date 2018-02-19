@@ -1,9 +1,0 @@
-#include "BoolSimpl.h"
-#include <iostream>
-
-using namespace llvm;
-
-Instruction * BoolSimpl::visitICmpInst(ICmpInst &I) {
-  std::cerr << "cmp" << std::endl;
-  return 0;
-}

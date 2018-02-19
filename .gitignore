@@ -2,6 +2,9 @@
 *.out
 *.aux
 *.swp
+*~
+*#
+\#*
 .nfs*
 /Makefile
 CMakeCache.txt
@@ -13,3 +16,4 @@ ex/bin
 ex/res
 src/pagai-debug
 gui
+build/
