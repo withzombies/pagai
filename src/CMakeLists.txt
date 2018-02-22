@@ -96,7 +96,7 @@ if(${ENABLE_Z3})
 endif()
 
 
-target_link_libraries(pagai mpfr gmpxx gmp ${Boost_LIBRARIES} )
+target_link_libraries(pagai mpfr gmpxx gmp ${Boost_LIBRARIES} ${CURSES_LIBRARIES})
 
 if(${ENABLE_Z3})
 	if (${STATIC_LINK})

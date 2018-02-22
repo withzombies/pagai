@@ -201,6 +201,8 @@ find_package(FLEX 2.5.35)
 #set(Boost_USE_STATIC_RUNTIME OFF) 
 find_package(Boost REQUIRED COMPONENTS program_options)
 
+find_package(Curses REQUIRED)
+
 option(PRINT_DEBUG "Activate debug traces" OFF)
 option(PRINT_DEBUG_SMT "Print the SMT formulae during the analysis" OFF)
 
