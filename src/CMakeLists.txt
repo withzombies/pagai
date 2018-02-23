@@ -26,9 +26,6 @@ endif()
 
 add_definitions(-DLLVM_INSTALL_PATH="${LLVM_PATH}")
 
-#find_package(Boost COMPONENTS system REQUIRED)
-find_package(Boost COMPONENTS program_options)
-
 # TODO: we could do configure-time checks with find_file(FOO NAMES foo.h PATH ...)
 include_directories(
   ${YICES_PATH}/include 
@@ -50,11 +47,9 @@ link_directories(
   #${PPL_PREFIX}/lib
 )
 
-find_package(BISON)
-find_package(FLEX)
-BISON_TARGET(SMTlib2parser SMTlib2parser.yy
-	${CMAKE_CURRENT_BINARY_DIR}/SMTlib2parser.cc
-        COMPILE_FLAGS --report=state)
+BISON_TARGET(SMTlib2parser SMTlib2parser.yy ${CMAKE_CURRENT_BINARY_DIR}/SMTlib2parser.cc
+             DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/SMTlib2parser.hh
+             COMPILE_FLAGS --report=state)
 FLEX_TARGET(SMTlib2lexer SMTlib2lexer.lex
 	${CMAKE_CURRENT_BINARY_DIR}/SMTlib2lexer.cc
         COMPILE_FLAGS --always-interactive)
