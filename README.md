@@ -2,9 +2,14 @@
 
 ## Installation
 
+Shorter: on Ubuntu
+sudo apt-get install libmpfr-dev libgmp3-dev libboost-all-dev cmake cmake-gui curl
+
 PAGAI needs:
 
 - GMP and MPFR. On Debian systems, install packages `libmpfr-dev` and `libgmp3-dev`
+
+- Boost. On Debian systems, install package `libboost-all-dev`
 
 - CMake, for the compilation. On Debian systems, install package `cmake` (you may want to install `cmake-gui` too for a graphical configuration tool)
 
