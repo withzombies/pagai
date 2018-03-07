@@ -76,7 +76,7 @@ bool useThreshold(int i) {return Threshold[i];}
 bool definedMain() {return defined_main;}
 std::string getMain() {return main_function;}
 bool quiet_mode() {return vm.count("quiet");} 
-bool log_smt_into_file() {return vm.count("log_smt");}
+bool log_smt_into_file() {return vm.count("log-smt");}
 bool optimizeBC() {return vm.count("optimize");}
 bool InstCombining() {return vm.count("instcombining");}
 std::vector<enum Techniques> * getComparedTechniques() {return &TechniquesToCompare;}
