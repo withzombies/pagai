@@ -10,60 +10,85 @@ PAGAI needs:
 - GMP and MPFR. On Debian systems, install packages `libmpfr-dev` and `libgmp3-dev`
 - Boost. On Debian systems, install package `libboost-all-dev`
 - CMake, for the compilation. On Debian systems, install package `cmake` (you may want to install `cmake-gui` too for a graphical configuration tool)
-- Yices, Z3, CUDD, LLVM, Apron and the PPL (can be automatically installed for you). See the file `cmake/external_projects_config.cmake` to see the exact versions required for each configuration.
+- Yices, Z3, CUDD, LLVM, Apron and the PPL (can be automatically installed for you). See the file `CMakeLists.txt` to see the exact versions supported for each configuration.
   The easiest way is probably to go for a local install of all dependencies for the configuration you want.
 
-To compile PAGAI, run the following commands:
+### Default Build
 
-    mkdir build
-    cd build
-    cmake [OPTIONS] ..  # The list of options is documented below
-    make -j4            # Adjust "-j4" depending on the number
-                        # of parallel tasks you want to run
+We provide a script called `default_build.sh` which creates a build directory that, after some compilation time,
+contains the PAGAI executable with a default set of options. If you want to change one of those options, use
+a custom build.
 
-The `cmake` command will very likely output an error saying that some dependency could not be found on your system.
-Indeed, we require specific versions of libraries that are generally not available using package managers.
-You can ask for an automatic download/install of those dependencies using the following command (after having run
-`cmake` once):
+To clean up the build directory built with `default_build.sh`, run `default_clean.sh`.
 
-    make -j4 dep_install    # This can take some time (some dozens of minutes)
+### Custom Build
 
-When this is done, you can finally build PAGAI:
+1. Create and initialize a build directory
 
-    cmake ..            # The configuration is kept in cache files, so
-                        # you don't have to specify all the arguments again
-    make -j4
+    ```
+    mkdir build && cd build
+    cmake <Path to CMakeLists.txt> # e.g. "cmake .."
+    ```
 
-After this, you won't have to run `cmake` again, even if you modify PAGAI's source files.
-Just run `make` again. The only reason you would want to run `cmake` again would be if you
-want to change one of the options you gave to cmake.
+    CMake will ask you to choose a configuration (it is the only mandatory option).
+    If you don't know which one to use, go for the one with the most recent version of LLVM.
+    Also, specify now the other build options you want (see below). For example:
 
-### Compiler Choice
+    ```
+    cmake -DCONFIG=llvm3.6 [OTHER_OPTIONS] ..
+    ```
 
-CMake chooses the compiler based on `CC` and `CXX` environment variables.
-If you want to force the use of a specific compiler (and that your `CC`
-or `CXX` variables are not set) use something like:
+2. Local install of dependencies
 
-    CC=clang CXX=clang++ cmake [OPTIONS] ..
+    Most dependencies can be installed locally, which we recommend so that the supported
+    versions are used. To install PAGAI's dependencies locally (the destination is the `external/install`
+    directory in PAGAI's root dir) run this command from the build directory:
 
-On MacOS, please compile with clang and not g++: there are strange
-template instantiations errors with g++, leading to duplicate symbols
-when linking.
+    ```
+    make -j4 dep_install
+    ```
+
+    This can take some time (dozens of minutes to hours) especially the installation of LLVM.
+
+3. Refresh cmake
+
+    When this is done, refresh one last time the cmake configuration:
+
+    ```
+    cmake ..
+    ```
+
+    There is no need to specify the options to cmake again, since they are recorded from the
+    first time you run the cmake command.
+
+4. Build PAGAI executable
+
+    Finally, you can build the PAGAI executable using `make`.
+
+    After this, you won't have to run `cmake` again, even if you modify PAGAI's source files.
+    Just run `make`. The only reason you would want to run `cmake` again would be if you
+    want to change one of the options you gave to cmake.
 
 ### CMake Options
 
 The CMake script can take various options in the form `-DOPTION_NAME=VALUE`.
-The list of available options is:
 
-- `CONFIG`=`CONFIG_NAME`    Use a specific set of versions for dependencies.
-                            Each configuration corresponds to a specific set of versions that
-                            are known to be supported by PAGAI. The list of configurations
-                            can either be seen by looking at the main `CMakeLists.txt`, or by
-                            typing `cmake ..` without anything else (from an empty sub-directory).
-- `ENABLE_PPL`=`ON/OFF`     Compile and link APRON with [Parma Polyhedra Library](http://bugseng.com/products/ppl/).
-                            Defaults to `OFF` (i.e. uses NewPolka).
-- `ENABLE_OPT_OCT`=`ON/OFF` Compile and link APRON with [OptOptagons](https://github.com/eth-srl/OptOctagon)
-                            from ETHZ. Defaults to `OFF`.
+The list of available options is visible in the top of the main `CMakeLists.txt` file,
+as well as their action on the build system and their default values.
+
+### Compiler Choice
+
+CMake chooses the compiler based on `CC` and `CXX` environment variables.
+If you want to force the use of a specific compiler, other than the default
+one, use something like:
+
+    export CC=clang
+    export CXX=clang++
+    cmake [OPTIONS] ..
+
+On MacOS, please compile with clang and not g++: there are strange
+template instantiations errors with g++, leading to duplicate symbols
+when linking.
 
 ## Usage 
 
