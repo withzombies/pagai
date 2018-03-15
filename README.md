@@ -8,65 +8,62 @@ sudo apt-get install libmpfr-dev libgmp3-dev libboost-all-dev cmake cmake-gui cu
 PAGAI needs:
 
 - GMP and MPFR. On Debian systems, install packages `libmpfr-dev` and `libgmp3-dev`
-
 - Boost. On Debian systems, install package `libboost-all-dev`
-
 - CMake, for the compilation. On Debian systems, install package `cmake` (you may want to install `cmake-gui` too for a graphical configuration tool)
+- Yices, Z3, CUDD, LLVM, Apron and the PPL (can be automatically installed for you). See the file `cmake/external_projects_config.cmake` to see the exact versions required for each configuration.
+  The easiest way is probably to go for a local install of all dependencies for the configuration you want.
 
-- Yices, Z3, CUDD, LLVM, Apron and the PPL (can be automatically installed for you). See the top of external/Makefile for required versions of these tools. In particular, PAGAI won't work if you don't have the exact version of LLVM.
-
-- curl or wget, if you want automatic dependencies installation.
-
-The simplest way to compile PAGAI is to run:
-
-    ./autoinstall.sh
-
-from the toplevel. This will download and compile most dependencies
-for you (it takes time, and ~550Mb of disk space).
-
-    PARALLEL_MAKE_OPTS=-j4 ./autoinstall.sh
-
-will compile dependencies trying to use 4 cores (adjust as needed).
-
-If you don't want the dependencies to be installed for you, run:
-
-    cmake .
-    make
-
-from the toplevel.
-
-Alternatively, one can use an out-of-tree build with:
-
-    mkdir build
-    ../autoinstall-out-of-tree.sh
-
-or, without the external dependency installation:
+To compile PAGAI, run the following commands:
 
     mkdir build
     cd build
-    cmake ..
-    make
+    cmake [OPTIONS] ..  # The list of options is documented below
+    make -j4            # Adjust "-j4" depending on the number
+                        # of parallel tasks you want to run
 
-Variables (path to libraries, build options, ...) can be set for each
-build with e.g.:
+The `cmake` command will very likely output an error saying that some dependency could not be found on your system.
+Indeed, we require specific versions of libraries that are generally not available using package managers.
+You can ask for an automatic download/install of those dependencies using the following command (after having run
+`cmake` once):
 
-    cmake -DSTATIC_LINK=ON .
-    cmake -i .
-    cmake-gui .
+    make -j4 dep_install    # This can take some time (some dozens of minutes)
 
-To run PAGAI, you should make sure your `$PATH` variable contains the
-directory of the SMT solver you want to use (e.g. Z3, CVC4, etc.)
+When this is done, you can finally build PAGAI:
+
+    cmake ..            # The configuration is kept in cache files, so
+                        # you don't have to specify all the arguments again
+    make -j4
+
+After this, you won't have to run `cmake` again, even if you modify PAGAI's source files.
+Just run `make` again. The only reason you would want to run `cmake` again would be if you
+want to change one of the options you gave to cmake.
+
+### Compiler Choice
+
+CMake chooses the compiler based on `CC` and `CXX` environment variables.
+If you want to force the use of a specific compiler (and that your `CC`
+or `CXX` variables are not set) use something like:
+
+    CC=clang CXX=clang++ cmake [OPTIONS] ..
 
 On MacOS, please compile with clang and not g++: there are strange
 template instantiations errors with g++, leading to duplicate symbols
 when linking.
 
+### CMake Options
 
-### Optional APRON extensions
+The CMake script can take various options in the form `-DOPTION_NAME=VALUE`.
+The list of available options is:
 
-PAGAI can use APRON linked with
-- the [Parma Polyhedra Library](http://bugseng.com/products/ppl/) with `-DENABLE_PPL`
-- [OptOptagons](https://github.com/eth-srl/OptOctagon) from ETHZ with `-DENABLE_OPT_OCT`
+- `CONFIG`=`CONFIG_NAME`    Use a specific set of versions for dependencies.
+                            Each configuration corresponds to a specific set of versions that
+                            are known to be supported by PAGAI. The list of configurations
+                            can either be seen by looking at the main `CMakeLists.txt`, or by
+                            typing `cmake ..` without anything else (from an empty sub-directory).
+- `ENABLE_PPL`=`ON/OFF`     Compile and link APRON with [Parma Polyhedra Library](http://bugseng.com/products/ppl/).
+                            Defaults to `OFF` (i.e. uses NewPolka).
+- `ENABLE_OPT_OCT`=`ON/OFF` Compile and link APRON with [OptOptagons](https://github.com/eth-srl/OptOctagon)
+                            from ETHZ. Defaults to `OFF`.
 
 ## Usage 
 
