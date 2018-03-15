@@ -26,6 +26,7 @@ option(USE_SYSTEM_PPL "Whether to use PPL from system (no local installation)" O
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+include(cmake/ExternalProject.patch.cmake)
 
 if(PRINT_DEBUG)
     add_definitions(-DPRINT_DEBUG)

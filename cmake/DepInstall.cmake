@@ -111,7 +111,7 @@ function(DEPINSTALL_FIND_PACKAGE PACKAGE)
         endforeach()
     else()
         foreach(FWD_VAR ${DEPINSTALL_FIND_PACKAGE_DEFINES})
-            unset(${FWD_VAR} PARENT_SCOPE)
+            set(${FWD_VAR} PARENT_SCOPE) # equivalent of "unset(... PARENT_SCOPE)" which is not supported in early CMakes
         endforeach()
     endif()
 endfunction()

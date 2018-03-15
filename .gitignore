@@ -7,6 +7,9 @@
 \#*
 .nfs*
 
+# This file is patched when required (CMake < 3.1.0) but we don't want to version it
+ExternalProject.cmake
+
 doc
 CMakeCache.txt
 CMakeFiles/
