@@ -6,7 +6,7 @@
 #ifndef LIVE_H
 #define LIVE_H
 
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/Analysis/LoopInfo.h"

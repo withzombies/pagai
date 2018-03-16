@@ -235,8 +235,8 @@ void Environment::display(llvm::raw_ostream &stream) const {
 		free(c);
 	}
 }
-		
-void Environment::to_MDNode(LLVMContext * C, std::vector<llvm::Value*> * met) {
+
+void Environment::to_MDNode(LLVMContext * C, std::vector<METADATA_TYPE*> * met) {
 	for (size_t i=0; i<env->intdim+env->realdim; i++) {
 		ap_var_t var = env->var_of_dim[i];
 		Value * val = (Value*) var;

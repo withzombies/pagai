@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "ap_global1.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
+#include "config.h"
 
 class Node;
 class SMTpass;
@@ -221,8 +222,7 @@ class Abstract {
 		 */
 		virtual void display(llvm::raw_ostream &stream, std::string * left = NULL) const = 0;
 
-
-		virtual void to_MDNode(llvm::Instruction * Inst, std::vector<llvm::Value*> * met) {}
+		virtual void to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {}
 
 		virtual void insert_as_LLVM_invariant(llvm::Instruction * Inst) {}
 };

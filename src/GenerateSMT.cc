@@ -3,8 +3,13 @@
  * \brief Implementation of the GenerateSMT class
  * \author Julien Henry
  */
-#include "llvm/Support/CFG.h"
-#include "llvm/Analysis/Dominators.h"
+#include "llvm/Analysis/CFG.h"
+#include "config.h"
+#if LLVM_VERSION_ATLEAST(3, 5)
+#   include "llvm/IR/Dominators.h"
+#else
+#   include "llvm/Analysis/Dominators.h"
+#endif
 
 #include "GenerateSMT.h"
 #include "Analyzer.h"
@@ -35,12 +40,20 @@ GenerateSMT::~GenerateSMT() {
 
 void GenerateSMT::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.addRequired<Live>();
+#if LLVM_VERSION_ATLEAST(3, 5)
+	AU.addRequired<DominatorTreeWrapperPass>();
+#else
 	AU.addRequired<DominatorTree>();
+#endif
 	AU.setPreservesAll();
 }
 
 bool GenerateSMT::runOnFunction(Function &F) {
+#if LLVM_VERSION_ATLEAST(3, 5)
+    DT = &(getAnalysis<DominatorTreeWrapperPass>(F).getDomTree());
+#else
     DT = &(getAnalysis<DominatorTree>(F));
+#endif
 
 	LSMT->getRho(F);
 

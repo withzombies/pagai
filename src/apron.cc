@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string>
 
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/Support/FormattedStream.h"
 
 #include "ap_global1.h"

@@ -8,7 +8,7 @@
 #include<set>
 
 #include "llvm/IR/BasicBlock.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/IR/Constants.h"
 

@@ -9,7 +9,12 @@
 #include <string>
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/AliasSetTracker.h"
-#include "llvm/Support/InstIterator.h"
+#include "config.h"
+#if LLVM_VERSION_ATLEAST(3, 5)
+#   include "llvm/IR/InstIterator.h"
+#else
+#   include "llvm/Support/InstIterator.h"
+#endif
 
 #include "AIopt.h"
 #include "Expr.h"

@@ -6,7 +6,7 @@
 #ifndef _APRON_H 
 #define _APRON_H 
 
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 
 #include "ap_global1.h"
 

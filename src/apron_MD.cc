@@ -6,9 +6,10 @@
 #include <stdio.h>
 #include <string>
 
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/Support/FormattedStream.h"
 
+#include "config.h"
 #include "ap_global1.h"
 #include "box.h"
 #include "oct.h"
@@ -25,13 +26,13 @@
 
 using namespace llvm;
 
-void ap_tcons1_t_to_MDNode(ap_tcons1_t & cons, llvm::Instruction * Inst, std::vector<llvm::Value*> * met) {
+void ap_tcons1_t_to_MDNode(ap_tcons1_t & cons, llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
 	ap_constyp_t* constyp = ap_tcons1_constypref(&cons);
 	ap_texpr1_t texpr = ap_tcons1_texpr1ref(&cons);
 	ap_scalar_t* scalar;
 
 	LLVMContext& C = Inst->getContext();
-	std::vector<llvm::Value*> MD_texpr;
+	std::vector<METADATA_TYPE*> MD_texpr;
 	ap_texpr1_t_to_MDNode(texpr,Inst,&MD_texpr);
 	met->push_back(MDNode::get(C,MD_texpr));
 	switch (*constyp) {
@@ -59,7 +60,7 @@ void ap_tcons1_t_to_MDNode(ap_tcons1_t & cons, llvm::Instruction * Inst, std::ve
 	//met->push_back(i);
 }
 
-void coeff_to_MDNode(ap_coeff_t * a, llvm::Instruction * Inst, std::vector<llvm::Value*> * met) {
+void coeff_to_MDNode(ap_coeff_t * a, llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
 	switch(a->discr){
 		case AP_COEFF_SCALAR:
 			{
@@ -75,11 +76,11 @@ void coeff_to_MDNode(ap_coeff_t * a, llvm::Instruction * Inst, std::vector<llvm:
 	}
 }
 
-void ap_texpr1_t_to_MDNode(ap_texpr1_t & expr, llvm::Instruction * Inst, std::vector<llvm::Value*> * met) {
+void ap_texpr1_t_to_MDNode(ap_texpr1_t & expr, llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
 	texpr0_to_MDNode(expr.texpr0, expr.env,Inst,met);
 }
 
-void texpr0_to_MDNode(ap_texpr0_t* a, ap_environment_t * env, llvm::Instruction * Inst, std::vector<llvm::Value*> * met) {
+void texpr0_to_MDNode(ap_texpr0_t* a, ap_environment_t * env, llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
 	if (!a) return;
 	LLVMContext& C = Inst->getContext();
 #if 1
@@ -131,7 +132,7 @@ void texpr0_to_MDNode(ap_texpr0_t* a, ap_environment_t * env, llvm::Instruction 
 			break;
 		case AP_TEXPR_NODE:
 			if (true) {
-				std::vector<llvm::Value*> child;
+				std::vector<METADATA_TYPE*> child;
 				texpr0_node_to_MDNode(a->val.node,env,Inst,&child);
 				MDNode* N = MDNode::get(C,child);
 				met->push_back(N);
@@ -145,7 +146,7 @@ void texpr0_to_MDNode(ap_texpr0_t* a, ap_environment_t * env, llvm::Instruction 
 #endif
 }
 
-void texpr0_node_to_MDNode(ap_texpr0_node_t * a, ap_environment_t * env, llvm::Instruction * Inst, std::vector<llvm::Value*> * met) {
+void texpr0_node_to_MDNode(ap_texpr0_node_t * a, ap_environment_t * env, llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
 	int prec = ap_texpr_op_precedence[a->op];
 	LLVMContext& C = Inst->getContext();
 

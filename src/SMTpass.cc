@@ -14,7 +14,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
 
@@ -209,7 +209,7 @@ SMT_expr SMTpass::linexpr1ToSmt(BasicBlock* b, ap_linexpr1_t linexpr, bool &inte
 SMT_expr SMTpass::scalarToSmt(ap_scalar_t * scalar, bool integer, double &value, bool &infinity) {
 	mp_rnd_t round = GMP_RNDU;
 	ap_double_set_scalar(&value,scalar,round);
-	if (isinf(value)) {
+	if (std::isinf(value)) {
 		infinity = true;
 		// will be unused, but we must return something
 		return man->SMT_mk_real(0);
@@ -514,7 +514,7 @@ SMT_expr SMTpass::getValueExpr(Value * v, bool primed) {
 				} else if (FP->getType()->isDoubleTy()) {
 					x = APF.convertToDouble();
 				}
-				if (isnan(x) || isinf(x)) {
+				if (std::isnan(x) || std::isinf(x)) {
 					// x is not a number or is infinity...
 					std::ostringstream name;
 					name << getValueName(v,false);

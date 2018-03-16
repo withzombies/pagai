@@ -10,7 +10,7 @@
 
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 
 #include "AIpass.h"
 #include "Sigma.h"

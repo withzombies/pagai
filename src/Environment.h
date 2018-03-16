@@ -13,6 +13,7 @@
 #include "Live.h"
 #include "Constraint.h"
 #include "Node.h"
+#include "config.h"
 
 using namespace llvm;
 
@@ -106,7 +107,7 @@ class Environment {
 		void display(llvm::raw_ostream &stream) const;
 
 		
-		void to_MDNode(LLVMContext * C, std::vector<llvm::Value*> * met);
+		void to_MDNode(LLVMContext * C, std::vector<METADATA_TYPE*> * met);
 
 	private:
 

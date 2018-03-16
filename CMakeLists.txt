@@ -2,13 +2,15 @@ cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
 
 project(PAGAI CXX)
 
+set(CMAKE_CXX_STANDARD 11)
+
 include(cmake/SetupDefaultCompilerDirs.cmake)
 
 # Options
 
 option(ENABLE_PROFILING "Whether to build using -pg" OFF)
 option(ENABLE_DEBUGGING "Whether to build using -g" OFF)
-option(ENABLE_YICES "Whether to enable Yices" OFF)
+option(ENABLE_YICES "Whether to enable Yices" ON)
 option(ENABLE_Z3 "Whether to enable Z3 through api" ON)
 option(ENABLE_PPL "Whether APRON has been compiled with PPL (otherwise uses NewPolka)" OFF)
 option(PRINT_DEBUG "Activate debug traces" OFF)

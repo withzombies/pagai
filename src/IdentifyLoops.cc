@@ -1,8 +1,7 @@
 #ifndef GLOBALTOLOCAL_H
 #define GLOBALTOLOCAL_H
-#include "llvm/Config/config.h"
-#include "llvm/Support/CFG.h"
-#include "llvm/InstVisitor.h"
+#include "llvm/Config/llvm-config.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"

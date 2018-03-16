@@ -7,17 +7,23 @@
 #define _RECOVERNAME_H
 
 #include <set>
-#include<map>
+#include <map>
 
 #include "llvm/IR/Module.h"
-#include "llvm/Support/InstIterator.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/Support/Dwarf.h"
+#include "config.h"
+#if LLVM_VERSION_ATLEAST(3, 5)
+#   include "llvm/IR/InstIterator.h"
+#else
+#   include "llvm/Support/InstIterator.h"
+#endif
 
 #include "Info.h"
 
-#define LLVM_DEBUG_VERSION LLVMDebugVersion
+// TODO DM
+#define LLVM_DEBUG_VERSION (12 << 16)
 
 using namespace llvm;
 
@@ -41,11 +47,6 @@ class recoverName {
 	private :
 		static void pass1(Function *F);
 		
-		static MDNode * get_DW_TAG_lexical_block(MDNode * MD);
-		static MDNode * get_DW_TAG_subprogram(MDNode * MD);
-		static MDNode * get_DW_TAG_file_type(MDNode * MD);
-
-		
 		static Info resolveMetDescriptor(MDNode* md);
 
 		static void update_line_column(Instruction * I, unsigned & line, unsigned & column);
@@ -64,7 +65,6 @@ class recoverName {
 		static std::set<Info> getMDInfos_rec(Value* v,std::set<Value*> & seen);
 		static Info getMDInfos(const Value* V);
 		static int process(Function* F);
-		static int getFunctionLineNo(Function* F);
 		static int getBasicBlockLineNo(BasicBlock* BB);
 		static int getBasicBlockColumnNo(BasicBlock* BB);
 		static std::string getSourceFileName(Function * F);

@@ -9,10 +9,15 @@
 #include <map>
 
 #include "ap_global1.h"
-#include "llvm/Config/config.h"
+#include "llvm/Config/llvm-config.h"
 #include "llvm/Support/FormattedStream.h"
-#include "llvm/InstVisitor.h"
 #include "llvm/IR/Constants.h"
+#include "config.h"
+#if LLVM_VERSION_ATLEAST(3, 5)
+#   include "llvm/IR/InstVisitor.h"
+#else
+#   include "llvm/InstVisitor.h"
+#endif
 
 #include "Abstract.h"
 #include "Environment.h"

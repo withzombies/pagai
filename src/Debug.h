@@ -15,27 +15,22 @@
 // #define PRINT_DEBUG
 
 #ifdef PRINT_DEBUG
-#define DEBUG(X) do {X} while (0)
+#   define DEBUG(X) do {X} while (0)
 #else
-#define DEBUG(X) do { } while (0)
+#   define DEBUG(X) do { } while (0)
 #endif
 
 #ifdef PRINT_DEBUG_SMT
-#define DEBUG_SMT(X) do {X} while (0)
+#   define DEBUG_SMT(X) do {X} while (0)
 #else
-#define DEBUG_SMT(X) do { } while (0)
+#   define DEBUG_SMT(X) do { } while (0)
 #endif
 
 #ifdef HAS_Z3 
-#define Z3(X)  X
+#   define Z3(X)  X
 #else
-#define Z3(X)  
+#   define Z3(X)
 #endif
-
-#ifndef LLVM_INSTALL_PATH
-#define LLVM_INSTALL_PATH ""
-#endif
-
 
 #include <time.h>
 #include <map>

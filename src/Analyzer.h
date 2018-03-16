@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "llvm/Support/FormattedStream.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Function.h"
 
 

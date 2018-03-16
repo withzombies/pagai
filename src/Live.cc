@@ -60,7 +60,11 @@ bool Live::isLiveByLinearityInBlock(Value *V, BasicBlock *BB, bool PHIblock) {
 	} else {
 		for (Value::use_iterator I = V->use_begin(), E = V->use_end();
 				I != E; ++I) {
+#if LLVM_VERSION_ATLEAST(3, 5)
+			User *U = I->getUser();
+#else
 			User *U = *I;
+#endif
 			// if the use is an operand of a linear binary operation, then we should keep
 			// it live
 			if (BinaryOperator * binop = dyn_cast<BinaryOperator>(U)) {
@@ -147,7 +151,11 @@ Live::Memo &Live::compute( Value *V) {
 	std::stack<Block> S;
 	for (Value::use_iterator I = V->use_begin(), E = V->use_end();
 			I != E; ++I) {
+#if LLVM_VERSION_ATLEAST(3, 5)
+		User *U = I->getUser();
+#else
 		User *U = *I;
+#endif
 		BasicBlock *UseBB = cast<Instruction>(U)->getParent();
 
 		// Note the block in which this use occurs.
@@ -165,7 +173,11 @@ Live::Memo &Live::compute( Value *V) {
 
 			//M.LiveThrough.insert(UseBB);
 
-			Block Pred(phi->getIncomingBlock(I),false);
+#if LLVM_VERSION_ATLEAST(3, 5)
+			Block Pred(phi->getIncomingBlock(*I), false);
+#else
+			Block Pred(phi->getIncomingBlock(I), false);
+#endif
 			S.push(Pred);
 
 		} else if (UseBB != DefB.b || DefB.PHIblock) {

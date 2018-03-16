@@ -335,8 +335,8 @@ void AbstractClassic::display(llvm::raw_ostream &stream, std::string * left) con
 	fclose(tmp);
 #endif
 }
-		
-void AbstractClassic::to_MDNode(llvm::Instruction * Inst, std::vector<llvm::Value*> * met) {
+
+void AbstractClassic::to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
 
 	LLVMContext& C = Inst->getContext();
 	ap_tcons1_array_t tcons_array = ap_abstract1_to_tcons_array(man,main);
@@ -350,14 +350,14 @@ void AbstractClassic::to_MDNode(llvm::Instruction * Inst, std::vector<llvm::Valu
 #if 1
 		// alternative invariant representation
 		Environment env(this);
-		std::vector<Value*> MDenv;
+		std::vector<METADATA_TYPE*> MDenv;
 		env.to_MDNode(&C,&MDenv);
 		met->push_back(MDNode::get(C,MDenv));
-		std::vector<Value*> MDconstraints;
+		std::vector<METADATA_TYPE*> MDconstraints;
 		for (size_t k = 0; k < size; k++) {
 			ap_tcons1_t cons = ap_tcons1_array_get(&tcons_array,k);
 
-			std::vector<llvm::Value*> c;
+			std::vector<METADATA_TYPE*> c;
 			ap_tcons1_t_to_MDNode(cons,Inst,&c);
 			MDconstraints.push_back(MDNode::get(C,c));
 		}
@@ -371,7 +371,7 @@ void AbstractClassic::to_MDNode(llvm::Instruction * Inst, std::vector<llvm::Valu
 			//std::string & cstr = s->str();
 			//met->push_back(MDString::get(C, cstr));
 
-			std::vector<llvm::Value*> c;
+			std::vector<METADATA_TYPE*> c;
 			ap_tcons1_t_to_MDNode(cons,Inst,&c);
 			met->push_back(MDNode::get(C,c));
 

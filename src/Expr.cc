@@ -7,7 +7,6 @@
 #define UNDEF_ADDRESS 0x0
 #include <map>
 
-#include "llvm/Support/CFG.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
 

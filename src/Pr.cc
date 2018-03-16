@@ -6,7 +6,7 @@
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/IR/Instructions.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 
 #include "Pr.h"
 #include "Analyzer.h"

@@ -10,7 +10,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/raw_os_ostream.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 
 extern llvm::raw_ostream *Out;
 

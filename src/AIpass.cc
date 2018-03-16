@@ -13,9 +13,8 @@
 
 
 #include "llvm/IR/Instructions.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/IR/IntrinsicInst.h"
-#include "llvm/Support/system_error.h"
 
 #include "AIpass.h"
 #include "Pr.h"
@@ -245,7 +244,7 @@ void AIPass::InstrumentLLVMBitcode(Function * F) {
 				(printAllInvariants() && n->X_s.count(passID) && n->X_s[passID] != NULL && !ignored(F))) {
 			Instruction * Inst = b->getFirstNonPHI();
 			if (InvariantAsMetadata()) {
-				std::vector<Value*> arr;
+				std::vector<METADATA_TYPE*> arr;
 				n->X_s[passID]->to_MDNode(Inst,&arr);
 				LLVMContext& C = Inst->getContext();
 				MDNode* N = MDNode::get(C,arr);

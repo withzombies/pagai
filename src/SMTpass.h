@@ -11,8 +11,12 @@
 #include <list>
 #include <set>
 
-#include "llvm/Config/config.h"
-#include "llvm/InstVisitor.h"
+#include "config.h"
+#if LLVM_VERSION_ATLEAST(3, 5)
+#   include "llvm/IR/InstVisitor.h"
+#else
+#   include "llvm/InstVisitor.h"
+#endif
 
 #include "Analyzer.h"
 #include "Abstract.h"

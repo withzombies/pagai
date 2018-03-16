@@ -6,7 +6,7 @@
 #include <vector>
 #include <list>
 
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 
 #include "AISimple.h"
 #include "Expr.h"

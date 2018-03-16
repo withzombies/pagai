@@ -10,6 +10,7 @@
 
 #include "ap_global1.h"
 #include "Abstract.h"
+#include "config.h"
 
 class Node;
 class AbstractGopan;
@@ -164,7 +165,7 @@ class AbstractClassic: public Abstract {
 		void display(llvm::raw_ostream &stream, std::string * left = NULL) const;
 
 		
-		void to_MDNode(llvm::Instruction * Inst, std::vector<llvm::Value*> * met);
+		void to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met);
 
 		void insert_as_LLVM_invariant(llvm::Instruction * Inst);
 };

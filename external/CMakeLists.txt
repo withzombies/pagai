@@ -93,27 +93,39 @@ endif()
 
 # LLVM + clang
 
-set(CLANG_ARCHIVE           "clang-${LLVM_VERSION}.src.tar.gz")
-set(CLANG_DOWNLOAD_PATH_TMP "${CMAKE_BINARY_DIR}/${CLANG_ARCHIVE}")
+if(LLVM_VERSION VERSION_GREATER 3.4.2)
+    set(CLANG_ARCHIVE_WE "cfe-${LLVM_VERSION}.src")
+    set(CLANG_ARCHIVE_EXT "tar.xz")
+    set(LLVM_ARCHIVE "llvm-${LLVM_VERSION}.src.tar.xz")
+elseif(LLVM_VERSION VERSION_GREATER 3.4)
+    set(CLANG_ARCHIVE_WE "cfe-${LLVM_VERSION}.src")
+    set(CLANG_ARCHIVE_EXT "tar.gz")
+    set(LLVM_ARCHIVE "llvm-${LLVM_VERSION}.src.tar.gz")
+else()
+    set(CLANG_ARCHIVE_WE "clang-${LLVM_VERSION}")
+    set(CLANG_ARCHIVE_EXT "src.tar.gz")
+    set(LLVM_ARCHIVE "llvm-${LLVM_VERSION}.src.tar.gz")
+endif()
+
+set(CLANG_DOWNLOAD_PATH_TMP "${CMAKE_BINARY_DIR}/external/${CLANG_ARCHIVE_WE}.${CLANG_ARCHIVE_EXT}")
 file(DOWNLOAD
-    "http://releases.llvm.org/${LLVM_VERSION}/${CLANG_ARCHIVE}"
+    "http://releases.llvm.org/${LLVM_VERSION}/${CLANG_ARCHIVE_WE}.${CLANG_ARCHIVE_EXT}"
     "${CLANG_DOWNLOAD_PATH_TMP}"
 )
 ExternalProject_add(llvm
     PREFIX "${EXTERNAL_PREFIX}/llvm-${LLVM_VERSION}"
 
-    URL "http://releases.llvm.org/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.gz"
+    URL "http://releases.llvm.org/${LLVM_VERSION}/${LLVM_ARCHIVE}"
 
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-bindings=none --prefix=<INSTALL_DIR>
-    BUILD_COMMAND REQUIRES_RTTI=1 ${CMAKE_MAKE_PROGRAM}
+    BUILD_COMMAND REQUIRES_RTTI=1 ${CMAKE_MAKE_PROGRAM} $ENV{PARALLEL_MAKE_OPTS}
 )
 ExternalProject_add_step(llvm get_clang
     WORKING_DIRECTORY <SOURCE_DIR>/tools
     DEPENDEES download
     COMMAND ${CMAKE_COMMAND} -E remove_directory clang
     COMMAND ${CMAKE_COMMAND} -E tar xf "${CLANG_DOWNLOAD_PATH_TMP}"
-    COMMAND ${CMAKE_COMMAND} -E remove "${CLANG_DOWNLOAD_PATH_TMP}"
-    COMMAND ${CMAKE_COMMAND} -E rename "clang-${LLVM_VERSION}" clang
+    COMMAND ${CMAKE_COMMAND} -E rename "${CLANG_ARCHIVE_WE}" clang
     DEPENDERS configure
 )
 DepInstall_add(TARGET llvm)

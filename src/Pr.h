@@ -9,7 +9,7 @@
 #include <map>
 #include <set>
 
-#include "llvm/Support/CFG.h"
+#include "llvm/Analysis/CFG.h"
 #include "Node.h"
 
 using namespace llvm;

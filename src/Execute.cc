@@ -4,13 +4,22 @@
  * \author Julien Henry
  */
 #include <fstream>
+
+#include "config.h"
+#if LLVM_VERSION_ATLEAST(3, 5)
+// parseIRFile returns a "unique_ptr" after LLVM 3.4 ...
+#   include <memory>
+#else
+// ... and a simple ptr (managed with llvm::OwningPtr) before
+#   include "llvm/ADT/OwningPtr.h"
+#endif
+
 #include "llvm/IR/Module.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/Pass.h"
 #include "llvm/PassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Bitcode/ReaderWriter.h"
-#include "llvm/Support/system_error.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/raw_os_ostream.h"
@@ -19,7 +28,6 @@
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Transforms/IPO.h"
-#include "llvm/Config/llvm-config.h"
 
 #include "AIpf.h"
 #include "AIpf_incr.h"
@@ -55,7 +63,6 @@
 #include "clang/Frontend/TextDiagnosticPrinter.h"
 #include "clang/Basic/Version.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
-#include "llvm/ADT/OwningPtr.h"
 #include "llvm/IR/Module.h"
 
 #include "llvm/IRReader/IRReader.h"
@@ -65,7 +72,7 @@
 using namespace llvm;
 
 static cl::opt<std::string>
-DefaultDataLayout("default-data-layout", 
+DefaultDataLayout("default-data-layout",
           cl::desc("data layout string to use if not specified by module"),
           cl::value_desc("layout-string"), cl::init(""));
 
@@ -116,10 +123,17 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 
 	if (OutputFilename != "") {
 
-		std::string error;
-		FDOut = new raw_fd_ostream(OutputFilename.c_str(), error);
-		if (!error.empty()) {
-			errs() << error << '\n';
+#if LLVM_VERSION_ATLEAST(3, 5)
+		std::error_code error;
+		FDOut = new raw_fd_ostream(OutputFilename.c_str(), error, sys::fs::F_None);
+		if (error) {
+			errs() << error.message() << '\n';
+#else
+		std::string error_str;
+		FDOut = new raw_fd_ostream(OutputFilename.c_str(), error_str, sys::fs::F_None);
+		if (!error_str.empty()) {
+			errs() << error_str << '\n';
+#endif
 			delete FDOut;
 			return;
 		}
@@ -134,8 +148,11 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	//Dbg = &llvm::fdbgs();
 	Dbg = &llvm::outs();
 
+#if LLVM_VERSION_ATLEAST(3, 5)
+	std::unique_ptr<llvm::Module> M;
+#else
 	llvm::Module * M;
-	std::auto_ptr<Module> M_ptr;
+#endif
 
 	// Arguments to pass to the clang frontend
 	std::vector<const char *> args;
@@ -166,8 +183,8 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	}
 	//args.push_back(IncludePaths.front().c_str());
 
-	llvm::OwningPtr<clang::CodeGenAction> Act(new clang::EmitLLVMOnlyAction());
-	 
+	clang::EmitLLVMOnlyAction Act;
+
 	clang::DiagnosticOptions * Diagopt = new clang::DiagnosticOptions();
 	Diagopt->ShowColors=1;
 	Diagopt->ShowPresumedLoc=1;
@@ -178,13 +195,21 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	Diags->setClient(client);
 
 	// Create the compiler invocation
+#if LLVM_VERSION_ATLEAST(3, 5)
+	std::unique_ptr<clang::CompilerInvocation> CI(new clang::CompilerInvocation);
+#else
 	llvm::OwningPtr<clang::CompilerInvocation> CI(new clang::CompilerInvocation);
+#endif
 	clang::CompilerInvocation::CreateFromArgs(*CI, &args[0], &args[0] + args.size(), *Diags);
 	
 	clang::CompilerInstance Clang;
 	// equivalent to the -gcolumn-info command line option for clang
 	CI->getCodeGenOpts().DebugColumnInfo = 1;
+#if LLVM_VERSION_ATLEAST(3, 5)
+	Clang.setInvocation(CI.release());
+#else
 	Clang.setInvocation(CI.take());
+#endif
 	Clang.setDiagnostics(Diags);
 
 	Clang.getHeaderSearchOpts().UseStandardSystemIncludes=1;
@@ -198,7 +223,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	std::string sep;
 	if (llvm::sys::path::is_separator('/'))
 		sep = "/";
-	else 
+	else
 		sep = "\\";
 	p += sep + "lib" + sep + "clang" + sep + CLANG_VERSION_STRING;
     	Clang.getHeaderSearchOpts().ResourceDir = p;
@@ -208,14 +233,22 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	if (!is_Cfile(InputFilename)) {
 		SMDiagnostic SM;
 		LLVMContext & Context = getGlobalContext();
-		M = ParseIRFile(InputFilename,SM,Context); 
+// the name "ParseIRFile" has been uncapitalized after LLVM 3.4...
+#if LLVM_VERSION_ATLEAST(3, 5)
+		M = parseIRFile(InputFilename, SM, Context);
+#else
+		M = ParseIRFile(InputFilename, SM, Context);
+#endif
 	} else {
-		if (!Clang.ExecuteAction(*Act)) {
+		if (!Clang.ExecuteAction(Act)) {
 		//*Dbg << "Unable to produce LLVM bitcode. Please use Clang with the appropriate options.\n";
 		    return;
 		}
-		llvm::Module *module = Act->takeModule();
-		M = module;
+		// run takeLLVMContext(): otherwise the LLVMContext
+		// is deleted when the Action is deleted,
+		// which destroys also M, thus M is then doubly destroyed.
+		Act.takeLLVMContext();
+		M = Act.takeModule();
 	}
 
 	if (M == NULL) {
@@ -234,8 +267,8 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 		InitialPasses.add(new RemoveUndet());
 	if (optimizeBC()) {
 		// may degrade precision of the analysis
-		PassManagerBuilder Builder; 
-		Builder.OptLevel = 3; 
+		PassManagerBuilder Builder;
+		Builder.OptLevel = 3;
 		Builder.populateModulePassManager(InitialPasses);
 	}
 
@@ -257,7 +290,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	}
 	//Passes.add(createLoopSimplifyPass());	
 
-	// in case we want to run an Alias analysis pass : 
+	// in case we want to run an Alias analysis pass :
 	//Passes.add(createGlobalsModRefPass());
 	//Passes.add(createBasicAliasAnalysisPass());
 	//Passes.add(createScalarEvolutionAliasAnalysisPass());
@@ -367,7 +400,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 				AnalysisPasses.add(new CompareDomain<LW_WITH_PF_DISJ>());
 				break;
 		}
-	} else { 
+	} else {
 		ModulePass *AIPass;
 		switch (getTechnique()) {
 			case LOOKAHEAD_WIDENING:
@@ -399,23 +432,31 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	}
 	AnalysisPasses.run(*M);
 
-	//*Out << *M;
-	std::string error;
-
+#if LLVM_VERSION_ATLEAST(3, 5)
+	std::error_code error;
 	if (generateMetadata()) {
-		raw_fd_ostream * BitcodeOutput = new raw_fd_ostream(getAnnotatedBCFilename().c_str(), error);
+		raw_fd_ostream * BitcodeOutput = new raw_fd_ostream(getAnnotatedBCFilename().c_str(), error, sys::fs::F_None);
+		WriteBitcodeToFile(M.get(), *BitcodeOutput);
+#else
+	std::string error_str;
+	if (generateMetadata()) {
+		raw_fd_ostream * BitcodeOutput = new raw_fd_ostream(getAnnotatedBCFilename().c_str(), error_str, sys::fs::F_None);
 		WriteBitcodeToFile(M, *BitcodeOutput);
+#endif
 		BitcodeOutput->close();
 	}
 
 	if (onlyOutputsRho()) {
 		return;
 	}
+
+#ifdef TOTO
 	// we properly delete all the created Nodes
 	std::map<BasicBlock*,Node*>::iterator it = Nodes.begin(), et = Nodes.end();
 	for (;it != et; it++) {
 		delete (*it).second;
 	}
+#endif
 
 	Pr::releaseMemory();
 	SMTpass::releaseMemory();

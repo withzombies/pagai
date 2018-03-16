@@ -1,6 +1,9 @@
 #include <fstream>
+#include <system_error>
 
+#include "llvm/Support/FileSystem.h"
 #include "AnalysisPass.h"
+#include "config.h"
 
 bool AnalysisPass::asserts_proved(Function * F) {
 	Pr * FPr = Pr::getInstance(F);
@@ -43,10 +46,20 @@ void AnalysisPass::generateAnnotatedFiles(Module * M, bool outputfile) {
 		std::string OutputFilename(getAnnotatedFilename());
 		// open the output stream
 		raw_fd_ostream *FDOut = NULL;
-		std::string error;
-		FDOut = new raw_fd_ostream(OutputFilename.c_str(), error);
-		if (!error.empty()) {
-			errs() << error << '\n';
+
+		// raw_fd_ostream's constructor has changed after LLVM 3.4
+		// and takes as second argument a "std::error_code" and no longer an "std::string"
+#if LLVM_VERSION_ATLEAST(3, 5)
+		std::error_code error;
+		FDOut = new raw_fd_ostream(OutputFilename.c_str(), error, llvm::sys::fs::F_None);
+		if (error) { // TODO DM check
+			errs() << error.message() << '\n';
+#else
+		std::string error_str;
+		FDOut = new raw_fd_ostream(OutputFilename.c_str(), error_str, llvm::sys::fs::F_None);
+		if (!error_str.empty()) {
+			errs() << error_str << '\n';
+#endif
 			delete FDOut;
 			return;
 		}
@@ -136,7 +149,7 @@ void AnalysisPass::printResult_oldoutput(Function * F) {
 			changeColor(raw_ostream::MAGENTA);
 			Instruction * Inst = b->getFirstNonPHI();
 			//Instruction * Inst = &b->front();
-			std::vector<Value*> arr;
+			std::vector<METADATA_TYPE*> arr;
 			
 			if (generateMetadata()) {
 				n->X_s[passID]->to_MDNode(Inst,&arr);

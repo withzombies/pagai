@@ -4,12 +4,21 @@
  * \author Rahul Nanda, Julien Henry
  */
 #include<algorithm>
-#include<fstream>
+#include <fstream>
+
+#include "config.h"
+#if LLVM_VERSION_ATLEAST(3, 5)
+#	include "llvm/IR/Dominators.h"
+#	include "llvm/IR/DebugInfo.h"
+#else
+#	include "llvm/DebugInfo.h"
+#	include "llvm/Analysis/Dominators.h"
+#endif
+#include "llvm/Support/Dwarf.h"
 
 #include "recoverName.h"
 #include "Debug.h"
 #include "SMTpass.h"
-#include "llvm/Analysis/Dominators.h"
 
 #define MAX 0xFFFFFFFF
 
@@ -221,16 +230,6 @@ int recoverName::process(Function *F) {
 }
 
 int recoverName::getBasicBlockLineNo(BasicBlock* BB) {
-#if 0
-	Instruction * I = getFirstMetadata(BB);
-	if (I == NULL) return -1;
-	MDNode * MD = I->getMetadata(0);
-	MDNode * MDNode_lexical_block = get_DW_TAG_lexical_block(MD);
-	if(const ConstantInt *LineNo = dyn_cast<ConstantInt>(MDNode_lexical_block->getOperand(2)))
-		return LineNo->getZExtValue();
-	return -1;
-#endif
-
 	std::map<BasicBlock*,int>::iterator it;
 	it=Block_line.find(BB);
 	if(it!=Block_line.end())
@@ -242,16 +241,6 @@ int recoverName::getBasicBlockLineNo(BasicBlock* BB) {
 }
 
 int recoverName::getBasicBlockColumnNo(BasicBlock* BB) {
-#if 0
-	Instruction * I = getFirstMetadata(BB);
-	if (I == NULL) return -1;
-	MDNode * MD = I->getMetadata(0);
-	MDNode * MDNode_lexical_block = get_DW_TAG_lexical_block(MD);
-	if(const ConstantInt *LineNo = dyn_cast<ConstantInt>(MDNode_lexical_block->getOperand(3)))
-		return LineNo->getZExtValue();
-	return -1;
-#endif
-
 	std::map<BasicBlock*,int>::iterator it;
 	it=Block_column.find(BB);
 	if(it!=Block_column.end())
@@ -262,78 +251,57 @@ int recoverName::getBasicBlockColumnNo(BasicBlock* BB) {
 		return -1;
 }
 
-//this functions collects required information about a variable from a MDNode*, creates the corresponding object 
-//of type Info and returns it.
+/*
+ * This function collects required information about a variable from a MDNode*, creates the corresponding object
+ * of type Info and returns it.
+ */
 Info recoverName::resolveMetDescriptor(MDNode* md) {
-	std::string name,type;
-	int lineNo,tag;
-	int varNameLoc,lineNoLoc,typeLoc;
-
-	bool assigned=false;
-	bool islocal = false, isarg = false, isret = false, isglobal = false;
-	if(const ConstantInt *Tag = dyn_cast<ConstantInt>(md->getOperand(0)))
-	{
-		tag=Tag->getZExtValue()-LLVM_DEBUG_VERSION; 	
-		switch(tag)
-		{
-			case 256: //DW_TAG_AUTO_VARIABLE
-						islocal=true;
-						varNameLoc=2;lineNoLoc=4;typeLoc=5;
-						assigned=true;
-						break;
-			case 257: //DW_TAG_arg_variable
-						isarg=true;
-						varNameLoc=2;lineNoLoc=4;typeLoc=5;
-						assigned=true;
-						break;
-			case 258: //DW_TAG_return_variable
-						isret=true;
-						varNameLoc=2;lineNoLoc=4;typeLoc=5;
-						assigned=true;
-						break;
-			case 52: //DW_TAG_variable
-						isglobal=true;
-						varNameLoc=3;lineNoLoc=7;typeLoc=8;
-						assigned=true;
-						break;
-		}	
+	DIVariable descriptor(md);
+	std::string name;
+	std::string type;
+	int lineNo;
+	auto tag = descriptor.getTag();
+	
+	switch(tag) {
+		case dwarf::DW_TAG_auto_variable:
+		case dwarf::DW_TAG_arg_variable:
+		case dwarf::DW_TAG_variable:
+			lineNo = descriptor.getLineNumber();
+			name = descriptor.getName();
+			type = "unknown";
+			return Info(name, lineNo, type, true, false, false, false);
 	}	
-	if(assigned)
-	{
-		if (const MDString * MDS1 = dyn_cast<MDString>(md->getOperand(varNameLoc))) 
-		{
-			name=MDS1->getString().str();
-    	} 		
-		if(const ConstantInt *LineNo = dyn_cast<ConstantInt>(md->getOperand(lineNoLoc)))
-		{
-			lineNo=LineNo->getZExtValue();	
-		}
-
-		// type is set to unknown, since we do not use it anyway
-		type="unknown";
-
-		Info res(name,lineNo,type,islocal,isarg,isret,isglobal);
-		return res;
-	}
 	assert(false);
 }
 
 void recoverName::update_line_column(Instruction * I, unsigned & line, unsigned & column) {
 	MDNode *BlockMD = I->getMetadata("dbg");
-	if(BlockMD != NULL && ! isa<DbgValueInst>(I) && ! isa<DbgDeclareInst>(I)) {
-		unsigned l,c;
-		if(const ConstantInt *BBLineNo = dyn_cast<ConstantInt>(BlockMD->getOperand(0))) {
-			l=BBLineNo->getZExtValue();
-		}
-		if(const ConstantInt *BBColumnNo = dyn_cast<ConstantInt>(BlockMD->getOperand(1))) {
-			c=BBColumnNo->getZExtValue();
-		}
-		if(l<line) {
-			line=l;
-			column=c;
-		} else if(l==line && c<column) {
-			column=c;
-		}
+	if (BlockMD == NULL) return;
+
+// MDLocation was introduced after LLVM 3.4
+#if LLVM_VERSION_ATLEAST(3, 5)
+	MDLocation *location = dyn_cast<MDLocation>(BlockMD);
+	if (location == NULL) {
+		return;
+	}
+
+	auto l = location->getLine();
+	auto c = location->getColumn();
+#else
+	unsigned l, c;
+	if (const ConstantInt *BBLineNo = dyn_cast<ConstantInt>(BlockMD->getOperand(0))) {
+		l = BBLineNo->getZExtValue();
+	}
+	if (const ConstantInt *BBColumnNo = dyn_cast<ConstantInt>(BlockMD->getOperand(1))) {
+		c = BBColumnNo->getZExtValue();
+	}
+#endif
+
+	if (l < line) {
+		line = l;
+		column = c;
+	} else if (l == line && c < column) {
+		column = c;
 	}
 }
 
@@ -345,7 +313,6 @@ void recoverName::pass1(Function *F) {
 	for (Function::iterator bb = F->begin(), e = F->end(); bb != e; ++bb) {
 		unsigned bbline=MAX,bbcolumn=MAX;
 		for (BasicBlock::iterator I = bb->begin(), E = bb->end(); I != E; ++I) {
-			update_line_column(I,bbline,bbcolumn);	
 			//now check if the instruction is of type llvm.dbg.value or llvm.dbg.declare
 			bool dbgInstFlag=false;
 			if(const DbgValueInst *DVI=dyn_cast<DbgValueInst>(I)) {
@@ -357,7 +324,17 @@ void recoverName::pass1(Function *F) {
 				MD = DDI->getVariable(); 
 				dbgInstFlag=true;
 			}
-			if(dbgInstFlag) {
+
+			/*
+			 * We do not take llvm.dbg.* instructions into account
+			 * for line/columns computations since some of them
+			 * point to function parameters, resulting in annoying
+			 * "reachable" annotations inside the parameters list
+			 * if we keep them.
+			 */
+			if (!dbgInstFlag) {
+				update_line_column(I, bbline, bbcolumn);
+			} else {
 				Info varInfo=resolveMetDescriptor(MD);
 				if(!varInfo.empty()) {
 					std::pair<std::multimap<const Value*,Info>::iterator,std::multimap<const Value*,Info>::iterator> ret1;
@@ -403,44 +380,22 @@ Instruction * recoverName::getFirstMetadata(BasicBlock * b) {
 	return NULL;
 }
 
-int recoverName::getFunctionLineNo(Function* F) {
-	Instruction * I = getFirstMetadata(F);
-	MDNode * MD = I->getMetadata(0);
-	//MD = dyn_cast<MDNode>(MD->getOperand(2));
-	MDNode * MDNode_subprogram = get_DW_TAG_subprogram(MD);
-	assert(MDNode_subprogram != NULL);
-	const ConstantInt *LineNo = dyn_cast<ConstantInt>(MDNode_subprogram->getOperand(19));
-	return LineNo->getZExtValue();
-}
-
 std::string recoverName::getSourceFileName(Function * F) {
-	// we only need the first instruction
-	Instruction * I = getFirstMetadata(F);
+	const Instruction * I = getFirstMetadata(F);
 	if (I == NULL) return "";
-	MDNode * MD = I->getMetadata("dbg");
-	if (MD == NULL) return "";
-	MDNode * MDNode_file_type = get_DW_TAG_file_type(MD);
-	if (MDNode_file_type == NULL) return "";
-	MD = dyn_cast<MDNode>(MDNode_file_type->getOperand(1));
-	const MDString * Filename = dyn_cast<MDString>(MD->getOperand(0));
-
-	std::string s = Filename->getString().str();
-	return s;
+	const MDNode * dbg = I->getMetadata("dbg");
+	if (dbg == NULL) return "";
+	const DILocation location = DILocation(dbg);
+	return location.getFilename();
 }
 
 std::string recoverName::getSourceFileDir(Function * F) {
-	// we only need the first instruction
-	Instruction * I = getFirstMetadata(F);
+	const Instruction * I = getFirstMetadata(F);
 	if (I == NULL) return "";
-	MDNode * MD = I->getMetadata("dbg");
-	if (MD == NULL) return "";
-	MDNode * MDNode_file_type = get_DW_TAG_file_type(MD);
-	if (MDNode_file_type == NULL) return "";
-	MD = dyn_cast<MDNode>(MDNode_file_type->getOperand(1));
-	const MDString * Filename = dyn_cast<MDString>(MD->getOperand(1));
-
-	std::string s = Filename->getString().str();
-	return s;
+	const MDNode * dbg = I->getMetadata("dbg");
+	if (dbg == NULL) return "";
+	const DILocation location = DILocation(dbg);
+	return location.getDirectory();
 }
 
 bool recoverName::is_readable(Function * F) { 
@@ -481,57 +436,3 @@ bool recoverName::hasMetadata(BasicBlock * b) {
 	return false;
 }
 
-MDNode * recoverName::get_DW_TAG_lexical_block(MDNode * MD) {
-	const ConstantInt *Tag = dyn_cast<ConstantInt>(MD->getOperand(0));
-	int tag = Tag->getZExtValue()-LLVM_DEBUG_VERSION;
-	MDNode * N;
-	switch (tag) {
-		case 11: // DW_TAG_lexical_block
-			return MD;
-		default:
-			DEBUG(
-				*Out << "MD\n";
-				*Out << *MD << "\n";
-			);
-			N = dyn_cast<MDNode>(MD->getOperand(2));
-			break;
-	}
-	return get_DW_TAG_lexical_block(N);
-}
-
-MDNode * recoverName::get_DW_TAG_subprogram(MDNode * MD) {
-	const ConstantInt *Tag = dyn_cast<ConstantInt>(MD->getOperand(0));
-	int tag = Tag->getZExtValue()-LLVM_DEBUG_VERSION;
-	MDNode * N;
-	switch (tag) {
-		case 11: // DW_TAG_lexical_block
-			N = dyn_cast<MDNode>(MD->getOperand(2));
-			break;
-		case 46: //DW_TAG_subprogram
-			return MD;
-		default:
-			N = dyn_cast<MDNode>(MD->getOperand(2));
-			break;
-	}
-	return get_DW_TAG_subprogram(N);
-}
-
-MDNode * recoverName::get_DW_TAG_file_type(MDNode * MD) {
-	const ConstantInt *Tag = dyn_cast<ConstantInt>(MD->getOperand(0));
-	int tag = Tag->getZExtValue()-LLVM_DEBUG_VERSION;
-	MDNode * N;
-	switch (tag) {
-		case 11: // DW_TAG_lexical_block
-			N = dyn_cast<MDNode>(MD->getOperand(2));
-			break;
-		case 46: //DW_TAG_subprogram
-			N = dyn_cast<MDNode>(MD->getOperand(2));
-			break;
-		case 41: // DW_TAG_file_type
-			return MD;
-		default:
-			N = dyn_cast<MDNode>(MD->getOperand(2));
-			break;
-	}
-	return get_DW_TAG_file_type(N);
-}
