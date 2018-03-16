@@ -155,7 +155,7 @@ endif()
 ExternalProject_add(apron
     PREFIX "${APRON_PREFIX}"
 
-    URL "http://forge.imag.fr/frs/download.php/702/apron_${APRON_VERSION}.tar.gz"
+    URL "https://gricad-gitlab.univ-grenoble-alpes.fr/pagai/apron-clone/raw/master/archives/apron-${APRON_VERSION}.tar.xz"
 
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND "${CMAKE_COMMAND}"
