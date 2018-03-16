@@ -43,7 +43,7 @@ ExternalProject_add(cudd
     CONFIGURE_COMMAND ""
 
     BUILD_IN_SOURCE 1
-    BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${CUDD_XCFLAGS} && ${CMAKE_MAKE_PROGRAM} -C obj ${CUDD_XCFLAGS} testobj
+    BUILD_COMMAND $(MAKE) ${CUDD_XCFLAGS} && $(MAKE) -C obj ${CUDD_XCFLAGS} testobj
 
     # Just check that the build went OK, it's fast
     TEST_BEFORE_INSTALL 1
@@ -66,6 +66,7 @@ if(ENABLE_Z3)
         # No update command (this git won't be updated)
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND ""
+        BUILD_COMMAND $(MAKE)
 
         BINARY_DIR "${EXTERNAL_PREFIX}/z3-${Z3_VERSION}/src/z3/build"
     )
@@ -117,7 +118,7 @@ ExternalProject_add(llvm
     URL "http://releases.llvm.org/${LLVM_VERSION}/${LLVM_ARCHIVE}"
 
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-bindings=none --prefix=<INSTALL_DIR>
-    BUILD_COMMAND REQUIRES_RTTI=1 ${CMAKE_MAKE_PROGRAM} $ENV{PARALLEL_MAKE_OPTS}
+    BUILD_COMMAND REQUIRES_RTTI=1 $(MAKE)
 )
 ExternalProject_add_step(llvm get_clang
     WORKING_DIRECTORY <SOURCE_DIR>/tools
@@ -136,6 +137,7 @@ if(ENABLE_PPL)
         PREFIX "${EXTERNAL_PREFIX}/ppl-${PPL_VERSION}"
         URL "ftp://ftp.cs.unipr.it/pub/ppl/releases/${PPL_VERSION}/ppl-${PPL_VERSION}.tar.gz"
         CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-interfaces=c,c++
+        BUILD_COMMAND $(MAKE)
     )
     DepInstall_add(TARGET ppl)
 endif()
@@ -165,6 +167,7 @@ ExternalProject_add(apron
         -DPPL_INSTALL_PREFIX=${PPL_PREFIX}
         -DPPL_ENABLED=${APRON_PPL_ENABLED}
         -P "${CMAKE_SOURCE_DIR}/cmake/ConfigureApron.cmake"
+    BUILD_COMMAND $(MAKE)
 )
 
 DepInstall_add(TARGET apron)
