@@ -9,7 +9,6 @@
 #
 # This script sets the following variables:
 #
-#     LLVM_PATH             Path to the LLVM install
 #     LLVM_CXX_FLAGS        Compiler flags required
 #     LLVM_LD_FLAGS         Linker flags required
 #     LLVM_LIBRARIES        Libraries to link with
@@ -80,7 +79,6 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LLVM DEFAULT_MSG LLVM_VERSION LLVM_CONFIG_LIBS LLVM_CONFIG_CXXFLAGS LLVM_CONFIG_LDFLAGS)
 mark_as_advanced(LLVM_CONFIG_CXXFLAGS LLVM_CONFIG_LDFLAGS LLVM_CONFIG_LIBS)
 
-set(LLVM_PATH "${EXTERNAL_PREFIX}/llvm-${LLVM_VERSION}")
 set(LLVM_CXX_FLAGS "${LLVM_CONFIG_CXXFLAGS}")
 set(LLVM_LD_FLAGS "${LLVM_CONFIG_LDFLAGS}")
 set(LLVM_LIBRARIES "${LLVM_CONFIG_LIBS}")

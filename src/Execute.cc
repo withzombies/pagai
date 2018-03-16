@@ -19,6 +19,7 @@
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Transforms/IPO.h"
+#include "llvm/Config/llvm-config.h"
 
 #include "AIpf.h"
 #include "AIpf_incr.h"
@@ -192,7 +193,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	//Clang.getHeaderSearchOpts().UseLibcxx=1;
 	
 	std::string p = parse_conf();
-	if (p.size() == 0) std::string p = LLVM_INSTALL_PATH;
+	if (p.size() == 0) std::string p = LLVM_PREFIX;
 
 	std::string sep;
 	if (llvm::sys::path::is_separator('/'))
