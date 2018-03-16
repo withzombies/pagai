@@ -16,7 +16,6 @@ set(YICES_ARCH i686-pc-linux-gnu-static-gmp)
 execute_process(COMMAND uname -m OUTPUT_VARIABLE ARCH)
 if(${ARCH} MATCHES amd64 OR ${ARCH} MATCHES x86_64)
     set(CUDD_XCFLAGS "XCFLAGS=-mtune=native -DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=8 -DSIZEOF_LONG=8")
-    set(Z3_ARCH -x64)
     set(YICES_ARCH x86_64-unknown-linux-gnu-static-gmp)
 elseif(${ARCH} MATCHES sparc64)
     set(CUDD_XCFLAGS "XCFLAGS=-DHAVE_IEEE_754 -DBSD -DSIZEOF_VOID_P=4 -DSIZEOF_LONG=4")
@@ -57,24 +56,24 @@ DepInstall_add(TARGET cudd)
 # Z3
 
 if(ENABLE_Z3)
-    find_package(PythonInterp REQUIRED)
+    find_package(PythonInterp 2 REQUIRED)
     ExternalProject_add(z3
         PREFIX "${EXTERNAL_PREFIX}/z3-${Z3_VERSION}"
 
         GIT_REPOSITORY "https://github.com/Z3Prover/z3"
-        GIT_TAG "${Z3_VERSION}"
+        GIT_TAG "z3-${Z3_VERSION}"
 
         # No update command (this git won't be updated)
         UPDATE_COMMAND ""
+        CONFIGURE_COMMAND ""
 
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+        BINARY_DIR "${EXTERNAL_PREFIX}/z3-${Z3_VERSION}/src/z3/build"
     )
-    ExternalProject_add_step(z3 bootstrap_create
+    ExternalProject_add_step(z3 python_mkmake
         WORKING_DIRECTORY <SOURCE_DIR>
-        DEPENDEES update
-        COMMAND ${PYTHON_EXECUTABLE} contrib/cmake/bootstrap.py create
-        DEPENDERS configure
-    )
+        DEPENDEES download
+        COMMAND "${PYTHON_EXECUTABLE}" scripts/mk_make.py --prefix=<INSTALL_DIR>
+        DEPENDERS configure)
     DepInstall_add(TARGET z3)
 endif()
 

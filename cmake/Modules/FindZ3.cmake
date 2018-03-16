@@ -3,7 +3,8 @@
 # Influential variables:
 #
 #     EXTERNAL_PREFIX       Prefix where local installations are done
-#     Z3_VERSION            Commit of Z3 to look for (local install)
+#     Z3_VERSION            Version to find
+#     USE_SYSTEM            Use system installation
 #
 # This script sets the following variables:
 #
@@ -28,7 +29,7 @@ endif()
 # Finally send the results
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Z3 DEFAULT_MSG Z3_INCLUDE_DIR Z3_LIBRARY)
+find_package_handle_standard_args(Z3 DEFAULT_MSG Z3_VERSION Z3_INCLUDE_DIR Z3_LIBRARY)
 mark_as_advanced(Z3_INCLUDE_DIR Z3_LIBRARY)
 
 set(Z3_INCLUDE_DIRS ${Z3_INCLUDE_DIR})
