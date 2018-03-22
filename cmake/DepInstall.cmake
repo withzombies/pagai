@@ -32,8 +32,8 @@ endmacro()
 #
 # Example in some CMakeLists.txt:
 #
-#     DepInstall_add(CONFIG one DEP_VERSION 1.0)
-#     DepInstall_add(CONFIG two DEP_VERSION 2.0)
+#     DepInstall_add_config(one DEP_VERSION 1.0)
+#     DepInstall_add_config(two DEP_VERSION 2.0)
 #     DepInstall_check_config()
 #
 #     # if ${CONFIG} is "one", ${DEP_VERSION} is 1.0 here
@@ -116,69 +116,67 @@ function(DEPINSTALL_FIND_PACKAGE PACKAGE)
     endif()
 endfunction()
 
-# Add an object for DepInstall
-#
-# The object can be:
-#
-#     - a target (generally created with ExternalProject_add) then this
-#       target will be a dependency of "make dep_install"
-#     - a configuration, then it is a set of versions for dependencies
-#       that correspond to a configuration that is known to be valid
+# Add a target for DepInstall (generally created with ExternalProject_add)
+# which will be a dependency of "make dep_install".
 
-function(DEPINSTALL_ADD)
+function(DEPINSTALL_ADD_TARGET TARGET_NAME)
     set(OPTIONS)
     set(ONE_VALUE_ARGS
         INFO            # Add a STATUS message to display
-        
-        # Type 1: specify a target
-
-        TARGET          # Add a target to build at "make dep_install"
-
-        # Type 2: create a configuration
-
-        CONFIG          # Add a configuration of packages
-        # Then a list of pairs: VERSION_KEY VERSION
     )
-    set(MULTI_VALUE_ARGS)
-    cmake_parse_arguments(DEPINSTALL_ADD "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
-
-    if(DEPINSTALL_ADD_TARGET AND DEPINSTALL_ADD_CONFIG)
-        message(FATAL_ERROR "DepInstall_add cannot create a TARGET and a CONFIG at the same time")
+    set(MULTI_VALUE_ARGS
+        DEPENDS         # Only for "TARGET" type, specify extra dependencies
+    )
+    cmake_parse_arguments(DEPINSTALL_ADD_TARGET "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
+    if(DEPINSTALL_ADD_TARGET_UNPARSED_ARGUMENTS)
+        message(WARNING "Unknown arguments for DepInstall_add: ${DEPINSTALL_ADD_TARGET_UNPARSED_ARGUMENTS}")
+    endif()
+    
+    set_target_properties(${TARGET_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    add_dependencies(dep_install ${TARGET_NAME})
+    if(DEPINSTALL_ADD_TARGET_DEPENDS)
+        add_dependencies(${TARGET_NAME} ${DEPINSTALL_ADD_TARGET_DEPENDS})
     endif()
 
-    if(DEPINSTALL_ADD_TARGET)
-        set_target_properties(${DEPINSTALL_ADD_TARGET} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        add_dependencies(dep_install ${DEPINSTALL_ADD_TARGET})
-
-        if(DEPINSTALL_ADD_UNPARSED_ARGUMENTS)
-            message(WARNING "Unknown arguments for DepInstall_add: ${DEPINSTALL_ADD_UNPARSED_ARGUMENTS}")
-        endif()
-    elseif(DEPINSTALL_ADD_CONFIG)
-        # append this config name to the config list
-        list(APPEND DEPINSTALL_CONFIG_LIST "${DEPINSTALL_ADD_CONFIG}")
-
-        set(CFGNAME CONFIG_${DEPINSTALL_ADD_CONFIG})
-        set(IS_ENTRY_NAME TRUE)
-        foreach(arg ${DEPINSTALL_ADD_UNPARSED_ARGUMENTS})
-            if(IS_ENTRY_NAME)
-                # append this version key to the list for this configuration
-                list(APPEND DEPINSTALL_CONFIG_${DEPINSTALL_ADD_CONFIG}_LIST "${arg}")
-
-                set(ENTRY_NAME "${arg}")
-                set(IS_ENTRY_NAME FALSE)
-            else()
-                set(DEPINSTALL_${DEPINSTALL_ADD_CONFIG}_${ENTRY_NAME} "${arg}" PARENT_SCOPE)
-                set(IS_ENTRY_NAME TRUE)
-            endif()
-        endforeach()
-
-        set(DEPINSTALL_CONFIG_LIST ${DEPINSTALL_CONFIG_LIST} PARENT_SCOPE)
-        set(DEPINSTALL_CONFIG_${DEPINSTALL_ADD_CONFIG}_LIST ${DEPINSTALL_CONFIG_${DEPINSTALL_ADD_CONFIG}_LIST} PARENT_SCOPE)
-    else()
-        message(FATAL_ERROR "DepInstall_add requires a TARGET or a CONFIG")
-    endif()
-
-    if(DEPINSTALL_ADD_INFO)
-        message(STATUS "${DEPINSTALL_ADD_INFO}")
+    if(DEPINSTALL_ADD_TARGET_INFO)
+        message(STATUS "${DEPINSTALL_ADD_TARGET_INFO}")
     endif()
 endfunction()
+
+# Add a configuration, i.e. a set of versions for dependencies
+# that correspond to a configuration that is known to be valid.
+#
+# Defines the variables:
+#
+#     DEPINSTALL_CONFIG_LIST                        List of configuration names
+#     DEPINSTALL_CONFIG_${CONFIG_NAME}_LIST         List of entry names in config ${CONFIG_NAME}
+#     DEPINSTALL_${CONFIG_NAME}_${ENTRY_NAME}       Value of the entry named ${ENTRY_NAME} in config ${CONFIG_NAME}
+
+function(DEPINSTALL_ADD_CONFIG CONFIG_NAME)
+    set(OPTIONS)
+    set(ONE_VALUE_ARGS)
+    set(MULTI_VALUE_ARGS)
+    cmake_parse_arguments(DEPINSTALL_ADD_CONFIG "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
+
+    # append this config name to the config list
+    list(APPEND DEPINSTALL_CONFIG_LIST "${CONFIG_NAME}")
+
+    set(CFGNAME CONFIG_${CONFIG_NAME})
+    set(IS_ENTRY_NAME TRUE)
+    foreach(arg ${DEPINSTALL_ADD_CONFIG_UNPARSED_ARGUMENTS})
+        if(IS_ENTRY_NAME)
+            # append this version key to the list for this configuration
+            list(APPEND DEPINSTALL_CONFIG_${CONFIG_NAME}_LIST "${arg}")
+
+            set(ENTRY_NAME "${arg}")
+            set(IS_ENTRY_NAME FALSE)
+        else()
+            set(DEPINSTALL_${CONFIG_NAME}_${ENTRY_NAME} "${arg}" PARENT_SCOPE)
+            set(IS_ENTRY_NAME TRUE)
+        endif()
+    endforeach()
+
+    set(DEPINSTALL_CONFIG_LIST ${DEPINSTALL_CONFIG_LIST} PARENT_SCOPE)
+    set(DEPINSTALL_CONFIG_${CONFIG_NAME}_LIST ${DEPINSTALL_CONFIG_${CONFIG_NAME}_LIST} PARENT_SCOPE)
+endfunction()
+

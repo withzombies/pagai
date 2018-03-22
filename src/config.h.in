@@ -1,6 +1,8 @@
 /**
  * \file config.h
  * \brief Declares some utility macros to ease configuration checking
+ *
+ * This file is pre-processed by CMake to generate appropriate version numbers.
  */
 #ifndef CONFIG_UTIL_PAGAI_H
 #define CONFIG_UTIL_PAGAI_H
@@ -16,5 +18,18 @@
 #else
 #   define METADATA_TYPE llvm::Value
 #endif
+
+// PAGAI versioning
+
+#define PAGAI_VERSION_MAJOR "@PAGAI_VERSION_MAJOR@"
+#define PAGAI_VERSION_MINOR "@PAGAI_VERSION_MINOR@"
+#define PAGAI_VERSION_PATCH "@PAGAI_VERSION_PATCH@"
+
+#define PAGAI_VERSION "@PAGAI_VERSION@"
+
+// Build options
+
+@CMAKE_BUILD_OPTIONS@
+@CMAKE_BUILD_CONFIG@
 
 #endif

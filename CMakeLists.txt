@@ -6,6 +6,14 @@ set(CMAKE_CXX_STANDARD 11)
 
 include(cmake/SetupDefaultCompilerDirs.cmake)
 
+# PAGAI versioning
+# See: https://semver.org/
+
+set(PAGAI_VERSION_MAJOR 1)
+set(PAGAI_VERSION_MINOR 0)
+set(PAGAI_VERSION_PATCH 0)
+set(PAGAI_VERSION ${PAGAI_VERSION_MAJOR}.${PAGAI_VERSION_MINOR}.${PAGAI_VERSION_PATCH})
+
 # Options
 
 option(ENABLE_PROFILING "Whether to build using -pg" OFF)
@@ -64,7 +72,7 @@ find_package(Curses REQUIRED)
 
 include(cmake/DepInstall.cmake)
 
-DepInstall_add(CONFIG llvm3.4
+DepInstall_add_config(llvm3.4
     LLVM_VERSION 3.4
     CUDD_VERSION 2.5.1
     APRON_VERSION 0.9.11
@@ -72,7 +80,7 @@ DepInstall_add(CONFIG llvm3.4
     PPL_VERSION 1.1
     YICES_VERSION 1.0.40)
 
-DepInstall_add(CONFIG llvm3.6
+DepInstall_add_config(llvm3.6
     LLVM_VERSION 3.6.2
     CUDD_VERSION 2.5.1
     APRON_VERSION 0.9.11
@@ -139,6 +147,9 @@ add_executable(pagai
 )
 
 # Final configuration steps
+
+# Must be configured here (after all CMake variables are defined)
+include(cmake/MakeConfigFile.cmake)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LLVM_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LLVM_LD_FLAGS}")

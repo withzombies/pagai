@@ -51,7 +51,7 @@ ExternalProject_add(cudd
 
     INSTALL_COMMAND ""
 )
-DepInstall_add(TARGET cudd)
+DepInstall_add_target(cudd)
 
 # Z3
 
@@ -75,7 +75,7 @@ if(ENABLE_Z3)
         DEPENDEES download
         COMMAND "${PYTHON_EXECUTABLE}" scripts/mk_make.py --prefix=<INSTALL_DIR>
         DEPENDERS configure)
-    DepInstall_add(TARGET z3)
+    DepInstall_add_target(z3)
 endif()
 
 # YICES
@@ -88,7 +88,7 @@ if(ENABLE_YICES)
         -DUNTAR_TO="${EXTERNAL_PREFIX}"
         -P "${CMAKE_SOURCE_DIR}/cmake/SimpleInstall.cmake")
     add_custom_target(yices DEPENDS "${EXTERNAL_PREFIX}/yices-${YICES_VERSION}/bin/yices")
-    DepInstall_add(TARGET yices)
+    DepInstall_add_target(yices)
 endif()
 
 # LLVM + clang
@@ -128,7 +128,7 @@ ExternalProject_add_step(llvm get_clang
     COMMAND ${CMAKE_COMMAND} -E rename "${CLANG_ARCHIVE_WE}" clang
     DEPENDERS configure
 )
-DepInstall_add(TARGET llvm)
+DepInstall_add_target(llvm)
 
 # PPL
 
@@ -139,7 +139,7 @@ if(ENABLE_PPL)
         CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-interfaces=c,c++
         BUILD_COMMAND $(MAKE)
     )
-    DepInstall_add(TARGET ppl)
+    DepInstall_add_target(ppl)
 endif()
 
 # APRON
@@ -169,8 +169,8 @@ ExternalProject_add(apron
         -P "${CMAKE_SOURCE_DIR}/cmake/ConfigureApron.cmake"
     BUILD_COMMAND $(MAKE)
 )
-
-DepInstall_add(TARGET apron)
 if(ENABLE_PPL)
-    add_dependencies(apron ppl)
+    DepInstall_add_target(apron DEPENDS ppl)
+else()
+    DepInstall_add_target(apron)
 endif()

@@ -11,12 +11,13 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 
-#include "Execute.h" 
-#include "Analyzer.h" 
-#include "Debug.h" 
+#include "Execute.h"
+#include "Analyzer.h"
+#include "Debug.h"
+#include "config.h"
 
-namespace po = boost::program_options; 
-po::variables_map vm; 
+namespace po = boost::program_options;
+po::variables_map vm;
 
 SMTSolver Solver;
 Techniques technique;
@@ -75,7 +76,7 @@ bool useThreshold() {return Threshold[0];}
 bool useThreshold(int i) {return Threshold[i];}
 bool definedMain() {return defined_main;}
 std::string getMain() {return main_function;}
-bool quiet_mode() {return vm.count("quiet");} 
+bool quiet_mode() {return vm.count("quiet");}
 bool log_smt_into_file() {return vm.count("log-smt");}
 bool optimizeBC() {return vm.count("optimize");}
 bool InstCombining() {return vm.count("instcombining");}
@@ -85,9 +86,9 @@ std::string TechniquesToString(Techniques t) {
 	switch (t) {
 		case LOOKAHEAD_WIDENING:
 			return "LOOKAHEAD WIDENING";
-		case PATH_FOCUSING: 
+		case PATH_FOCUSING:
 			return "PATH FOCUSING";
-		case PATH_FOCUSING_INCR: 
+		case PATH_FOCUSING_INCR:
 			return "PATH FOCUSING INCR";
 		case LW_WITH_PF:
 			return "COMBINED";
@@ -210,7 +211,7 @@ bool setSolver(std::string d) {
 		Solver = CVC3;
 	} else if (!d.compare("cvc4")) {
 		Solver = CVC4;
-#ifdef HAS_Z3 
+#ifdef HAS_Z3
 	} else if (!d.compare("z3_api")) {
 		Solver = API_Z3;
 #endif
@@ -258,7 +259,7 @@ bool isMain(llvm::Function * F) {
 
 std::string solver_help() {
 
-   std::string doc = 
+   std::string doc =
 	"\
 	* z3 \n\
 	* z3_qfnra\n\
@@ -266,7 +267,7 @@ std::string solver_help() {
 	* smtinterpol\n\
 	* cvc3\n\
 	* cvc4\n";
-#ifdef HAS_Z3 
+#ifdef HAS_Z3
    doc +=
 	"\
 	* z3_api\n";
@@ -280,14 +281,14 @@ std::string solver_help() {
 }
 
 std::string domain_help() {
-   std::string doc = 
+   std::string doc =
 "abstract domain\n\
 	* box (Apron boxes)\n\
 	* oct (Octagons)\n\
 	* pk (NewPolka strict polyhedra)\n\
 	* pkeq (NewPolka linear equalities)";
 #ifdef PPL_ENABLED
-   doc += 
+   doc +=
 	"\n\
 	* ppl_poly (PPL strict polyhedra)\n \
 	* ppl_poly_bagnara (ppl_poly + widening from Bagnara & al, SAS2003)\n \
@@ -310,6 +311,47 @@ std::string technique_help() {
    return doc;
 }
 
+void check_help_or_version(const po::options_description & desc) {
+    if (vm.count("help")) {
+        std::cout << desc << "\n";
+        std::exit(0);
+    } else if (vm.count("version")) {
+        std::cout << "PAGAI version " << PAGAI_VERSION << "\n\n";
+#ifdef ENABLE_DEBUGGING
+        std::cout << "- Debugging enabled\n";
+#endif
+#ifdef ENABLE_PROFILING
+        std::cout << "- Profiling enabled\n";
+#endif
+#ifdef PRINT_DEBUG
+        std::cout << "- Debug traces are printed\n";
+#endif
+#ifdef PRINT_DEBUG_SMT
+        std::cout << "- SMT debug traces are printed\n";
+#endif
+#if defined(ENABLE_YICES) && defined(YICES_VERSION)
+        std::cout << "- Yices is enabled (version " << YICES_VERSION << ")\n";
+#endif
+#if defined(ENABLE_Z3) && defined(Z3_VERSION)
+        std::cout << "- Z3 is enabled (version " << Z3_VERSION << ")\n";
+#endif
+#ifdef APRON_VERSION
+        std::cout << "- Apron version " << APRON_VERSION
+#   if defined(ENABLE_PPL) && defined(PPL_VERSION)
+            << " (with PPL version " << PPL_VERSION << ")"
+#   endif
+            << "\n";
+#endif
+#ifdef LLVM_VERSION
+        std::cout << "- LLVM version " << LLVM_VERSION << "\n";
+#endif
+#ifdef CUDD_VERSION
+        std::cout << "- CUDD version " << CUDD_VERSION << "\n";
+#endif
+        std::exit(0);
+    }
+}
+
 int main(int argc, char* argv[]) {
 
     execute run;
@@ -319,7 +361,7 @@ int main(int argc, char* argv[]) {
 	char* arg;
 	bool debug = false;
 
-#ifdef HAS_Z3 
+#ifdef HAS_Z3
 	Solver = API_Z3;
 #else
 	Solver = Z3;
@@ -346,61 +388,60 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> compare_list;
 
 
-    po::options_description desc("Options"); 
+    po::options_description desc("Options");
     desc.add_options()
       ("input,i", po::value<std::string>()->required(), "input")
-      ("help,h", "Print help messages") 
+      ("help,h", "Print help messages")
+      ("version,v", "Print version")
       ("include-path,I", po::value< std::vector<std::string> >(&include_paths), "include path (same as -I for clang)")
       ("solver,s", po::value<std::string>()->default_value("z3_api"), solver_help().c_str())
       ("domain,d", po::value<std::string>()->default_value("pk"), domain_help().c_str())
       ("technique,t", po::value<std::string>()->default_value("lw+pf"), technique_help().c_str())
-      ("new-narrowing", "When the decreasing sequence fails (SAS12)") 
-      ("main", po::value<std::string>(), "label name of the entry point") 
-      ("undefined-check", "check for some undefined behaviors") 
-      ("pointers", "pointers") 
-      ("optimize", "optimize") 
-      ("instcombining", "instcombining") 
-      ("loop-unroll", "unroll loops") 
-      ("no-loop-rotate", "do not rotate loops") 
-      ("no-globals2locals", "do not turn global variables into local variables") 
-      ("skipnonlinear", "ignore non linear arithmetic") 
-      ("noinline", "do not inline functions") 
+      ("new-narrowing", "When the decreasing sequence fails (SAS12)")
+      ("main", po::value<std::string>(), "label name of the entry point")
+      ("undefined-check", "check for some undefined behaviors")
+      ("pointers", "pointers")
+      ("optimize", "optimize")
+      ("instcombining", "instcombining")
+      ("loop-unroll", "unroll loops")
+      ("no-loop-rotate", "do not rotate loops")
+      ("no-globals2locals", "do not turn global variables into local variables")
+      ("skipnonlinear", "ignore non linear arithmetic")
+      ("noinline", "do not inline functions")
       ("output,o", po::value<std::string>()->default_value(""), "C output")
       ("output-bc,b", po::value<std::string>(&annotatedBCFilename), "LLVM IR output")
       ("output-bc-v2", po::value<std::string>(&annotatedBCFilename), "LLVM IR output (v2)")
-      ("svcomp", "SV-Comp mode") 
-      ("wcet", "wcet mode") 
-      ("debug", "debug") 
+      ("svcomp", "SV-Comp mode")
+      ("wcet", "wcet mode")
+      ("debug", "debug")
       ("compare,c", po::value< std::vector<std::string> >(&compare_list), "compare list of techniques")
-      ("comparedomains", "compare abstract domains") 
-      ("printformula", "print SMT formula") 
-      ("printall", "print all") 
-      ("quiet", "quiet mode") 
-      ("dump-ll", "dump analyzed ll file") 
-      ("force-old-output", "use old output") 
+      ("comparedomains", "compare abstract domains")
+      ("printformula", "print SMT formula")
+      ("printall", "print all")
+      ("quiet", "quiet mode")
+      ("dump-ll", "dump analyzed ll file")
+      ("force-old-output", "use old output")
       ("timeout", po::value<std::string>(), "timeout")
-      ("log-smt", "write all the SMT requests into a log file") 
+      ("log-smt", "write all the SMT requests into a log file")
       //("annotated", po::value<std::string>(&annotatedFilename), "name of the annotated C file")
       ("domain2", po::value<std::string>(), "not for use")
-      ("new-narrowing2", "not for use") 
+      ("new-narrowing2", "not for use")
       ;
 
-    po::positional_options_description positionalOptions; 
-    positionalOptions.add("input", 1); 
+    po::positional_options_description positionalOptions;
+    positionalOptions.add("input", 1);
 
     try {
-        po::store(po::command_line_parser(argc, argv).options(desc).positional(positionalOptions).run(), vm); 
-    	po::notify(vm);    
+        po::store(po::command_line_parser(argc, argv).options(desc).positional(positionalOptions).run(), vm);
+        po::notify(vm);
     } catch (std::exception& e) {
+        check_help_or_version(desc);
 
 	    std::cout << "ERROR\n" << e.what() << "\n" << desc << "\n";
-	    exit(1);
+	    return 1;
     }
 
-    if (vm.count("help")) {
-	    std::cout << desc << "\n";
-        return 1;
-    }
+    check_help_or_version(desc);
 
     setSolver(vm["solver"].as<std::string>());
     setTechnique(vm["technique"].as<std::string>());
