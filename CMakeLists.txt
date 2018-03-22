@@ -66,7 +66,7 @@ include(cmake/DepInstall.cmake)
 
 DepInstall_add(CONFIG llvm3.4
     LLVM_VERSION 3.4
-    CUDD_VERSION 2.5.0
+    CUDD_VERSION 2.5.1
     APRON_VERSION 0.9.11
     Z3_VERSION 4.5.0
     PPL_VERSION 1.1
@@ -74,7 +74,7 @@ DepInstall_add(CONFIG llvm3.4
 
 DepInstall_add(CONFIG llvm3.6
     LLVM_VERSION 3.6.2
-    CUDD_VERSION 2.5.0
+    CUDD_VERSION 2.5.1
     APRON_VERSION 0.9.11
     Z3_VERSION 4.5.0
     PPL_VERSION 1.1
