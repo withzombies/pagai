@@ -5,8 +5,11 @@
  */
 #include <map>
 #include <sstream>
+#include <vector>
 
+#include "begin_3rdparty.h"
 #include "cuddObj.hh"
+#include "end_3rdparty.h"
 
 #include "PathTree_bb.h"
 #include "Analyzer.h"
@@ -66,7 +69,7 @@ BDD PathTree_bb::getBDDfromBasicBlock(BasicBlock * b, std::map<BasicBlock*,int> 
 	return mgr->bddVar(n);
 }
 
-const std::string PathTree_bb::getStringFromLevel(int const i, SMTpass * smt) {
+const std::string PathTree_bb::getStringFromLevel(int const i) {
 	BasicBlock * bb = levels[i]; 
 	if (BddVarStart.count(bb) && BddVarStart[bb]==i)
 		return SMTpass::getNodeName(bb,true);
@@ -87,7 +90,9 @@ void PathTree_bb::DumpDotBDD(BDD graph, std::string filename) {
 
 	int n = BddVar.size() + BddVarStart.size();
 
-	char * inames[n];
+	std::vector<char *> inames;
+	inames.resize(n);
+
 	for (std::map<BasicBlock*,int>::iterator it = BddVar.begin(), et = BddVar.end(); it != et; it++) {
 		inames[it->second] = strdup(SMTpass::getNodeName(it->first,false).c_str());
 	}
@@ -95,12 +100,11 @@ void PathTree_bb::DumpDotBDD(BDD graph, std::string filename) {
 		inames[it->second] = strdup(SMTpass::getNodeName(it->first,true).c_str());
 	}
 
-    char const* onames[] = {"B"};
-    DdNode *Dds[] = {graph.getNode()};
-    int NumNodes = sizeof(onames)/sizeof(onames[0]);
-    FILE* fp = fopen(name.str().c_str(), "w");
-	Cudd_DumpDot(mgr->getManager(), NumNodes, Dds, 
-            const_cast<char**>(inames), const_cast<char**>(onames), fp);
+	char const* onames[] = {"B"};
+	DdNode *Dds[] = {graph.getNode()};
+	int NumNodes = sizeof(onames)/sizeof(onames[0]);
+	FILE* fp = fopen(name.str().c_str(), "w");
+	Cudd_DumpDot(mgr->getManager(), NumNodes, Dds, const_cast<char**>(&inames[0]), const_cast<char**>(onames), fp);
 	fclose(fp);
 }
 
@@ -109,7 +113,7 @@ SMT_expr PathTree_bb::generateSMTformula(SMTpass * smt, bool neg) {
 	DdNode *node;
 	DdNode *N, *Nv, *Nnv;
 	DdGen *gen;
-	DdNode * true_node;
+	DdNode * true_node = nullptr;
 	std::vector<SMT_expr> formula;
 	std::vector<SMT_expr> factorized;
 	for(gen = Cudd_FirstNode (mgr->getManager(), Bdd->getNode(), &node);
@@ -131,7 +135,7 @@ SMT_expr PathTree_bb::generateSMTformula(SMTpass * smt, bool neg) {
 				Bdd_expr[node] = smt->man->SMT_mk_false();	
 			}
 		} else {
-			std::string bb = getStringFromLevel(N->index,smt);
+			std::string bb = getStringFromLevel(N->index);
 			SMT_var bbvar = smt->man->SMT_mk_bool_var(bb);
 			SMT_expr bbexpr = smt->man->SMT_mk_expr_from_bool_var(bbvar);
 	

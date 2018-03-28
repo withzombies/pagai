@@ -9,9 +9,11 @@
 #include <queue>
 #include <vector>
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
 #include "llvm/Analysis/CFG.h"
+#include "end_3rdparty.h"
 
 #include "AIpass.h"
 

@@ -6,11 +6,14 @@
 #ifndef _INFO_H
 #define _INFO_H
 
-#include<string>
+#include <string>
+
+#include "begin_3rdparty.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/raw_os_ostream.h"
 #include "llvm/Analysis/CFG.h"
+#include "end_3rdparty.h"
 
 extern llvm::raw_ostream *Out;
 

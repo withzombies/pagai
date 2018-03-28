@@ -3,10 +3,11 @@
  * \brief Implementation of the Environment class
  * \author Julien Henry
  */
-
+#include "begin_3rdparty.h"
 #include "llvm/Support/FormattedStream.h"
-
 #include "ap_global1.h"
+#include "end_3rdparty.h"
+
 #include "apron.h"
 #include "Environment.h"
 #include "Debug.h"
@@ -123,7 +124,6 @@ ap_environment_t * Environment::getEnv() {
 
 void Environment::get_vars(std::set<ap_var_t> * intdims, std::set<ap_var_t> * realdims) {
 	ap_var_t var;
-	Value* val;
 	for (size_t i = 0; i < env->intdim; i++) {
 		var = ap_environment_var_of_dim(env,i);
 		intdims->insert(var);
@@ -239,7 +239,6 @@ void Environment::display(llvm::raw_ostream &stream) const {
 void Environment::to_MDNode(LLVMContext * C, std::vector<METADATA_TYPE*> * met) {
 	for (size_t i=0; i<env->intdim+env->realdim; i++) {
 		ap_var_t var = env->var_of_dim[i];
-		Value * val = (Value*) var;
 		MDString * dim = MDString::get(*C, ap_var_to_string(var));
 		MDNode* N = MDNode::get(*C,dim);
 		met->push_back(N);

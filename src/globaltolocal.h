@@ -1,6 +1,7 @@
 #ifndef GLOBALTOLOCAL_H
 #define GLOBALTOLOCAL_H
 
+#include "begin_3rdparty.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Constants.h"
@@ -12,6 +13,7 @@
 #else
 #   include "llvm/InstVisitor.h"
 #endif
+#include "end_3rdparty.h"
 
 class GlobalToLocal : public llvm::ModulePass {
  public:

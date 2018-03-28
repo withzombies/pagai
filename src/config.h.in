@@ -7,7 +7,9 @@
 #ifndef CONFIG_UTIL_PAGAI_H
 #define CONFIG_UTIL_PAGAI_H
 
+#include "begin_3rdparty.h"
 #include "llvm/Config/llvm-config.h"
+#include "end_3rdparty.h"
 
 // Ensure LLVM_VERSION is at least <maj>.<min>
 #define LLVM_VERSION_ATLEAST(maj, min) (LLVM_VERSION_MAJOR > (maj) || (LLVM_VERSION_MAJOR == (maj) && LLVM_VERSION_MINOR >= (min)))

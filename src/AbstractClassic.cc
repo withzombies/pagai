@@ -3,14 +3,17 @@
  * \brief Implementation of the AbstractClassic class
  * \author Julien Henry
  */
-#include "stdio.h"
+#include <cstdio>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
+#include "begin_3rdparty.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/IR/IRBuilder.h"
 
 #include "ap_global1.h"
+#include "end_3rdparty.h"
 
 #include "Abstract.h"
 #include "AbstractClassic.h"
@@ -171,7 +174,8 @@ void AbstractClassic::join_array(Environment * env, std::vector<Abstract*> X_pre
 	size_t size = X_pred.size();
 	ap_abstract1_clear(man,main);
 
-	ap_abstract1_t  Xmain[size];
+    std::vector<ap_abstract1_t> Xmain;
+    Xmain.resize(size);
 
 	for (unsigned i=0; i < size; i++) {
 		Xmain[i] = ap_abstract1_change_environment(man,false,X_pred[i]->main,env->getEnv(),false);
@@ -179,7 +183,7 @@ void AbstractClassic::join_array(Environment * env, std::vector<Abstract*> X_pre
 	}
 
 	if (size > 1) {
-		*main = ap_abstract1_join_array(man,Xmain,size);	
+		*main = ap_abstract1_join_array(man,&Xmain[0],size);	
 		for (unsigned i=0; i < size; i++) {
 			ap_abstract1_clear(man,&Xmain[i]);
 		}
@@ -210,7 +214,7 @@ ap_lincons1_array_t AbstractClassic::to_lincons_array() {
 	return ap_abstract1_to_lincons_array(man,main);
 }
 
-void AbstractClassic::print(bool only_main) {
+void AbstractClassic::print() {
 	*Out << *this;
 }
 
@@ -394,7 +398,7 @@ void AbstractClassic::insert_as_LLVM_invariant(llvm::Instruction * Inst) {
 	
 	IRBuilder<> Builder(Context);
 	Builder.SetInsertPoint(Inst);
-	Value * invariant = invariant = ConstantInt::getTrue(Context);
+	Value * invariant = ConstantInt::getTrue(Context);
 	if (ap_abstract1_is_bottom(man,main)) {
 		invariant = ConstantInt::getFalse(Context);
 	} else if (size == 0) {

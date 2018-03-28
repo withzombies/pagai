@@ -4,8 +4,11 @@
  * \author Julien Henry
  */
 #include <sstream>
+#include <vector>
 
+#include "begin_3rdparty.h"
 #include "cuddObj.hh"
+#include "end_3rdparty.h"
 
 #include "Analyzer.h"
 #include "AIpass.h"
@@ -90,14 +93,14 @@ ADD Sigma::getADDfromAddIndex(int n) {
 }
 
 void Sigma::insert(std::list<BasicBlock*> path, int start) {
-	ADD f = computef(path,start);
+	ADD f = computef(path);
 	if (!Add.count(start))
 		Add[start] = new ADD(mgr->addZero());
 	*Add[start] = *Add[start] + f;
 }
 
 void Sigma::remove(std::list<BasicBlock*> path, int start) {
-	ADD f = computef(path,start);
+	ADD f = computef(path);
 	if (!Add.count(start))
 		Add[start] = new ADD(mgr->addZero());
 	*Add[start] = *Add[start] * ~f;
@@ -109,7 +112,7 @@ void Sigma::clear() {
 	}
 }
 
-ADD Sigma::computef(std::list<BasicBlock*> path, int start) {
+ADD Sigma::computef(std::list<BasicBlock*> path) {
 	std::list<BasicBlock*> workingpath;
 	BasicBlock * current;
 	int n;
@@ -139,7 +142,7 @@ ADD Sigma::computef(std::list<BasicBlock*> path, int start) {
 }
 
 bool Sigma::exist(std::list<BasicBlock*> path, int start) {
-	ADD f = computef(path,start);
+	ADD f = computef(path);
 	if (!Add.count(start))
 		Add[start] = new ADD(mgr->addZero());
 	return (f <= *Add[start] * f);
@@ -150,7 +153,7 @@ bool Sigma::isZero(int start) {
 }
 
 void Sigma::setActualValue(std::list<BasicBlock*> path, int start, int value) {
-	ADD f = computef(path,start);
+	ADD f = computef(path);
 	if (!Add.count(start))
 		Add[start] = new ADD(mgr->addZero());
 	// f corresponds to (start,path)
@@ -160,7 +163,7 @@ void Sigma::setActualValue(std::list<BasicBlock*> path, int start, int value) {
 }
 
 int Sigma::getActualValue(std::list<BasicBlock*> path, int start) {
-	ADD f = computef(path,start);
+	ADD f = computef(path);
 	if (!Add.count(start))
 		Add[start] = new ADD(mgr->addZero());
 	// f corresponds to (start,path)
@@ -189,8 +192,7 @@ int Sigma::getSigma(
 		std::list<BasicBlock*> path, 
 		int start,
 		Abstract * Xtemp,
-		AIPass * pass,
-		bool source) {
+		AIPass * pass) {
 
 	int res = -1;
 		
@@ -220,10 +222,6 @@ int Sigma::getSigma(
 				res = N;
 		}
 
-	//	if (path.front() == path.back())
-	//		res = 2;
-	//	else 
-	//		res = 1;
 		setActualValue(path,start,res);	
 		DEBUG(
 			AIPass::printPath(path);
@@ -244,7 +242,9 @@ void Sigma::DumpDotADD(ADD graph, std::string filename) {
 	name << filename << ".dot";
 
 	int n = AddVar.size() + AddVarSource.size();
-	char * inames[n];
+	std::vector<char *> inames;
+	inames.resize(n);
+
 	for (std::map<BasicBlock*,int>::iterator it = AddVar.begin(), et = AddVar.end(); it != et; it++) {
 		inames[it->second] = strdup(SMTpass::getNodeName(it->first,false).c_str());
 	}
@@ -252,11 +252,10 @@ void Sigma::DumpDotADD(ADD graph, std::string filename) {
 		inames[it->second] = strdup(SMTpass::getNodeName(it->first,true).c_str());
 	}
 
-    char const* onames[] = {"A"};
-    DdNode *Dds[] = {graph.getNode()};
-    int NumNodes = sizeof(onames)/sizeof(onames[0]);
-    FILE* fp = fopen(name.str().c_str(), "w");
-	Cudd_DumpDot(mgr->getManager(), NumNodes, Dds, 
-            const_cast<char**>(inames), const_cast<char**>(onames), fp);
+	char const* onames[] = {"A"};
+	DdNode *Dds[] = {graph.getNode()};
+	int NumNodes = sizeof(onames)/sizeof(onames[0]);
+	FILE* fp = fopen(name.str().c_str(), "w");
+	Cudd_DumpDot(mgr->getManager(), NumNodes, Dds, const_cast<char**>(&inames[0]), const_cast<char**>(onames), fp);
 	fclose(fp);
 }

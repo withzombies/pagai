@@ -3,11 +3,14 @@
  * \brief Implementation of the AbstractGopan class
  * \author Julien Henry
  */
-#include "stdio.h"
+#include <cstdio>
+#include <vector>
 
+#include "begin_3rdparty.h"
 #include "llvm/Support/FormattedStream.h"
 
 #include "ap_global1.h"
+#include "end_3rdparty.h"
 
 #include "AbstractGopan.h"
 #include "Node.h"
@@ -118,6 +121,7 @@ void AbstractGopan::widening(Abstract * X) {
  * instead
  */
 void AbstractGopan::widening_threshold(Abstract * X, Constraint_array* cons) {
+	(void) cons;
 	widening(X);
 }
 
@@ -174,8 +178,11 @@ void AbstractGopan::assign_texpr_array(
 void AbstractGopan::join_array(Environment * env, std::vector<Abstract*> X_pred) {
 	size_t size = X_pred.size();
 
-	ap_abstract1_t  Xmain[size];
-	ap_abstract1_t  Xpilot[size];
+	std::vector<ap_abstract1_t> Xmain;
+	Xmain.resize(size);
+
+	std::vector<ap_abstract1_t> Xpilot;
+	Xpilot.resize(size);
 	
 	for (unsigned i=0; i < size; i++) {
 		Xmain[i] = ap_abstract1_change_environment(man,false,X_pred[i]->main,env->getEnv(),false);
@@ -189,8 +196,8 @@ void AbstractGopan::join_array(Environment * env, std::vector<Abstract*> X_pred)
 		delete pilot;
 	}
 	if (size > 1) {
-		*main = ap_abstract1_join_array(man,Xmain,size);	
-		pilot = new ap_abstract1_t(ap_abstract1_join_array(man,Xpilot,size));	
+		*main = ap_abstract1_join_array(man,&Xmain[0],size);	
+		pilot = new ap_abstract1_t(ap_abstract1_join_array(man,&Xpilot[0],size));	
 		for (unsigned i=0; i < size; i++) {
 			ap_abstract1_clear(man,&Xmain[i]);
 			ap_abstract1_clear(man,&Xpilot[i]);
@@ -209,6 +216,7 @@ void AbstractGopan::join_array(Environment * env, std::vector<Abstract*> X_pred)
 }
 
 void AbstractGopan::join_array_dpUcm(Environment *env, Abstract* n) {
+	(void) env;
 	ap_abstract1_t Xmain;
 	ap_abstract1_t Xpilot;
 	Xmain = ap_abstract1_join(man,false,main,n->main);
@@ -226,14 +234,17 @@ void AbstractGopan::join_array_dpUcm(Environment *env, Abstract* n) {
 }
 
 void AbstractGopan::meet(Abstract* A) {
+	(void) A;
 	//TODO
 }
 
-void AbstractGopan::print(bool only_main) {
+void AbstractGopan::print() {
 	*Out << *this;
 }
 
 void AbstractGopan::display(llvm::raw_ostream &stream,  std::string * left) const {
+	(void) left;
+
 	FILE* tmp = tmpfile();
 	if (tmp == NULL) return;
 

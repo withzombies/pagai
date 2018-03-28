@@ -6,14 +6,14 @@
 #include <vector>
 #include <list>
 #include <fstream>
+#include <ctime>
+#include <cerrno>
 
-#include <time.h>
-#include <pthread.h>
-#include <errno.h>
-
+#include "begin_3rdparty.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/IntrinsicInst.h"
+#include "end_3rdparty.h"
 
 #include "AIpass.h"
 #include "Pr.h"
@@ -30,7 +30,7 @@ using namespace llvm;
 
 AIPass * CurrentAIpass = NULL;
 
-void AIPass::ascendingIter(Node * n, Function * F, bool dont_reset) {
+void AIPass::ascendingIter(Node * n, bool dont_reset) {
 	A.push(n);
 	
 	if (!dont_reset) {
@@ -141,8 +141,7 @@ void AIPass::TerminateFunction(Function * F) {
 }
 
 void format_string(std::string & left) {
-	int k;
-	for (k = 0; k < left.size(); k++) {
+	for (size_t k = 0; k < left.size(); k++) {
 		if (left[k] != '\t')
 			left[k] = ' '; 
 	}
@@ -429,13 +428,6 @@ void AIPass::loopiter(
 					Xtemp->print();
 			     );
 
-			//DEBUG(
-			//	*Dbg << "THRESHOLD:\n";
-			//	fflush(stdout);
-			//	ap_lincons1_array_fprint(stdout,&threshold);
-			//	fflush(stdout);
-			//);
-
 			if (use_threshold)
 				Xtemp->widening_threshold(Succ->X_s[passID],threshold);
 			else
@@ -451,7 +443,7 @@ void AIPass::loopiter(
 			     );
 
 			Xtemp = aman->NewAbstract(n->X_s[passID]);
-			computeTransform(aman,n,*path,Xtemp);
+			computeTransform(aman,*path,Xtemp);
 			DEBUG(
 					*Dbg << "POLYHEDRON AT THE STARTING NODE (AFTER MINIWIDENING)\n";
 					n->X_s[passID]->print();
@@ -526,6 +518,11 @@ void computeThreshold(
 		Abstract * A,
 		Environment * env) {
 
+	(void) C;
+	(void) cons;
+	(void) A;
+	(void) env;
+
 	// TODO
 	//A->set_top(env);
 	//A->meet_tcons_array(C);
@@ -541,7 +538,7 @@ void computeThreshold(
 	//ap_lincons1_array_clear(&cs);
 }
 
-void AIPass::computeTransform (AbstractMan * aman, Node * n, std::list<BasicBlock*> path, Abstract * Xtemp) {
+void AIPass::computeTransform (AbstractMan * aman, std::list<BasicBlock*> path, Abstract * Xtemp) {
 
 	// setting the focus path, such that the instructions can be correctly
 	// handled
@@ -591,8 +588,6 @@ void AIPass::computeTransform (AbstractMan * aman, Node * n, std::list<BasicBloc
 	// We create an Abstract Value that will represent the set of constraints
 	// Abstract * ConstraintsAbstract = aman->NewAbstract(man, env);
 
-	ap_var_t var;
-	Value * val;
 	std::set<ap_var_t> intdims;
 	std::set<ap_var_t> realdims;
 
@@ -612,15 +607,7 @@ void AIPass::computeTransform (AbstractMan * aman, Node * n, std::list<BasicBloc
 					((*i)->front())->print();
 					*Dbg << "\n";
 			     );
-			//Xtemp->meet_tcons_array((*i)->front());
 			intersect.add_constraint((*i)->front());
-			//*Dbg << "constraint : \n";
-			//(*i)->front()->print();
-			//*Dbg << "\n";
-			//computeThreshold((*i)->front(),&cons,ConstraintsAbstract,env2);
-
-			// delete the single Constraint_array*
-			//delete (*i)->front();
 		} else {
 			DEBUG(
 					*Dbg << "multiple contraints:\n";
@@ -635,7 +622,6 @@ void AIPass::computeTransform (AbstractMan * aman, Node * n, std::list<BasicBloc
 				Constraint_array intersect_all(*it);
 				X2->meet_tcons_array(&intersect_all);
 				A.push_back(X2);
-				//computeThreshold(*it,&cons,ConstraintsAbstract,env2);
 			}
 			Environment Xtemp_env(Xtemp);
 			Xtemp->join_array(&Xtemp_env,A);
@@ -678,15 +664,8 @@ void AIPass::computeTransform (AbstractMan * aman, Node * n, std::list<BasicBloc
 	if (!threshold_empty) {
 		delete threshold;
 	}
-	//threshold = ap_lincons1_array_make(env2.getEnv(),cons.size());
 	threshold_empty = false;
 	threshold = new Constraint_array();
-	//for (unsigned k = 0; k < cons.size(); k++) {
-	//	if (!ap_lincons1_extend_environment_with(&cons[k],env2.getEnv())) {
-	//		ap_lincons1_array_set(&threshold,k,&cons[k]);
-	//	}
-	//}
-	//delete ConstraintsAbstract;
 }
 
 // TODO :
@@ -714,7 +693,7 @@ bool AIPass::computeNarrowingSeed(Function * F) {
 			Succ = Nodes[*s];
 			// computing the image of the abstract value by the path's tranformation
 			Xtemp = aman->NewAbstract(n->X_s[passID]);
-			computeTransform(aman,n,path,Xtemp);
+			computeTransform(aman,path,Xtemp);
 
 			// we check if the Abstract value is a good seed for Halbwachs's
 			// narrowing
@@ -798,7 +777,7 @@ void AIPass::insert_env_vars_into_node_vars(Environment * env, Node * n, Value *
 
 bool AIPass::computeCondition(Value * val, 
 		bool result,
-		int cons_index,
+		size_t cons_index,
 		std::vector< std::vector<Constraint*> * > * cons) {
 
 	bool res;
@@ -824,7 +803,7 @@ bool AIPass::computeCondition(Value * val,
 }
 bool AIPass::computeCastCondition(CastInst * inst, 
 		bool result,
-		int cons_index,
+		size_t cons_index,
 		std::vector< std::vector<Constraint*> * > * cons) {
 
 	DEBUG(
@@ -852,11 +831,9 @@ bool AIPass::computeCastCondition(CastInst * inst,
 
 bool AIPass::computeCmpCondition(	CmpInst * inst, 
 		bool result,
-		int cons_index,
+		size_t cons_index,
 		std::vector< std::vector<Constraint*> * > * cons) {
 
-	//Node * n = Nodes[inst->getParent()];
-	Node * n = Nodes[focuspath.back()];
 	ap_constyp_t constyp;
 	ap_constyp_t nconstyp;
 
@@ -929,7 +906,7 @@ bool AIPass::computeCmpCondition(	CmpInst * inst,
 		case CmpInst::BAD_ICMP_PREDICATE:
 		case CmpInst::BAD_FCMP_PREDICATE:
 			*Dbg << "ERROR : Unknown predicate\n";
-			break;
+			return false;
 		default:
 			// unreachable
 			constyp = AP_CONS_DISEQ; // disequality constraint
@@ -948,7 +925,7 @@ bool AIPass::computeCmpCondition(	CmpInst * inst,
 
 bool AIPass::computeConstantCondition(	ConstantInt * inst, 
 		bool result,
-		int cons_index,
+		size_t cons_index,
 		std::vector< std::vector<Constraint*> * > * cons) {
 
 	bool is_null = inst->isNullValue();
@@ -974,7 +951,7 @@ bool AIPass::computeConstantCondition(	ConstantInt * inst,
 
 bool AIPass::computeBinaryOpCondition(BinaryOperator * inst, 
 		bool result,
-		int cons_index,
+		size_t cons_index,
 		std::vector< std::vector<Constraint*> * > * cons) {
 
 	bool res = false;
@@ -1024,7 +1001,7 @@ bool AIPass::computeBinaryOpCondition(BinaryOperator * inst,
 
 bool AIPass::computePHINodeCondition(PHINode * inst, 
 		bool result,
-		int cons_index,
+		size_t cons_index,
 		std::vector< std::vector<Constraint*> * > * cons) {
 
 	bool res = false;
@@ -1048,12 +1025,12 @@ bool AIPass::computePHINodeCondition(PHINode * inst,
 
 void AIPass::visitReturnInst (ReturnInst &I){
 	//*Dbg << "returnInst\n" << I << "\n";
+	(void) I;
 }
 
 void AIPass::visitBranchInst (BranchInst &I){
 	//*Dbg << "BranchInst\n" << I << "\n";	
 	bool test;
-	bool res;
 
 	//*Dbg << "BranchInst\n" << I << "\n";	
 	if (I.isUnconditional()) {
@@ -1075,7 +1052,7 @@ void AIPass::visitBranchInst (BranchInst &I){
 
 	std::vector< std::vector<Constraint*> * > * cons = new std::vector< std::vector<Constraint*> * >();
 	cons->push_back(new std::vector<Constraint*>());
-	res = computeCondition(I.getOperand(0),test,0,cons);
+	computeCondition(I.getOperand(0),test,0,cons);
 
 	// we add cons in the set of constraints of the path
 	for (unsigned i = 0; i < cons->size(); i++) {
@@ -1099,6 +1076,7 @@ void AIPass::visitSwitchInst (SwitchInst &I){
 void AIPass::visitIndirectBrInst (IndirectBrInst &I){
 	//*Dbg << "IndirectBrInst\n" << I << "\n";	
 	// TODO
+	(void) I;
 }
 
 void AIPass::visitInvokeInst (InvokeInst &I){
@@ -1114,11 +1092,13 @@ void AIPass::visitUnreachableInst (UnreachableInst &I){
 void AIPass::visitICmpInst (ICmpInst &I){
 	//*Dbg << "ICmpInst\n" << I << "\n";	
 	//visitInstAndAddVarIfNecessary(I);
+	(void) I;
 }
 
 void AIPass::visitFCmpInst (FCmpInst &I){
 	//*Dbg << "FCmpInst\n" << I << "\n";	
 	//visitInstAndAddVarIfNecessary(I);
+	(void) I;
 }
 
 void AIPass::visitAllocaInst (AllocaInst &I){
@@ -1141,7 +1121,6 @@ void AIPass::visitGetElementPtrInst (GetElementPtrInst &I){
 
 	if (pointer_arithmetic()) {
 		Node * n = Nodes[focuspath.back()];
-		ap_texpr_rtype_t ap_type;
 		Expr exp((Value*)&I);
 		Environment * env = exp.getEnv();
 		insert_env_vars_into_node_vars(env,n,(Value*)&I);
@@ -1158,7 +1137,6 @@ void AIPass::visitPHINode (PHINode &I){
 	BasicBlock * pred = focuspath[focusblock-1];
 
 	Value * pv;
-	Node * nb;
 
 	ap_texpr_rtype_t ap_type;
 	if (Expr::get_ap_type((Value*)&I, ap_type)) return;
@@ -1182,7 +1160,6 @@ void AIPass::visitPHINode (PHINode &I){
 	for (unsigned i = 0; i < I.getNumIncomingValues(); i++) {
 		if (pred == I.getIncomingBlock(i)) {
 			pv = I.getIncomingValue(i);
-			nb = Nodes[I.getIncomingBlock(i)];
 			Expr expr(pv);
 
 			if (focusblock == focuspath.size()-1) {
@@ -1229,16 +1206,12 @@ void AIPass::visitTruncInst (TruncInst &I){
 
 void AIPass::visitZExtInst (ZExtInst &I){
 	//*Dbg << "ZExtInst\n" << I << "\n";	
-	Value * pv;
-	Node * nb;
 	Node * n = Nodes[focuspath.back()];
 
 	if(I.getSrcTy()->isIntegerTy(1) && I.getDestTy()->isIntegerTy()) {
 		// we cast a boolean to an integer
 		// we overapproximate here...
 	} else if(I.getSrcTy()->isIntegerTy() && I.getDestTy()->isIntegerTy()) {
-
-		ap_texpr_rtype_t ap_type;
 		Expr exp((Value*)&I);
 
 		// this value may use some apron variables 
@@ -1291,7 +1264,6 @@ void AIPass::visitPtrToIntInst (PtrToIntInst &I){
 
 	if (pointer_arithmetic()) {
 		Node * n = Nodes[focuspath.back()];
-		ap_texpr_rtype_t ap_type;
 		Expr exp((Value*)&I);
 		Environment * env = exp.getEnv();
 		insert_env_vars_into_node_vars(env,n,(Value*)&I);
@@ -1306,7 +1278,6 @@ void AIPass::visitIntToPtrInst (IntToPtrInst &I){
 
 	if (pointer_arithmetic()) {
 		Node * n = Nodes[focuspath.back()];
-		ap_texpr_rtype_t ap_type;
 		Expr exp((Value*)&I);
 		Environment * env = exp.getEnv();
 		insert_env_vars_into_node_vars(env,n,(Value*)&I);
@@ -1394,6 +1365,7 @@ void AIPass::visitBinaryOperator (BinaryOperator &I){
 void AIPass::visitCmpInst (CmpInst &I){
 	//*Dbg << "CmpInst\n" << I << "\n";	
 	//visitInstAndAddVarIfNecessary(I);
+	(void) I;
 }
 
 void AIPass::visitCastInst (CastInst &I){

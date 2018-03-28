@@ -6,7 +6,9 @@
 #include <vector>
 #include <list>
 
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
+#include "end_3rdparty.h"
 
 #include "AISimple.h"
 #include "Expr.h"
@@ -41,7 +43,7 @@ void AISimple::computeFunc(Function * F) {
 	n->X_d[passID]->set_top(&env);
 	n->X_i[passID]->set_top(&env);
 	n->X_f[passID]->set_top(&env);
-	ascendingIter(n, F);
+	ascendingIter(n);
 
 	narrowingIter(n);
 
@@ -63,7 +65,7 @@ void AISimple::computeFunc(Function * F) {
 		}
 		
 		copy_Xd_to_Xs(F);
-		ascendingIter(n, F);
+		ascendingIter(n);
 		narrowingIter(n);
 		step = 0;
 		while (copy_Xd_to_Xs(F) && step <= 2) {
@@ -99,9 +101,7 @@ void AISimple::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool AISimple::runOnModule(Module &M) {
-	Function * F;
-	BasicBlock * b;
-	Node * n;
+	Function * F = nullptr;
 	*Dbg << "// analysis: " << getPassName() << "\n";
 
 	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
@@ -123,6 +123,7 @@ bool AISimple::runOnModule(Module &M) {
 		TerminateFunction(F);
 		printResult(F);
 	}
+	assert(F != nullptr);
 	generateAnnotatedFiles(F->getParent(),OutputAnnotatedFile());
 	return 0;
 }
@@ -162,7 +163,7 @@ void AISimple::computeNode(Node * n) {
 
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 
 		DEBUG(
 			*Dbg << "POLYHEDRON AT THE STARTING NODE\n";
@@ -245,7 +246,7 @@ void AISimple::narrowNode(Node * n) {
 
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 
 		desc_iterations[passID][n->bb->getParent()]++;
 

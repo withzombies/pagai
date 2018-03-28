@@ -8,6 +8,8 @@
 #include <cstdlib>
 
 #include "config.h"
+
+#include "begin_3rdparty.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 // parseIRFile returns a "unique_ptr" after LLVM 3.4 ...
 #   include <memory>
@@ -29,7 +31,19 @@
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Analysis/LoopInfo.h"
+#include "llvm/ADT/IntrusiveRefCntPtr.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IRReader/IRReader.h"
+#include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/Path.h"
 #include "llvm/Transforms/IPO.h"
+
+#include "clang/CodeGen/CodeGenAction.h"
+#include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/CompilerInvocation.h"
+#include "clang/Frontend/TextDiagnosticPrinter.h"
+#include "clang/Basic/Version.h"
+#include "end_3rdparty.h"
 
 #include "AIpf.h"
 #include "AIpf_incr.h"
@@ -58,18 +72,6 @@
 #include "expandassume.h"
 #include "NameAllValues.h"
 #include "IdentifyLoops.h"
-
-#include "clang/CodeGen/CodeGenAction.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/CompilerInvocation.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Basic/Version.h"
-#include "llvm/ADT/IntrusiveRefCntPtr.h"
-#include "llvm/IR/Module.h"
-
-#include "llvm/IRReader/IRReader.h"
-#include "llvm/Support/SourceMgr.h"
-#include "llvm/Support/Path.h"
 
 using namespace llvm;
 
@@ -432,7 +434,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 				break;
 		}
 	} else {
-		ModulePass *AIPass;
+		ModulePass *AIPass = nullptr;
 		switch (getTechnique()) {
 			case LOOKAHEAD_WIDENING:
 				AIPass = new ModulePassWrapper<AIGopan, 0>();
@@ -459,6 +461,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 				AIPass = new ModulePassWrapper<AIdis, 0>();
 				break;
 		}
+		assert(AIPass != nullptr);
 		AnalysisPasses.add(AIPass);
 	}
 	AnalysisPasses.run(*M);

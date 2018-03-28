@@ -1,12 +1,14 @@
-#include <assert.h>
+#include <cassert>
+
+#include "begin_3rdparty.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/GlobalValue.h"
 #include "llvm/Support/raw_ostream.h"
-#include <llvm/Transforms/Utils/BasicBlockUtils.h>
-
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
+#include "end_3rdparty.h"
 
 #include "taginline.h"
 #include "Analyzer.h"

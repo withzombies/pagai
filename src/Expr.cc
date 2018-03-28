@@ -7,8 +7,10 @@
 #define UNDEF_ADDRESS 0x0
 #include <map>
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
+#include "end_3rdparty.h"
 
 #include "Expr.h"
 #include "apron.h"
@@ -429,9 +431,6 @@ ap_texpr1_t * Expr::visitTruncInst (TruncInst &I){
 }
 
 ap_texpr1_t * Expr::visitZExtInst (ZExtInst &I){
-
-	Value * pv;
-	Node * nb;
 	if(I.getSrcTy()->isIntegerTy(1) && I.getDestTy()->isIntegerTy()) {
 		// we cast a boolean to an integer
 		// we overapproximate here...
@@ -550,14 +549,7 @@ ap_texpr1_t * Expr::visitBinaryOperator (BinaryOperator &I){
 			if (skipNonLinear()) return visitInstAndAddVar(I);
 			op = AP_TEXPR_MOD;
 			break;
-			// Logical operators
-		case Instruction::Shl : // Shift left  (logical)
-		case Instruction::LShr: // Shift right (logical)
-		case Instruction::AShr: // Shift right (arithmetic)
-		case Instruction::And :
-		case Instruction::Or  :
-		case Instruction::Xor :
-		case Instruction::BinaryOpsEnd:
+		default:
 			// we consider the result is unknown
 			// so we create a new variable
 			return visitInstAndAddVar(I);

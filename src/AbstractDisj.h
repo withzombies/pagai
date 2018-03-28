@@ -8,7 +8,10 @@
 
 #include <vector>
 
+#include "begin_3rdparty.h"
 #include "ap_global1.h"
+#include "end_3rdparty.h"
+
 #include "Abstract.h"
 #include "AbstractMan.h"
 
@@ -74,7 +77,7 @@ class AbstractDisj: public Abstract {
 		 * if not, it creates disjuncts so that the AbstractDisj has N
 		 * disjuncts
 		 */
-		void SetNDisjunct(int N);
+		void SetNDisjunct(size_t N);
 		
 		/**
 		 * \brief get the index of the last disjunct
@@ -321,7 +324,7 @@ class AbstractDisj: public Abstract {
 		/**
 		 * \brief print the abstract domain on standard output
 		 */
-		void print(bool only_main = false);
+		void print();
 
 		/**
 		 * \brief print the abstract domain in the stream

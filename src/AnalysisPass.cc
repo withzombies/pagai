@@ -1,7 +1,10 @@
 #include <fstream>
 #include <system_error>
 
+#include "begin_3rdparty.h"
 #include "llvm/Support/FileSystem.h"
+#include "end_3rdparty.h"
+
 #include "AnalysisPass.h"
 #include "config.h"
 
@@ -162,8 +165,7 @@ void AnalysisPass::printResult_oldoutput(Function * F) {
 
 			*Out << "\n\nRESULT FOR BASICBLOCK: -------------------" << *b << "-----\n";
 			resetColor();
-			//n->X_i[passID]->print(true);
-			n->X_s[passID]->print(true);
+			n->X_s[passID]->print();
 			if (FPr->inAssert(b)) {
 				if (n->X_s[passID]->is_bottom()) {
 					changeColor(raw_ostream::GREEN);
@@ -196,6 +198,7 @@ void AnalysisPass::printResult_oldoutput(Function * F) {
 }
 
 std::string AnalysisPass::getUndefinedBehaviourMessage(BasicBlock * b) {
+	(void) b;
 	return "possible undefined behavior";
 }
 

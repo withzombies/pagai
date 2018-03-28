@@ -8,16 +8,19 @@
 
 #include <map>
 
+#include "config.h"
+
+#include "begin_3rdparty.h"
 #include "ap_global1.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/IR/Constants.h"
-#include "config.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 #   include "llvm/IR/InstVisitor.h"
 #else
 #   include "llvm/InstVisitor.h"
 #endif
+#include "end_3rdparty.h"
 
 #include "Abstract.h"
 #include "Environment.h"
@@ -144,6 +147,7 @@ class Expr : public llvm::InstVisitor<Expr,ap_texpr1_t*> {
 		ap_texpr1_t * visitCastInst (llvm::CastInst &I);
 
 		ap_texpr1_t * visitInstruction(llvm::Instruction &I) {
+			(void) I;
 			return NULL;
 		}
 		/**
@@ -151,4 +155,5 @@ class Expr : public llvm::InstVisitor<Expr,ap_texpr1_t*> {
 		 */
 		ap_texpr1_t * visitInstAndAddVar(llvm::Instruction &I);
 };
+
 #endif

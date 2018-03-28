@@ -37,10 +37,7 @@ void AIdis::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool AIdis::runOnModule(Module &M) {
-	Function * F;
-	BasicBlock * b = NULL;
-	Node * n = NULL;
-	int N_Pr = 0;
+	Function * F = nullptr;
 	LSMT = SMTpass::getInstance();
 
 	*Dbg << "// analysis: DISJUNCTIVE\n";
@@ -93,6 +90,7 @@ bool AIdis::runOnModule(Module &M) {
 
 		LSMT->reset_SMTcontext();
 	}
+	assert(F != nullptr);
 	generateAnnotatedFiles(F->getParent(),OutputAnnotatedFile());
 	return 0;
 }
@@ -102,7 +100,6 @@ bool AIdis::runOnModule(Module &M) {
 void AIdis::computeFunction(Function * F) {
 	BasicBlock * b;
 	Node * const n = Nodes[F->begin()];
-	Node * current;
 	unknown = false;
 
 	// A = {first basicblock}
@@ -162,7 +159,7 @@ void AIdis::computeFunction(Function * F) {
 		}
 
 		is_computed.clear();
-		ascendingIter(n, F, true);
+		ascendingIter(n, true);
 		if (unknown) goto end;
 
 		// we set X_d abstract values to bottom for narrowing
@@ -203,9 +200,8 @@ std::set<BasicBlock*> AIdis::getSuccessors(BasicBlock * b) const {
 int AIdis::sigma(
 		std::list<BasicBlock*> path, 
 		int start,
-		Abstract * Xtemp,
-		bool source) {
-	return S[path.front()]->getSigma(path,start,Xtemp,this,source);
+		Abstract * Xtemp) {
+	return S[path.front()]->getSigma(path,start,Xtemp,this);
 }
 
 void AIdis::computeNewPaths(Node * n) {
@@ -263,13 +259,13 @@ void AIdis::computeNewPaths(Node * n) {
 			*Dbg << "START\n";
 			Xtemp->print();
 		);
-		computeTransform(Xdisj->man_disj,n,path,Xtemp);
+		computeTransform(Xdisj->man_disj,path,Xtemp);
 		DEBUG(
 			*Dbg << "XTEMP\n";
 			Xtemp->print();
 		);
 		AbstractDisj * SuccDisj = dynamic_cast<AbstractDisj*>(Succ->X_s[passID]);
-		int Sigma = sigma(path,index,Xtemp,false);
+		int Sigma = sigma(path,index,Xtemp);
 		Join.clear();
 		Join.push_back(SuccDisj->getDisjunct(Sigma));
 		Join.push_back(Xdisj->man_disj->NewAbstract(Xtemp));
@@ -347,7 +343,7 @@ void AIdis::loopiter(
 			);
 
 			Xtemp = SuccDis->man_disj->NewAbstract(SuccDis->getDisjunct(Sigma));
-			computeTransform(SuccDis->man_disj,n,*path,Xtemp);
+			computeTransform(SuccDis->man_disj,*path,Xtemp);
 			DEBUG(
 				*Dbg << "POLYHEDRON AT THE STARTING NODE (AFTER MINIWIDENING)\n";
 				SuccDis->print();
@@ -426,8 +422,8 @@ void AIdis::computeNode(Node * n) {
 		// computing the image of the abstract value by the path's tranformation
 		AbstractDisj * Xdisj = dynamic_cast<AbstractDisj*>(n->X_s[passID]);
 		Xtemp = Xdisj->man_disj->NewAbstract(Xdisj->getDisjunct(index));
-		computeTransform(Xdisj->man_disj,n,path,Xtemp);
-		int Sigma = sigma(path,index,Xtemp,true);
+		computeTransform(Xdisj->man_disj,path,Xtemp);
+		int Sigma = sigma(path,index,Xtemp);
 		DEBUG(
 			*Dbg << "POLYHEDRON AT THE STARTING NODE\n";
 			n->X_s[passID]->print();
@@ -537,9 +533,9 @@ void AIdis::narrowNode(Node * n) {
 		// computing the image of the abstract value by the path's tranformation
 		AbstractDisj * Xdisj = dynamic_cast<AbstractDisj*>(n->X_s[passID]);
 		Xtemp = Xdisj->man_disj->NewAbstract(Xdisj->getDisjunct(index));
-		computeTransform(Xdisj->man_disj,n,path,Xtemp);
+		computeTransform(Xdisj->man_disj,path,Xtemp);
 		
-		int Sigma = sigma(path,index,Xtemp,false);
+		int Sigma = sigma(path,index,Xtemp);
 
 		DEBUG(
 			*Dbg << "POLYHEDRON TO JOIN\n";

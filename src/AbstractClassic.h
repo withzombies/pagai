@@ -8,7 +8,10 @@
 
 #include <vector>
 
+#include "begin_3rdparty.h"
 #include "ap_global1.h"
+#include "end_3rdparty.h"
+
 #include "Abstract.h"
 #include "config.h"
 
@@ -155,7 +158,7 @@ class AbstractClassic: public Abstract {
 		/**
 		 * \brief print the abstract domain on standard output
 		 */
-		void print(bool only_main = false);
+		void print();
 
 		/**
 		 * \brief print the abstract domain in the stream

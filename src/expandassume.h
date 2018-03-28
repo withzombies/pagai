@@ -1,6 +1,9 @@
 #ifndef EXPANDASSUME_H
 #define EXPANDASSUME_H
 
+#include <set>
+
+#include "begin_3rdparty.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Constants.h"
@@ -12,7 +15,7 @@
 #else
 #   include "llvm/InstVisitor.h"
 #endif
-#include <set>
+#include "end_3rdparty.h"
 
 class ExpandAssume : public llvm::FunctionPass {
 	// make sure we do not expand twice the same branch inst

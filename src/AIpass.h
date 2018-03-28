@@ -9,17 +9,20 @@
 #include <queue>
 #include <vector>
 
+#include "config.h"
+
+#include "begin_3rdparty.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/AliasSetTracker.h"
-#include "config.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 #   include "llvm/IR/InstVisitor.h"
 #else
 #   include "llvm/InstVisitor.h"
 #endif
+#include "end_3rdparty.h"
 
 #include "Analyzer.h"
 #include "apron.h"
@@ -161,18 +164,18 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 
 		AIPass (Apron_Manager_Type _man, bool use_New_Narrowing, bool _use_Threshold) : 
 			LV(NULL),
-			LSMT(NULL),
 			unknown(false),
 			NewNarrowing(use_New_Narrowing),
-			use_threshold(_use_Threshold) {
+			use_threshold(_use_Threshold),
+			LSMT(NULL) {
 				man = create_manager(_man);
 				init();
 			}
 
 		AIPass () : 
 			LV(NULL),
-			LSMT(NULL),
-			unknown(false) {
+			unknown(false),
+			LSMT(NULL) {
 				man = create_manager(getApronManager());
 				NewNarrowing = useNewNarrowing();
 				use_threshold = useThreshold();
@@ -219,7 +222,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 * (iterates over the nodes, calling computeNode for each of
 		 * them)
 		 */
-		virtual void ascendingIter(Node * n, llvm::Function * F, bool dont_reset = false);
+		virtual void ascendingIter(Node * n, bool dont_reset = false);
 
 		/** 
 		 * \brief Narrowing algorithm (iterates over the nodes, calling
@@ -257,11 +260,10 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 
 		/** 
 		 * \brief computes in Xtemp the polyhedra resulting from
-		 * the transformation  of n->X through the path
+		 * the transformation through the path
 		 */
 		void computeTransform (	
 			AbstractMan * aman,
-			Node * n, 
 			std::list<llvm::BasicBlock*> path, 
 			Abstract *Xtemp);
 
@@ -283,7 +285,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		bool computeCondition(llvm::Value * val, 
 				bool result,
-				int cons_index,
+				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
 		/** 
@@ -292,7 +294,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		bool computeCmpCondition(llvm::CmpInst * inst, 
 				bool result,
-				int cons_index,
+				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
 		/** 
@@ -301,7 +303,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		bool computeConstantCondition(llvm::ConstantInt * inst, 
 				bool result,
-				int cons_index,
+				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
 		/** 
@@ -310,7 +312,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		bool computePHINodeCondition(llvm::PHINode * inst, 
 				bool result,
-				int cons_index,
+				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
 		/** 
@@ -319,7 +321,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		bool computeBinaryOpCondition(llvm::BinaryOperator * inst, 
 				bool result,
-				int cons_index,
+				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 		
 		/** 
@@ -328,7 +330,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		bool computeCastCondition(llvm::CastInst * inst, 
 				bool result,
-				int cons_index,
+				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
 		/** 

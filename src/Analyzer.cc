@@ -5,9 +5,8 @@
  */
 #include <string>
 #include <iostream>
-#include <getopt.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 
@@ -161,6 +160,8 @@ std::string ApronManagerToString(Apron_Manager_Type D) {
 		case PKGRID:
 			return "PKGRID";
 #endif
+		default:
+			return "unknown";
 	}
 }
 
@@ -355,11 +356,7 @@ void check_help_or_version(const po::options_description & desc) {
 int main(int argc, char* argv[]) {
 
     execute run;
-    int o;
-    bool help = false;
     bool bad_use = false;
-	char* arg;
-	bool debug = false;
 
 #ifdef HAS_Z3
 	Solver = API_Z3;

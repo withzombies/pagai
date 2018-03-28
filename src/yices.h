@@ -7,9 +7,12 @@
 #define YICES_H
 
 #if HAS_YICES
+
 #include <map>
 
+#include "begin_3rdparty.h"
 #include "yices_c.h"
+#include "end_3rdparty.h"
 
 #include "SMT_manager.h"
 

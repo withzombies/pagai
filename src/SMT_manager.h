@@ -16,7 +16,7 @@
 #include "mpfr.h"
 #include "Debug.h"
 #ifdef HAS_Z3
-#include "z3++.h"
+#   include "z3++.h"
 #endif
 
 /**

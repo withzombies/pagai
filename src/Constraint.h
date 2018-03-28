@@ -8,7 +8,9 @@
 
 #include <vector>
 
+#include "begin_3rdparty.h"
 #include "ap_global1.h"
+#include "end_3rdparty.h"
 
 class Expr;
 

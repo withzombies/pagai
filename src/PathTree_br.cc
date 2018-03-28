@@ -6,7 +6,9 @@
 #include <map>
 #include <sstream>
 
+#include "begin_3rdparty.h"
 #include "cuddObj.hh"
+#include "end_3rdparty.h"
 
 #include "PathTree_br.h"
 #include "Analyzer.h"
@@ -32,10 +34,10 @@ void PathTree_br::createBDDVars(BasicBlock * Start, std::set<BasicBlock*> * Pr, 
 BranchInst * PathTree_br::getConditionnalBranch(BasicBlock * b, bool start) {
 	// access the branch inst of the basicblock if exists
 	for (BasicBlock::iterator i = b->begin(), ie = b->end(); i != ie; ++i) {
-          if (BranchInst* Inst = dyn_cast<BranchInst>(&*i)) {
+		if (BranchInst* Inst = dyn_cast<BranchInst>(&*i)) {
 			  if (Inst->isUnconditional() && !start) return NULL;
 			  return Inst;
-		  }
+		}
 	}
 	return NULL;
 }
@@ -84,7 +86,7 @@ BranchInst * PathTree_br::getBranchFromLevel(int const i) {
 	return br;
 }
 
-const std::string PathTree_br::getStringFromLevel(int const i, SMTpass * smt) {
+const std::string PathTree_br::getStringFromLevel(int const i) {
 	BranchInst * br = levels[i]; 
 	BasicBlock * bb = br->getParent();
 	if (BddVarStart.count(br) && BddVarStart[br]==i)
@@ -106,7 +108,9 @@ void PathTree_br::DumpDotBDD(BDD graph, std::string filename) {
 
 	int n = BddVar.size() + BddVarStart.size();
 
-	char * inames[n];
+	std::vector<char *> inames;
+	inames.resize(n);
+
 	for (std::map<BranchInst*,int>::iterator it = BddVar.begin(), et = BddVar.end(); it != et; it++) {
 		BasicBlock * origin = it->first->getParent();
 		BasicBlock * dest = it->first->getSuccessor(0);
@@ -120,12 +124,11 @@ void PathTree_br::DumpDotBDD(BDD graph, std::string filename) {
 		inames[it->second] = strdup(edge.c_str());
 	}
 
-    char const* onames[] = {"B"};
-    DdNode *Dds[] = {graph.getNode()};
-    int NumNodes = sizeof(onames)/sizeof(onames[0]);
-    FILE* fp = fopen(name.str().c_str(), "w");
-	Cudd_DumpDot(mgr->getManager(), NumNodes, Dds, 
-            const_cast<char**>(inames), const_cast<char**>(onames), fp);
+	char const* onames[] = {"B"};
+	DdNode *Dds[] = {graph.getNode()};
+	int NumNodes = sizeof(onames)/sizeof(onames[0]);
+	FILE* fp = fopen(name.str().c_str(), "w");
+	Cudd_DumpDot(mgr->getManager(), NumNodes, Dds, const_cast<char**>(&inames[0]), const_cast<char**>(onames), fp);
 	fclose(fp);
 }
 
@@ -143,7 +146,7 @@ SMT_expr PathTree_br::generateSMTformula(SMTpass * smt, bool neg) {
 	DdNode *node;
 	DdNode *N, *Nv, *Nnv;
 	DdGen *gen;
-	DdNode * true_node;
+	DdNode * true_node = nullptr;
 	std::vector<SMT_expr> formula;
 	std::vector<SMT_expr> factorized;
 	for(gen = Cudd_FirstNode (mgr->getManager(), Bdd->getNode(), &node);

@@ -5,6 +5,7 @@
  */
 #ifndef Z3_MANAGER_H
 #define Z3_MANAGER_H
+
 #if HAS_Z3
 
 #include <vector>
@@ -12,8 +13,10 @@
 #include <set>
 #include <string>
 
+#include "begin_3rdparty.h"
 #include "z3.h"
 #include "z3++.h"
+#include "end_3rdparty.h"
 
 #include "SMT_manager.h"
 

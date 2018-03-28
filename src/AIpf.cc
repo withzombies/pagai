@@ -37,10 +37,7 @@ void AIpf::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool AIpf::runOnModule(Module &M) {
-	Function * F;
-	BasicBlock * b;
-	Node * n;
-	int N_Pr = 0;
+	Function * F = nullptr;
 	LSMT = SMTpass::getInstance();
 	*Dbg << "// analysis: " << getPassName() << "\n";
 	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
@@ -84,6 +81,7 @@ bool AIpf::runOnModule(Module &M) {
 		
 		LSMT->reset_SMTcontext();
 	}
+    assert(F != nullptr);
 	generateAnnotatedFiles(F->getParent(),OutputAnnotatedFile());
 	
 	SMTpass::releaseMemory();
@@ -93,7 +91,6 @@ bool AIpf::runOnModule(Module &M) {
 void AIpf::computeFunction(Function * F) {
 	BasicBlock * b;
 	Node * n;
-	Node * current;
 	unknown = false;
 
 	// A = {first basicblock}
@@ -142,7 +139,7 @@ void AIpf::computeFunction(Function * F) {
 	A.push(n);
 
 	START();
-	ascendingIter(n, F);
+	ascendingIter(n);
 	if (unknown) goto end;
 
 	if (SVComp() && asserts_proved(F)) goto end;
@@ -245,7 +242,7 @@ void AIpf::computeNode(Node * n) {
 
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 		
 		DEBUG(
 			*Dbg << "POLYHEDRON AT THE STARTING NODE\n";
@@ -369,7 +366,7 @@ void AIpf::narrowNode(Node * n) {
 			*Dbg << "STARTING POLYHEDRON\n";
 			Xtemp->print();
 		);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 
 		DEBUG(
 			*Dbg << "POLYHEDRON TO JOIN\n";

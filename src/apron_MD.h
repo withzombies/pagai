@@ -6,10 +6,12 @@
 #ifndef _APRON_MD_H 
 #define _APRON_MD_H 
 
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/IRBuilder.h"
 
 #include "ap_global1.h"
+#include "end_3rdparty.h"
 
 #include "Analyzer.h"
 #include "Node.h"
@@ -28,5 +30,5 @@ llvm::Value * texpr0_to_LLVM(ap_texpr0_t* a, ap_environment_t * env, llvm::IRBui
 llvm::Value * texpr0_node_to_LLVM(ap_texpr0_node_t * a, ap_environment_t * env, llvm::IRBuilder<> * Builder);
 llvm::Value * ap_scalar_to_LLVM(ap_scalar_t & scalar, llvm::IRBuilder<> * Builder);
 llvm::Value * coeff_to_LLVM(ap_coeff_t * a, llvm::IRBuilder<> * Builder);
-#endif
 
+#endif

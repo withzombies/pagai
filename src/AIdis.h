@@ -8,9 +8,11 @@
 
 #include <vector>
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
 #include "llvm/Analysis/CFG.h"
+#include "end_3rdparty.h"
 
 #include "AIpass.h"
 #include "Sigma.h"
@@ -52,8 +54,7 @@ class AIdis : public llvm::ModulePass, public AIPass {
 		int sigma(
 			std::list<llvm::BasicBlock*> path, 
 			int start,
-			Abstract * Xtemp,
-			bool source);
+			Abstract * Xtemp);
 
 		void init()
 			{

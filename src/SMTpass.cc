@@ -14,9 +14,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
+#include "end_3rdparty.h"
 
 #include "Pr.h"
 #include "SMTpass.h"
@@ -130,6 +132,7 @@ void SMTpass::reset_SMTcontext() {
 
 SMT_expr SMTpass::texpr1ToSmt(ap_texpr1_t texpr) {
 	// NOT IMPLEMENTED
+	(void) texpr;
 	SMT_expr NULL_expr;
 	return NULL_expr;
 }
@@ -511,8 +514,8 @@ SMT_expr SMTpass::getValueExpr(Value * v, bool primed) {
 				APFloat APF = FP->getValueAPF();
 				double x;
 				if (FP->getType()->isFloatTy()) {
-					x = (double)APF.convertToFloat();
-				} else if (FP->getType()->isDoubleTy()) {
+					x = (double) APF.convertToFloat();
+				} else {
 					x = APF.convertToDouble();
 				}
 				if (std::isnan(x) || std::isinf(x)) {
@@ -578,7 +581,6 @@ void SMTpass::getElementFromString(
 	std::string dest_node ("bd_");
 	std::string disjunctive_index ("d_");
 	size_t found;
-	void* address;
 	src = NULL;
 	dest = NULL;
 	start = false;
@@ -884,6 +886,7 @@ int SMTpass::SMTsolve_simple(SMT_expr expr) {
 }
 
 void SMTpass::visitReturnInst (ReturnInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitBranchInst (BranchInst &I) {
@@ -924,9 +927,11 @@ void SMTpass::visitBranchInst (BranchInst &I) {
 }
 
 void SMTpass::visitSwitchInst (SwitchInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitIndirectBrInst (IndirectBrInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitInvokeInst (InvokeInst &I) {
@@ -958,15 +963,19 @@ void SMTpass::visitInvokeInst (InvokeInst &I) {
 }
 
 void SMTpass::visitUnreachableInst (UnreachableInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitAllocaInst (AllocaInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitLoadInst (LoadInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitStoreInst (StoreInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitGetElementPtrInst (GetElementPtrInst &I) {
@@ -1020,7 +1029,7 @@ bool SMTpass::is_primed(BasicBlock * b, Instruction &I) {
 	return (b != NULL 
 			&& (I.getParent() == b && FPr->inPr(b))
 			&& isa<PHINode>(I)
-	       );
+	);
 }
 
 void SMTpass::visitPHINode (PHINode &I) {
@@ -1151,6 +1160,7 @@ void SMTpass::visitIntToPtrInst (IntToPtrInst &I) {
 }
 
 void SMTpass::visitBitCastInst (BitCastInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitSelectInst (SelectInst &I) {
@@ -1169,31 +1179,38 @@ void SMTpass::visitSelectInst (SelectInst &I) {
 }
 
 void SMTpass::visitCallInst(CallInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitVAArgInst (VAArgInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitExtractElementInst (ExtractElementInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitInsertElementInst (InsertElementInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitShuffleVectorInst (ShuffleVectorInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitExtractValueInst (ExtractValueInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitInsertValueInst (InsertValueInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitTerminatorInst (TerminatorInst &I) {
+	(void) I;
 }
 
 void SMTpass::visitBinaryOperator (BinaryOperator &I) {
-	bool skip = false;
 	ap_texpr_rtype_t ap_type;
 	int t = Expr::get_ap_type((Value*)&I, ap_type);
 
@@ -1358,4 +1375,5 @@ void SMTpass::visitCmpInst (CmpInst &I) {
 }
 
 void SMTpass::visitCastInst (CastInst &I) {
+	(void) I;
 }

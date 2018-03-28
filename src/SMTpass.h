@@ -12,11 +12,13 @@
 #include <set>
 
 #include "config.h"
+#include "begin_3rdparty.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 #   include "llvm/IR/InstVisitor.h"
 #else
 #   include "llvm/InstVisitor.h"
 #endif
+#include "end_3rdparty.h"
 
 #include "Analyzer.h"
 #include "Abstract.h"
@@ -305,6 +307,7 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		void visitCastInst (llvm::CastInst &I);
 
 		void visitInstruction(llvm::Instruction &I) {
+        	(void) I;
 			//ferrs() << I.getOpcodeName();
 			//assert(0 && ": Instruction not interpretable yet!");
 		}

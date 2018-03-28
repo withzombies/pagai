@@ -6,7 +6,10 @@
 #ifndef _ABSTRACTMAN_H
 #define _ABSTRACTMAN_H
 
+#include "begin_3rdparty.h"
 #include "ap_global1.h"
+#include "end_3rdparty.h"
+
 #include "Abstract.h"
 #include "Environment.h"
 

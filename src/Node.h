@@ -6,14 +6,16 @@
 #ifndef _NODE_H
 #define _NODE_H
 
-#include<stack>
-#include<map>
-#include<set>
-#include<vector>
+#include <stack>
+#include <map>
+#include <set>
+#include <vector>
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/BasicBlock.h"
 
 #include "ap_global1.h"
+#include "end_3rdparty.h"
 
 #include "Analyzer.h"
 #include "Environment.h"

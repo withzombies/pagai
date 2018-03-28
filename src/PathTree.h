@@ -10,9 +10,12 @@
 #include <map>
 #include <vector>
 #include <string>
+
+#include "begin_3rdparty.h"
 #include "llvm/IR/BasicBlock.h"
 
 #include "cuddObj.hh"
+#include "end_3rdparty.h"
 
 #include "SMTpass.h"
 

@@ -3,14 +3,16 @@
  * \brief Implementation of the Node class
  * \author Julien Henry
  */
-#include<stack>
-#include<map>
-#include<set>
+#include <stack>
+#include <map>
+#include <set>
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/IR/Constants.h"
+#include "end_3rdparty.h"
 
 #include "Node.h"
 #include "Live.h"

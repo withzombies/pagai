@@ -9,9 +9,11 @@
 #include <list>
 #include <map>
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/BasicBlock.h"
 
 #include "cuddObj.hh"
+#include "end_3rdparty.h"
 
 /**
  * \class Sigma
@@ -72,7 +74,7 @@ class Sigma {
 		ADD getADDfromBasicBlock(llvm::BasicBlock * b, std::map<llvm::BasicBlock*, int> &map);
 		ADD getADDfromBasicBlock(llvm::BasicBlock * b, std::map<llvm::BasicBlock*, int> &map, int &n);
 
-		ADD computef(std::list<llvm::BasicBlock*> path, int start);
+		ADD computef(std::list<llvm::BasicBlock*> path);
 
 		/** 
 		 * \brief Add that stores the various seen paths
@@ -125,8 +127,7 @@ class Sigma {
 			std::list<llvm::BasicBlock*> path, 
 			int start,
 			Abstract * Xtemp,
-			AIPass * pass,
-			bool source);
+			AIPass * pass);
 
 };
 #endif

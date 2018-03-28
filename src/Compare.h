@@ -6,8 +6,10 @@
 #ifndef COMPARE_H
 #define COMPARE_H
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
+#include "end_3rdparty.h"
 
 #include "SMTpass.h"
 #include "Node.h"

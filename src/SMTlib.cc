@@ -5,23 +5,25 @@
  */
 #include <algorithm>
 #include <cstddef>
-#include <string.h>
+#include <cstring>
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <csignal>
+#include <climits>
+#include <gmp.h>
+
 #include <sys/wait.h>
 #include <unistd.h>
-#include <signal.h>
-#include <limits.h>
 
+#include "begin_3rdparty.h"
 #include "llvm/Support/FormattedStream.h"
+#include "end_3rdparty.h"
 
-#include <gmp.h>
 #include "SMTlib.h"
 #include "Analyzer.h"
 #include "Debug.h"
 #include "SMTlib2driver.h"
-
 
 SMTlib::SMTlib() {
 	stack_level = 0;
@@ -43,7 +45,6 @@ void SMTlib::SMTlib_init() {
 	int_type.s = "Int";
 	float_type.s = "Real";
 	bool_type.s = "Bool";
-	char buf;
 	solver_pid = 0;
 
 	if (pipe(rpipefd) == -1) {
@@ -336,7 +337,6 @@ SMT_expr SMTlib::SMT_mk_num (int n){
 
 SMT_expr SMTlib::SMT_mk_num_mpq (mpq_t mpq) {
 	SMT_expr res;
-	char * charmpq;
 	char * cnum;
 	char * cden;
 	if (mpq_sgn(mpq) < 0) {
@@ -380,16 +380,16 @@ std::string num_to_string(std::string num,int exponent) {
 			if (exponent > 0) {
 				int k;
 				for (k = 0; k < exponent; k++) {
-					if (k >= num.size())
+					if (k >= (int) num.size())
 						oss << "0";
 					else
 						oss << num[k];
 				}
 				oss << ".";
-				if (k >= num.size())
+				if (k >= (int) num.size())
 					oss << "0";
 				else
-					for (; k < num.size(); k++) {
+					for (; k < (int) num.size(); k++) {
 						oss << num[k];
 					}
 			} else {
@@ -406,7 +406,6 @@ std::string num_to_string(std::string num,int exponent) {
 
 SMT_expr SMTlib::SMT_mk_real (double x) {
 	std::ostringstream oss;
-	double intpart;
 	bool is_neg = false;
 	bool is_zero = false;
 

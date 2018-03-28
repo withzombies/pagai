@@ -3,10 +3,12 @@
  * \brief Implementation of the recoverName class
  * \author Rahul Nanda, Julien Henry
  */
-#include<algorithm>
+#include <algorithm>
 #include <fstream>
 
 #include "config.h"
+
+#include "begin_3rdparty.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 #	include "llvm/IR/Dominators.h"
 #	include "llvm/IR/DebugInfo.h"
@@ -15,6 +17,7 @@
 #	include "llvm/Analysis/Dominators.h"
 #endif
 #include "llvm/Support/Dwarf.h"
+#include "end_3rdparty.h"
 
 #include "recoverName.h"
 #include "Debug.h"
@@ -93,7 +96,6 @@ std::set<Info> recoverName::getMDInfos_rec(Value* v,std::set<Value*> & seen) {
 			res_infos.insert(new_res_infos.begin(),new_res_infos.end());
 		}
 	}
-	std::set<Info>::iterator it = res_infos.begin(), et = res_infos.end();
 	return res_infos;
 }
 
@@ -195,14 +197,14 @@ std::set<Info,compare_Info> recoverName::getPossibleMappings(const Value * V, st
 				std::set<Info,compare_Info>::iterator it1 = res.begin();
 				std::set<Info,compare_Info>::iterator it2 = s.begin();
 				while ( (it1 != res.end()) && (it2 != s.end()) ) {
-				    if (*it1 < *it2) {
-				    	res.erase(it1++);
-				    } else if (*it2 < *it1) {
-				    	++it2;
-				    } else { // **it1 == **it2
-				            ++it1;
-				            ++it2;
-				    }
+					if (*it1 < *it2) {
+						res.erase(it1++);
+					} else if (*it2 < *it1) {
+						++it2;
+					} else { // **it1 == **it2
+						++it1;
+						++it2;
+					}
 				}
 				// Anything left in set_1 from here on did not appear in set_2,
 				// so we remove it.
@@ -290,7 +292,8 @@ void recoverName::update_line_column(Instruction * I, unsigned & line, unsigned 
 	auto l = location->getLine();
 	auto c = location->getColumn();
 #else
-	unsigned l, c;
+	unsigned l = 0;
+	unsigned c = 0;
 	if (const ConstantInt *BBLineNo = dyn_cast<ConstantInt>(BlockMD->getOperand(0))) {
 		l = BBLineNo->getZExtValue();
 	}
@@ -410,8 +413,8 @@ bool recoverName::is_readable(Function * F) {
 	} else {
 		dirname = dir + "/" + name;
 	}
-    std::ifstream File(dirname.c_str()); 
-    return !File.fail(); 
+	std::ifstream File(dirname.c_str()); 
+	return !File.fail(); 
 }
 
 bool recoverName::hasMetadata(Module * M) {

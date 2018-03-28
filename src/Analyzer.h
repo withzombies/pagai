@@ -27,10 +27,11 @@
 #include <map>
 #include <vector>
 
+#include "begin_3rdparty.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Function.h"
-
+#include "end_3rdparty.h"
 
 enum Apron_Manager_Type {
 	BOX,

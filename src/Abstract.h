@@ -8,9 +8,12 @@
 
 #include <vector>
 
+#include "config.h"
+
+#include "begin_3rdparty.h"
 #include "ap_global1.h"
 #include "llvm/Analysis/CFG.h"
-#include "config.h"
+#include "end_3rdparty.h"
 
 class Node;
 class SMTpass;
@@ -213,7 +216,7 @@ class Abstract {
 		/**
 		 * \brief print the abstract domain on standard output
 		 */
-		virtual void print(bool only_main = false) = 0;
+		virtual void print() = 0;
 
 		/**
 		 * \brief print the abstract domain in the stream
@@ -222,9 +225,9 @@ class Abstract {
 		 */
 		virtual void display(llvm::raw_ostream &stream, std::string * left = NULL) const = 0;
 
-		virtual void to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {}
+		virtual void to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) { (void) Inst; (void) met; }
 
-		virtual void insert_as_LLVM_invariant(llvm::Instruction * Inst) {}
+		virtual void insert_as_LLVM_invariant(llvm::Instruction * Inst) { (void) Inst; }
 };
 
 llvm::raw_ostream& operator<<( llvm::raw_ostream &stream, Abstract const& A);

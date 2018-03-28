@@ -3,10 +3,10 @@
  * \brief Implementation of some Debug utilities
  * \author Julien Henry
  */
+#include <sys/time.h>
+
 #include "Debug.h"
 #include "Analyzer.h"
-
-#include <sys/time.h>
 
 int n_paths;
 int n_totalpaths;

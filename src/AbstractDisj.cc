@@ -3,11 +3,13 @@
  * \brief Implementation of the AbstractDisj class
  * \author Julien Henry
  */
-#include "stdio.h"
+#include <cstdio>
 
+#include "begin_3rdparty.h"
 #include "llvm/Support/FormattedStream.h"
 
 #include "ap_global1.h"
+#include "end_3rdparty.h"
 
 #include "AbstractDisj.h"
 #include "Node.h"
@@ -51,10 +53,10 @@ int AbstractDisj::getMaxIndex() {
 	return disj.size()-1;
 }
 
-void AbstractDisj::SetNDisjunct(int N) {
-	if (N <= disj.size()-1) return;
+void AbstractDisj::SetNDisjunct(size_t N) {
+	if (N + 1 <= disj.size()) return;
 	Environment env;
-	while (N > disj.size()-1) {
+	while (N + 1 > disj.size()) {
 		disj.push_back(man_disj->NewAbstract(man,&env));
 	}
 	main = disj[0]->main;
@@ -173,6 +175,7 @@ bool AbstractDisj::is_bottom(int index) {
 
 //NOT IMPLEMENTED
 void AbstractDisj::widening(Abstract * X) {
+	(void) X;
 }
 
 void AbstractDisj::widening(Abstract * X, int index) {
@@ -183,6 +186,8 @@ void AbstractDisj::widening(Abstract * X, int index) {
 
 //NOT IMPLEMENTED
 void AbstractDisj::widening_threshold(Abstract * X, Constraint_array* cons) {
+	(void) X;
+	(void) cons;
 }
 
 void AbstractDisj::widening_threshold(Abstract * X, Constraint_array* cons, int index) {
@@ -240,6 +245,8 @@ void AbstractDisj::assign_texpr_array(
 
 //NOT IMPLEMENTED
 void AbstractDisj::join_array(Environment * env, std::vector<Abstract*> X_pred) {
+	(void) env;
+	(void) X_pred;
 }
 
 void AbstractDisj::join_array(Environment * env, std::vector<Abstract*> X_pred, int index) {
@@ -250,6 +257,8 @@ void AbstractDisj::join_array(Environment * env, std::vector<Abstract*> X_pred, 
 
 //NOT IMPLEMENTED
 void AbstractDisj::join_array_dpUcm(Environment *env, Abstract* n) {
+	(void) env;
+	(void) n;
 }
 
 void AbstractDisj::join_array_dpUcm(Environment *env, Abstract* n, int index) {
@@ -260,6 +269,7 @@ void AbstractDisj::join_array_dpUcm(Environment *env, Abstract* n, int index) {
 
 void AbstractDisj::meet(Abstract* A) {
 	//TODO
+	(void) A;
 }
 
 //NOT CORRECT
@@ -282,7 +292,7 @@ ap_lincons1_array_t AbstractDisj::to_lincons_array(int index) {
 	return disj[index]->to_lincons_array();
 }
 
-void AbstractDisj::print(bool only_main) {
+void AbstractDisj::print() {
 	*Out << *this;
 }
 

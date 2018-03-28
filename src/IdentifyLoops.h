@@ -3,6 +3,7 @@
 
 #include <set>
 
+#include "begin_3rdparty.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Analysis/CFG.h"
 #include "config.h"
@@ -14,6 +15,7 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
+#include "end_3rdparty.h"
 
 extern std::set<llvm::BasicBlock *> Loop_headers;
 

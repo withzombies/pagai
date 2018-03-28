@@ -1,3 +1,4 @@
+#include "begin_3rdparty.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
@@ -7,6 +8,7 @@
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
+#include "end_3rdparty.h"
 
 #include "instrOverflow.h"
 #include "Live.h"
@@ -192,7 +194,6 @@ void instrOverflow::replaceWithCmp(
 	Instruction * re = replaced[intrinsicCall];
 	assert(re != NULL);
 	unsigned bitwidth = re->getType()->getIntegerBitWidth();
-	LLVMContext& C = re->getContext();
 	Constant * maxsignedval = ConstantInt::get(re->getType(),APInt::getSignedMaxValue(bitwidth));
 	Constant * maxunsignedval = ConstantInt::get(re->getType(),APInt::getMaxValue(bitwidth));
 	Constant * minsignedval = ConstantInt::get(re->getType(),APInt::getSignedMinValue(bitwidth));

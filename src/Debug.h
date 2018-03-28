@@ -32,11 +32,14 @@
 #   define Z3(X)
 #endif
 
-#include <time.h>
+#include <ctime>
 #include <map>
-#include "Node.h"
 
+#include "begin_3rdparty.h"
 #include "llvm/Support/TimeValue.h"
+#include "end_3rdparty.h"
+
+#include "Node.h"
 
 extern int n_paths;
 extern int n_totalpaths;

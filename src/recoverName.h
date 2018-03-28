@@ -9,16 +9,19 @@
 #include <set>
 #include <map>
 
+#include "config.h"
+
+#include "begin_3rdparty.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/Support/Dwarf.h"
-#include "config.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 #   include "llvm/IR/InstIterator.h"
 #else
 #   include "llvm/Support/InstIterator.h"
 #endif
+#include "end_3rdparty.h"
 
 #include "Info.h"
 

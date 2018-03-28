@@ -9,9 +9,11 @@
 #include <queue>
 #include <vector>
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
 #include "llvm/Analysis/CFG.h"
+#include "end_3rdparty.h"
 
 #include "AIpass.h"
 
@@ -115,8 +117,8 @@ class AIopt : public llvm::ModulePass, public AIPass {
 		std::set<llvm::BasicBlock*> getPredecessors(llvm::BasicBlock * b) const;
 		std::set<llvm::BasicBlock*> getSuccessors(llvm::BasicBlock * b) const;
 
-		virtual void assert_properties(params P, llvm::Function * F) {}
-		virtual void intersect_with_known_properties(Abstract * Xtemp, Node * n, params P) {}
+		virtual void assert_properties(params P, llvm::Function * F) { (void) P; (void) F; }
+		virtual void intersect_with_known_properties(Abstract * Xtemp, Node * n, params P) { (void) Xtemp; (void) n; (void) P; }
 
 		/**
 		 * \brief compute and update the Abstract value of the Node n

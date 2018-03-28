@@ -6,8 +6,6 @@
 #ifndef COMPAREDOMAIN_H
 #define COMPAREDOMAIN_H
 
-#include "Compare.h"
-
 #include "Pr.h"
 #include "ModulePassWrapper.h"
 #include "SMTpass.h"

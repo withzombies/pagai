@@ -38,9 +38,7 @@ void AIGuided::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool AIGuided::runOnModule(Module &M) {
-	Function * F;
-	Node * n = NULL;
-	int N_Pr = 0;
+	Function * F = nullptr;
 	LSMT = SMTpass::getInstance();
 
 	*Dbg << "// analysis: G\n";
@@ -79,6 +77,7 @@ bool AIGuided::runOnModule(Module &M) {
 		}
 		pathtree.clear();
 	}
+	assert(F != nullptr);
 	generateAnnotatedFiles(F->getParent(),OutputAnnotatedFile());
 	return 0;
 }
@@ -88,7 +87,6 @@ bool AIGuided::runOnModule(Module &M) {
 void AIGuided::computeFunction(Function * F) {
 	BasicBlock * b;
 	Node * const n = Nodes[F->begin()];
-	Node * current;
 	unknown = false;
 
 	// A = {first basicblock}
@@ -132,7 +130,7 @@ void AIGuided::computeFunction(Function * F) {
 
 		W = new PathTree_br(n->bb);
 		is_computed.clear();
-		ascendingIter(n, F, true);
+		ascendingIter(n, true);
 
 		// we set X_d abstract values to bottom for narrowing
 		Pr * FPr = Pr::getInstance(F);
@@ -213,7 +211,7 @@ void AIGuided::computeNewPaths(Node * n) {
 
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 
 		DEBUG(
 			*Dbg << "POLYHEDRON AT THE STARTING NODE\n";
@@ -258,7 +256,6 @@ void AIGuided::computeNode(Node * n) {
 	Node * Succ = NULL;
 	std::vector<Abstract*> Join;
 	std::list<BasicBlock*> path;
-	bool only_join = false;
 
 	if (is_computed.count(n) && is_computed[n]) {
 		return;
@@ -291,7 +288,7 @@ void AIGuided::computeNode(Node * n) {
 
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 
 		DEBUG(
 			*Dbg << "POLYHEDRON AT THE STARTING NODE\n";
@@ -376,7 +373,7 @@ void AIGuided::narrowNode(Node * n) {
 
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 
 		desc_iterations[passID][n->bb->getParent()]++;
 

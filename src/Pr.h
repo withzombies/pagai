@@ -9,7 +9,10 @@
 #include <map>
 #include <set>
 
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
+#include "end_3rdparty.h"
+
 #include "Node.h"
 
 /**

@@ -10,9 +10,12 @@
 #include <map>
 #include <vector>
 #include <string>
+
+#include "begin_3rdparty.h"
 #include "llvm/IR/BasicBlock.h"
 
 #include "cuddObj.hh"
+#include "end_3rdparty.h"
 
 #include "SMTpass.h"
 #include "PathTree.h"
@@ -85,13 +88,8 @@ class PathTree_br : public PathTree {
 		/**
 		 * \brief returns the name of the basicBlock associated
 		 * to the level i of the Bdd.
-		 *
-		 * If smt != NULL, this name is exactly the same as the one 
-		 * used in the SMTpass pass
 		 */
-		const std::string getStringFromLevel(
-			int i,
-			SMTpass * smt = NULL);
+		const std::string getStringFromLevel(int i);
 		
         llvm::BranchInst * getBranchFromLevel(int const i);
 

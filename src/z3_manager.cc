@@ -4,15 +4,18 @@
  * \author Julien Henry
  */
 #if HAS_Z3
+
 #include <algorithm>
 #include <cstddef>
-#include <string.h>
+#include <cstring>
 #include <sstream>
 #include <iostream>
-
-#include "llvm/Support/FormattedStream.h"
-
 #include <gmp.h>
+
+#include "begin_3rdparty.h"
+#include "llvm/Support/FormattedStream.h"
+#include "end_3rdparty.h"
+
 #include "z3_manager.h"
 #include "Analyzer.h"
 #include "Debug.h"
@@ -216,6 +219,7 @@ SMT_expr z3_manager::SMT_mk_mul (SMT_expr a1, SMT_expr a2) {
 }
 
 SMT_expr z3_manager::SMT_mk_div (SMT_expr a1, SMT_expr a2, bool integer) {
+	(void) integer;
 	return SMT_expr(expr(*a1.expr() / *a2.expr()));
 }
 

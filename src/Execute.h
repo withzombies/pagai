@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "llvm/Support/FormattedStream.h"
-
 /**
  * \class execute
  * \brief class that creates and runs the llvm passes

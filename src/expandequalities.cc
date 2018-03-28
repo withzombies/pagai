@@ -1,12 +1,14 @@
-#include <assert.h>
+#include <cassert>
+
+#include "begin_3rdparty.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
-
 #include "llvm/IR/IRBuilder.h"
+#include "end_3rdparty.h"
 
 #include "expandequalities.h"
 
@@ -70,8 +72,7 @@ void ExpandEqualities::visitBranchInst(BranchInst &I) {
 	CmpInst * cond;
 	if (!(cond = dyn_cast<CmpInst>(I.getCondition())))
 		return;
-	BasicBlock * eqblock;
-	BasicBlock * neblock;
+	
 	Value * leftop = cond->getOperand(0);
 	Value * rightop = cond->getOperand(1);
 	bool isFloat = false;
@@ -79,14 +80,10 @@ void ExpandEqualities::visitBranchInst(BranchInst &I) {
 		case CmpInst::FCMP_OEQ:
 			isFloat = true;
 		case CmpInst::ICMP_EQ:
-			eqblock = I.getSuccessor(0);
-			neblock = I.getSuccessor(1);
 			break;
 		case CmpInst::FCMP_ONE:
 			isFloat = true;
 		case CmpInst::ICMP_NE:
-			eqblock = I.getSuccessor(1);
-			neblock = I.getSuccessor(0);
 			break;
 		default:
 			return;

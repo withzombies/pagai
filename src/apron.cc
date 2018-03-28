@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string>
 
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/Support/FormattedStream.h"
 
@@ -15,12 +16,13 @@
 #include "pk.h"
 #include "pkeq.h"
 #ifdef OPT_OCT_ENABLED
-#include "opt_oct.h"
+#   include "opt_oct.h"
 #endif
 #ifdef PPL_ENABLED
-#include "ap_ppl.h"
-#include "ap_pkgrid.h"
+#   include "ap_ppl.h"
+#   include "ap_pkgrid.h"
 #endif
+#include "end_3rdparty.h"
 
 #include "apron.h"
 #include "Expr.h"
@@ -28,9 +30,26 @@
 #include "Analyzer.h"
 #include "Info.h"
 #include "recoverName.h"
+
 using namespace llvm;
 
 ap_var_operations_t var_op_manager;
+
+const int ap_texpr_op_precedence[] =
+{ 1, 1, 2, 2, 2,  /* binary */
+	3, 4, 4         /* unary */
+};
+
+const char* ap_texpr_op_name[] =
+{ "+", "-", "*", "/", "%", /* binary */
+	"-", "cast", "sqrt",     /* unary */
+};
+
+const char* ap_texpr_rtype_name[] =
+{ "", "i", "f", "d", "l", "q", };
+
+const char* ap_texpr_rdir_name[] =
+{ "n", "0", "+oo", "-oo", "?", "", };
 
 /*
  * new to_string function for the var_op_manager
@@ -75,12 +94,13 @@ int ap_var_compare(ap_var_t v1, ap_var_t v2) {
  * hash function for ap_var_t
  */
 int ap_var_hash(ap_var_t v) {
+	(void) v;
 	return 0;
 }
 
 // no copy, no free ! 
-ap_var_t ap_var_copy(ap_var_t var) {return var;}
-void ap_var_free(ap_var_t var) {}
+ap_var_t ap_var_copy(ap_var_t var) { return var; }
+void ap_var_free(ap_var_t var) { (void) var; }
 
 /*
  * This function aims to change the functions for the apron var manager,
@@ -98,16 +118,16 @@ void init_apron() {
 
 ap_manager_t * create_manager(Apron_Manager_Type man) {
 	ap_manager_t * ap_man;
+	(void) ap_man; // disable unused warning if no PPL
 	switch (man) {
 		case BOX:
 			return box_manager_alloc(); // Apron boxes
 		case OCT:
 			return oct_manager_alloc(); // Octagons
 #ifdef OPT_OCT_ENABLED
-	        case OPT_OCT:
-		        return opt_oct_manager_alloc(); // ETHZ optimized octagons
+		case OPT_OCT:
+			return opt_oct_manager_alloc(); // ETHZ optimized octagons
 #endif
-
 		case PK: 
 			return pk_manager_alloc(true); // NewPolka strict polyhedra
 		case PKEQ: 
@@ -130,6 +150,7 @@ ap_manager_t * create_manager(Apron_Manager_Type man) {
 					ap_ppl_grid_manager_alloc()); 
 #endif
 	}
+	return NULL;
 }
 
 
@@ -161,9 +182,8 @@ llvm::raw_ostream& operator<<( llvm::raw_ostream &stream, ap_tcons1_t & cons) {
 	return stream;
 }
 
-
-
 void interval_print(llvm::raw_ostream *stream, ap_interval_t * a) {
+	(void) a;
 	*stream << "interval";
 }
 
@@ -192,7 +212,7 @@ simpl check_scalar(ap_scalar_t * a) {
 }
 
 simpl check_coeff(ap_coeff_t * a) {
-    simpl res = DEFAULT;
+	simpl res = DEFAULT;
 	if (a->discr == AP_COEFF_SCALAR) {
 		res = check_scalar(a->val.scalar);
 	}
@@ -249,8 +269,6 @@ simpl check_texpr0(ap_texpr0_t * a) {
 
 simpl minus(simpl s) {
 	switch (s) {
-		case ZERO:
-			return ZERO;
 		case ONE:
 			return MINUSONE;
 		case MINUSONE:
@@ -259,8 +277,8 @@ simpl minus(simpl s) {
 			return NEGATIVE;
 		case NEGATIVE:
 			return POSITIVE;
-		case DEFAULT:
-			return DEFAULT;
+		default:
+			return s;
 	}
 }
 

@@ -3,18 +3,19 @@
  * \brief Implementation of Apron interface
  * \author Julien Henry
  */
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/Support/FormattedStream.h"
 
-#include "config.h"
 #include "ap_global1.h"
 #include "box.h"
 #include "oct.h"
 #include "pk.h"
 #include "pkeq.h"
+#include "end_3rdparty.h"
 
 #include "apron.h"
 #include "Expr.h"
@@ -29,7 +30,6 @@ using namespace llvm;
 void ap_tcons1_t_to_MDNode(ap_tcons1_t & cons, llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
 	ap_constyp_t* constyp = ap_tcons1_constypref(&cons);
 	ap_texpr1_t texpr = ap_tcons1_texpr1ref(&cons);
-	ap_scalar_t* scalar;
 
 	LLVMContext& C = Inst->getContext();
 	std::vector<METADATA_TYPE*> MD_texpr;
@@ -46,9 +46,6 @@ void ap_tcons1_t_to_MDNode(ap_tcons1_t & cons, llvm::Instruction * Inst, std::ve
 			met->push_back(MDString::get(C, ">"));
 			break;
 		case AP_CONS_EQMOD:
-			//scalar = ap_tcons1_scalarref(&cons);
-			//stream << " = 0 MOD " << *scalar;
-			//met->push_back(MDString::get(C, "=0 MOD "));
 			assert(false && "not implemented");
 			break;
 		case AP_CONS_DISEQ:
@@ -56,8 +53,6 @@ void ap_tcons1_t_to_MDNode(ap_tcons1_t & cons, llvm::Instruction * Inst, std::ve
 			break;
 	}
 	met->push_back(MDString::get(C, "0"));
-	//ConstantInt * i = ConstantInt::get(llvm::Type::getInt32Ty(C),0);
-	//met->push_back(i);
 }
 
 void coeff_to_MDNode(ap_coeff_t * a, llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
@@ -147,9 +142,6 @@ void texpr0_to_MDNode(ap_texpr0_t* a, ap_environment_t * env, llvm::Instruction 
 }
 
 void texpr0_node_to_MDNode(ap_texpr0_node_t * a, ap_environment_t * env, llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
-	int prec = ap_texpr_op_precedence[a->op];
-	LLVMContext& C = Inst->getContext();
-
 #if 1
 	if (a->exprB) {
 		/* left argument (if binary) */
@@ -159,6 +151,8 @@ void texpr0_node_to_MDNode(ap_texpr0_node_t * a, ap_environment_t * env, llvm::I
 	ap_texpr0_t* arg = a->exprB ? a->exprB : a->exprA;
 	texpr0_to_MDNode(arg,env,Inst,met);
 #else
+	LLVMContext& C = Inst->getContext();
+	int prec = ap_texpr_op_precedence[a->op];
 	if (a->exprB) {
 		int A = check_texpr0(a->exprA);
 		int B = check_texpr0(a->exprB);
@@ -217,7 +211,7 @@ Value * ap_tcons1_to_LLVM(ap_tcons1_t & cons, IRBuilder<> * Builder) {
 
 	Value * expr = ap_texpr1_to_LLVM(texpr,Builder);
 	Value * scal = ConstantInt::get(Builder->getInt32Ty(),0);
-	Value * res;
+	Value * res = nullptr;
 	// TODO: currently, works only with integers
 	// TODO: no distinction between signed and unsigned
 	switch (*constyp) {
@@ -322,7 +316,7 @@ Value * texpr0_node_to_LLVM(ap_texpr0_node_t * a, ap_environment_t * env, IRBuil
 		case AP_TEXPR_POW:
 			assert(false && "not implemented");
 	}
-
+	assert(false && "unexpected value for a->op");
 }
 
 Value * ap_scalar_to_LLVM(ap_scalar_t & scalar, IRBuilder<> * Builder) {
@@ -338,4 +332,5 @@ Value * coeff_to_LLVM(ap_coeff_t * a, IRBuilder<> * Builder) {
 		case AP_COEFF_INTERVAL:
 			assert(false && "not implemented");
 	}
+	assert(false && "unexpected value for a->discr");
 }

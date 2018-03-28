@@ -6,10 +6,12 @@
 #ifndef LIVE_H
 #define LIVE_H
 
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/Analysis/LoopInfo.h"
+#include "end_3rdparty.h"
 
 /**
  * \class Live

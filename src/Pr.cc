@@ -3,10 +3,12 @@
  * \brief Implementation of the Pr class
  * \author Julien Henry
  */
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/Analysis/CFG.h"
+#include "end_3rdparty.h"
 
 #include "Pr.h"
 #include "Analyzer.h"
@@ -123,7 +125,6 @@ bool Pr::check_acyclic_rec(Node * n, int & N,std::stack<Node*> * S,std::set<Basi
 }
 
 bool Pr::computeLoopHeaders(std::set<BasicBlock*>* FPr) {
-	Node * n = Nodes[&F->front()];
 	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
 		index[Nodes[i]] = 0;
 	}
@@ -137,6 +138,7 @@ bool Pr::computeLoopHeaders(std::set<BasicBlock*>* FPr) {
 #else
 	std::set<Node*> S;
 	std::set<Node*> Seen;
+	Node * n = Nodes[&F->front()];
 	computeLoopHeaders_rec(n,&Seen,&S,FPr);
 #endif
 	return true;
@@ -245,11 +247,12 @@ void Pr::computePr() {
 
 	}
 
-	std::set<BasicBlock*>* Pr = getPr();
 	DEBUG(
+		std::set<BasicBlock*>* Pr = getPr();
 		*Out << "FINAL Pr SET:\n";
-		for (std::set<BasicBlock*>::iterator it = Pr->begin(), et = Pr->end(); it != et; it++) 
+		for (std::set<BasicBlock*>::iterator it = Pr->begin(), et = Pr->end(); it != et; it++) {
 			*Out << **it << "\n";
+		}
 	);
 }
 

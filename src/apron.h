@@ -6,9 +6,10 @@
 #ifndef _APRON_H 
 #define _APRON_H 
 
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
-
 #include "ap_global1.h"
+#include "end_3rdparty.h"
 
 #include "Analyzer.h"
 #include "Node.h"
@@ -43,22 +44,14 @@ simpl check_coeff(ap_coeff_t * a);
 simpl check_texpr0_node(ap_texpr0_node_t * a);
 simpl check_texpr0(ap_texpr0_t * a);
 
+extern const int ap_texpr_op_precedence[];
 
-static const int ap_texpr_op_precedence[] =
-{ 1, 1, 2, 2, 2,  /* binary */
-	3, 4, 4         /* unary */
-};
+extern const char* ap_texpr_op_name[];
 
-static const char* ap_texpr_op_name[] =
-{ "+", "-", "*", "/", "%", /* binary */
-	"-", "cast", "sqrt",     /* unary */
-};
+extern const char* ap_texpr_rtype_name[];
 
-static const char* ap_texpr_rtype_name[] =
-{ "", "i", "f", "d", "l", "q", };
+extern const char* ap_texpr_rdir_name[];
 
-static const char* ap_texpr_rdir_name[] =
-{ "n", "0", "+oo", "-oo", "?", "", };
 
 /* node induces some rounding (to float or integer) */
 static inline bool ap_texpr0_node_exact(ap_texpr0_node_t* a)

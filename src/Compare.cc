@@ -38,7 +38,7 @@ Compare::Compare(std::vector<enum Techniques> * T) : ModulePass(ID) {
 }
 
 void Compare::getAnalysisUsage(AnalysisUsage &AU) const {
-	for (int i = 0; i < ComparedTechniques.size(); i++) {
+	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
 		switch (ComparedTechniques[i]) {
 			case SIMPLE:
 				AU.addRequired<ModulePassWrapper<AIClassic, 0> >();
@@ -268,25 +268,25 @@ void Compare::printResults(Techniques t1, Techniques t2) {
 void Compare::printAllResults() {
 
 	*Dbg << "\nSKIPPED:\n";
-	for (int i = 0; i < ComparedTechniques.size(); i++) {
+	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
 		printNumberSkipped(ComparedTechniques[i]);
 	}
 	*Dbg << "SKIPPED_END\n";
 
 	*Dbg << "\nTIME:\n";
-	for (int i = 0; i < ComparedTechniques.size(); i++) {
+	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
 		printTime(ComparedTechniques[i]);
 	}
 	*Dbg << "TIME_END\n";
 
 	*Dbg << "\nWARNINGS:\n";
-	for (int i = 0; i < ComparedTechniques.size(); i++) {
+	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
 		printWarnings(ComparedTechniques[i]);
 	}
 	*Dbg << "WARNINGS_END\n";
 
 	*Dbg << "\nSAFE_PROPERTIES:\n";
-	for (int i = 0; i < ComparedTechniques.size(); i++) {
+	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
 		printSafeProperties(ComparedTechniques[i]);
 	}
 	*Dbg << "SAFE_PROPERTIES_END\n";
@@ -295,8 +295,8 @@ void Compare::printAllResults() {
 	*Dbg	<< "\n";
 	*Dbg	<< "MATRIX:\n";
 
-	for (int i = 0; i < ComparedTechniques.size(); i++) {
-		for (int j = i+1; j < ComparedTechniques.size(); j++) {
+	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
+		for (size_t j = i + 1; j < ComparedTechniques.size(); j++) {
 			*Dbg	<< results[ComparedTechniques[i]][ComparedTechniques[j]].eq << " "
 					<< results[ComparedTechniques[i]][ComparedTechniques[j]].lt << " "
 					<< results[ComparedTechniques[i]][ComparedTechniques[j]].gt << " "
@@ -309,17 +309,17 @@ void Compare::printAllResults() {
 }
 
 void Compare::CompareTechniquesByPair(Node * n) {
-	for (int i = 0; i < ComparedTechniques.size(); i++) {
-		for (int j = i+1; j < ComparedTechniques.size(); j++) {
-			compareTechniques(n,ComparedTechniques[i],ComparedTechniques[j]);
+	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
+		for (size_t j = i + 1; j < ComparedTechniques.size(); j++) {
+			compareTechniques(n, ComparedTechniques[i], ComparedTechniques[j]);
 		}
 	}
 }
 
 void Compare::PrintResultsByPair() {
-	for (int i = 0; i < ComparedTechniques.size(); i++) {
-		for (int j = i+1; j < ComparedTechniques.size(); j++) {
-			printResults(ComparedTechniques[i],ComparedTechniques[j]);
+	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
+		for (size_t j = i + 1; j < ComparedTechniques.size(); j++) {
+			printResults(ComparedTechniques[i], ComparedTechniques[j]);
 		}
 	}
 }
@@ -378,9 +378,9 @@ bool Compare::runOnModule(Module &M) {
 		if (ignored(F)) continue;
 
 		// we now count the computing time and the number of warnings
-		for (int i = 0; i < ComparedTechniques.size(); i++) {
-			ComputeTime(ComparedTechniques[i],F);
-			CountNumberOfWarnings(ComparedTechniques[i],F);
+		for (size_t i = 0; i < ComparedTechniques.size(); i++) {
+			ComputeTime(ComparedTechniques[i], F);
+			CountNumberOfWarnings(ComparedTechniques[i], F);
 		}
 
 		Pr * FPr = Pr::getInstance(F);

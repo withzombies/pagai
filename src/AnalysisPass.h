@@ -1,18 +1,21 @@
 #ifndef _ANALYSIS_H
 #define _ANALYSIS_H
 
+#include "config.h"
+
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/AliasSetTracker.h"
-#include "config.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 #   include "llvm/IR/InstVisitor.h"
 #else
 #   include "llvm/InstVisitor.h"
 #endif
+#include "end_3rdparty.h"
 
 #include "Analyzer.h"
 #include "Node.h"

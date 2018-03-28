@@ -3,13 +3,16 @@
  * \brief Implementation of the GenerateSMT class
  * \author Julien Henry
  */
-#include "llvm/Analysis/CFG.h"
 #include "config.h"
+
+#include "begin_3rdparty.h"
+#include "llvm/Analysis/CFG.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 #   include "llvm/IR/Dominators.h"
 #else
 #   include "llvm/Analysis/Dominators.h"
 #endif
+#include "end_3rdparty.h"
 
 #include "GenerateSMT.h"
 #include "Analyzer.h"

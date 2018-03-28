@@ -5,8 +5,10 @@
  */
 #include <stack>
 
+#include "begin_3rdparty.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/Support/FormattedStream.h"
+#include "end_3rdparty.h"
 
 #include "Live.h"
 #include "Analyzer.h"
@@ -31,7 +33,7 @@ void Live::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool Live::runOnFunction(Function &F) {
-	//LI = &getAnalysis<LoopInfo>();
+	(void) F;
 
 	// This pass' values are computed lazily, so there's nothing to do here.
 	return false;
@@ -53,7 +55,7 @@ bool Live::isUsedInPHIBlock(Value *V, BasicBlock *BB) {
 
 
 bool Live::isLiveByLinearityInBlock(Value *V, BasicBlock *BB, bool PHIblock) {
-	if (Argument * arg = dyn_cast<Argument>(V))
+	if ((Argument *) dyn_cast<Argument>(V))
 		return true;
 	if (isLiveThroughBlock(V,BB,PHIblock)) {
 		return true;

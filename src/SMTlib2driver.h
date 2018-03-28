@@ -4,14 +4,14 @@
  * \author Julien Henry
  */
 #ifndef SMTLIB2DRIVER_H
-# define SMTLIB2DRIVER_H
-# include <string>
-# include <map>
-# include "SMTlib2parser.hh"
-#include <sstream>
+#define SMTLIB2DRIVER_H
 
-// for FILE* etc.
-#include <stdio.h>
+#include <string>
+#include <map>
+#include <sstream>
+#include <cstdio>
+
+#include "SMTlib2parser.hh"
 
 // Tell Flex the lexer's prototype ...
 # define YY_DECL                                        \

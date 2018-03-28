@@ -7,14 +7,18 @@
 #include <sstream>
 #include <list>
 #include <string>
+
+#include "config.h"
+
+#include "begin_3rdparty.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/AliasSetTracker.h"
-#include "config.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
 #   include "llvm/IR/InstIterator.h"
 #else
 #   include "llvm/Support/InstIterator.h"
 #endif
+#include "end_3rdparty.h"
 
 #include "AIopt.h"
 #include "Expr.h"
@@ -48,17 +52,13 @@ void AIopt::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 bool AIopt::runOnModule(Module &M) {
-	Function * F;
-	BasicBlock * b = NULL;
-	Node * n = NULL;
-	int N_Pr = 0;
+	Function * F = nullptr;
 	LSMT = SMTpass::getInstance();
 
 	*Dbg << "// analysis: " << getPassName() << "\n";
 
 	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
 		F = mIt;
-
 
 		// if the function is only a declaration, do nothing
 		if (F->begin() == F->end()) continue;
@@ -111,6 +111,7 @@ bool AIopt::runOnModule(Module &M) {
 
 		LSMT->reset_SMTcontext();
 	}
+	assert(F != nullptr);
 	generateAnnotatedFiles(F->getParent(),OutputAnnotatedFile());
 	
 	SMTpass::releaseMemory();
@@ -120,7 +121,6 @@ bool AIopt::runOnModule(Module &M) {
 void AIopt::computeFunction(Function * F) {
 	BasicBlock * b;
 	Node * const n = Nodes[F->begin()];
-	Node * current;
 
 	// A = {first basicblock}
 	b = F->begin();
@@ -190,7 +190,7 @@ void AIopt::computeFunction(Function * F) {
 
 		W = new PathTree_br(n->bb);
 		is_computed.clear();
-		ascendingIter(n, F, true);
+		ascendingIter(n, true);
 		if (unknown) {
 			delete W;
 			goto end;
@@ -319,7 +319,7 @@ void AIopt::computeNewPaths(Node * n) {
 		else SuccX = Succ->X_s[passID];
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 		Environment Xtemp_env(Xtemp);
 		SuccX->change_environment(&Xtemp_env);
 
@@ -428,7 +428,7 @@ void AIopt::computeNode(Node * n) {
 
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 		DEBUG(
 			*Dbg << "POLYHEDRON AT THE STARTING NODE\n";
 			n->X_s[passID]->print();
@@ -548,7 +548,7 @@ void AIopt::narrowNode(Node * n) {
 
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
-		computeTransform(aman,n,path,Xtemp);
+		computeTransform(aman,path,Xtemp);
 
 		DEBUG(
 			*Dbg << "POLYHEDRON TO JOIN\n";

@@ -20,14 +20,14 @@
 %error-verbose
 
 %{
-# include <cstdlib>
-# include <cerrno>
-# include <climits>
-# include <string>
+#include <cstdlib>
+#include <cerrno>
+#include <climits>
+#include <string>
 #include <sstream>
+
 #include "Analyzer.h"
 #include "SMTlib2driver.h"
- 
 %}
 
 %union

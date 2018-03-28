@@ -1,6 +1,9 @@
 #ifndef NAMEALLVALUES_H
 #define NAMEALLVALUES_H
 
+#include <set>
+
+#include "begin_3rdparty.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Analysis/CFG.h"
 #include "config.h"
@@ -12,7 +15,7 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
-#include <set>
+#include "end_3rdparty.h"
 
 class NameAllValues : public llvm::FunctionPass, 
 	public llvm::InstVisitor<NameAllValues, void> {

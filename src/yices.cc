@@ -3,16 +3,18 @@
  * \brief Implementation of the yices class
  * \author Julien Henry
  */
-
 #if HAS_YICES
+
 #include <cstddef>
 #include <vector>
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
+#include <gmp.h>
 #include <unistd.h>
 
-#include <gmp.h>
+#include "begin_3rdparty.h"
 #include "yices_c.h"
+#include "end_3rdparty.h"
 
 #include "yices.h"
 #include "Analyzer.h"
@@ -265,14 +267,21 @@ SMT_expr yices::SMT_mk_mul (SMT_expr a1, SMT_expr a2) {
 
 
 SMT_expr yices::SMT_mk_div (SMT_expr a1, SMT_expr a2, bool integer) {
+	(void) a1;
+	(void) a2;
+	(void) integer;
 	return int0;
 }
 
 SMT_expr yices::SMT_mk_rem (SMT_expr a1, SMT_expr a2) {
+	(void) a1;
+	(void) a2;
 	return int0;
 }
 
 SMT_expr yices::SMT_mk_xor (SMT_expr a1, SMT_expr a2) {
+	(void) a1;
+	(void) a2;
 	return SMT_mk_true();
 }
 
@@ -301,14 +310,17 @@ SMT_expr yices::SMT_mk_ge (SMT_expr a1, SMT_expr a2) {
 }
 
 SMT_expr yices::SMT_mk_int2real(SMT_expr a) {
+  (void) a;
   return SMT_mk_real0();
 }
 
 SMT_expr yices::SMT_mk_real2int(SMT_expr a) {
+  (void) a;
   return SMT_mk_int0();
 }
 
 SMT_expr yices::SMT_mk_is_int(SMT_expr a) {
+  (void) a;
   return SMT_mk_true();
 }
 
