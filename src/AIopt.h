@@ -15,20 +15,18 @@
 
 #include "AIpass.h"
 
-using namespace llvm;
-
 /**
  * \class AIopt
  * \brief Path Focusing + Guided Static analysis implementation
  */
-class AIopt : public ModulePass, public AIPass {
+class AIopt : public llvm::ModulePass, public AIPass {
 
 	protected:
 		/**
 		 * \brief remembers all the paths that have already been
 		 * visited
 		 */
-		std::map<BasicBlock*,PathTree*> pathtree;
+		std::map<llvm::BasicBlock*, PathTree*> pathtree;
 
 		/**
 		 * \brief remembers all the paths that have already been
@@ -39,12 +37,12 @@ class AIopt : public ModulePass, public AIPass {
 		/**
 		 * \brief Set of paths U
 		 */
-		std::map<BasicBlock*,PathTree*> U;
+		std::map<llvm::BasicBlock*, PathTree*> U;
 
 		/**
 		 * \brief Set of paths V
 		 */
-		std::map<BasicBlock*,PathTree*> V;
+		std::map<llvm::BasicBlock*, PathTree*> V;
 
 		std::priority_queue<Node*,std::vector<Node*>,NodeCompare> A_prime;
 
@@ -89,7 +87,7 @@ class AIopt : public ModulePass, public AIPass {
 		}
 
 		~AIopt () {
-			for (std::map<BasicBlock*,PathTree*>::iterator 
+			for (std::map<llvm::BasicBlock*, PathTree*>::iterator 
 				it = pathtree.begin(),
 				et = pathtree.end(); 
 				it != et; 
@@ -105,19 +103,19 @@ class AIopt : public ModulePass, public AIPass {
 		 * \name LLVM pass manager stuff
 		 */
 		const char *getPassName() const;
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 		/**
 		 * \}
 		 */
 
-		bool runOnModule(Module &M);
+		bool runOnModule(llvm::Module &M);
 
-		void computeFunction(Function * F);
+		void computeFunction(llvm::Function * F);
 
-		std::set<BasicBlock*> getPredecessors(BasicBlock * b) const;
-		std::set<BasicBlock*> getSuccessors(BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getPredecessors(llvm::BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getSuccessors(llvm::BasicBlock * b) const;
 
-		virtual void assert_properties(params P, Function * F) {}
+		virtual void assert_properties(params P, llvm::Function * F) {}
 		virtual void intersect_with_known_properties(Abstract * Xtemp, Node * n, params P) {}
 
 		/**

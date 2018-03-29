@@ -15,8 +15,6 @@
 #include "Analyzer.h"
 #include "Debug.h"
 
-using namespace llvm;
-
 /**
  * \class CmpResult
  * \brief class that stores the results of the Compare class
@@ -36,7 +34,7 @@ class CmpResults {
  * \class Compare
  * \brief Pass that compares abstract values computed by each AI pass
  */
-class Compare : public ModulePass {
+class Compare : public llvm::ModulePass {
 
 	public:
 		static int compareAbstract(SMTpass * LSMT, Abstract * A, Abstract * B);
@@ -52,13 +50,13 @@ class Compare : public ModulePass {
 			std::map<Techniques,CmpResults> 
 			> results;
 
-		std::map<Techniques, sys::TimeValue *> Time;
-		std::map<Techniques, sys::TimeValue *> Time_SMT;
+		std::map<Techniques, llvm::sys::TimeValue *> Time;
+		std::map<Techniques, llvm::sys::TimeValue *> Time_SMT;
 
 		// count the number of warnings emitted by each technique
-		std::map<Techniques,int> Warnings;
+		std::map<Techniques, int> Warnings;
 		// count the number of safe properties emitted by each technique
-		std::map<Techniques,int> Safe_properties;
+		std::map<Techniques, int> Safe_properties;
 
 
 		void compareTechniques(
@@ -69,8 +67,8 @@ class Compare : public ModulePass {
 		void CompareTechniquesByPair(Node * n);
 		void PrintResultsByPair();
 
-		void ComputeTime(Techniques t, Function * F);
-		void CountNumberOfWarnings(Techniques t, Function * F);
+		void ComputeTime(Techniques t, llvm::Function * F);
+		void CountNumberOfWarnings(Techniques t, llvm::Function * F);
 		void printTime(Techniques t);
 		void printWarnings(Techniques t);
 		void printSafeProperties(Techniques t);
@@ -85,8 +83,8 @@ class Compare : public ModulePass {
 		Compare();
 
 		const char * getPassName() const;
-		void getAnalysisUsage(AnalysisUsage &AU) const;
-		bool runOnModule(Module &M);
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
+		bool runOnModule(llvm::Module &M);
 
 };
 #endif

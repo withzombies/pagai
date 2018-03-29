@@ -34,6 +34,7 @@ If set to 1, they are - this causes segfaults in Z3 3.8 (but not 4.0+).
 #define SMT_HAS_WORKING_MODULO 1
 
 using namespace std;
+using namespace llvm;
 using namespace boost;
 
 std::map<BasicBlock*,int> NodeNames;

@@ -17,8 +17,6 @@
 #include "SMTpass.h"
 #include "PathTree.h"
 
-using namespace llvm;
-
 /**
  * \class PathTree_bb
  * \brief represents sets of paths in the graph, by storing the corresponding
@@ -45,15 +43,15 @@ class PathTree_bb : public PathTree {
 		/**
 		 * \brief stores the index of the basicBlock in the BDD
 		 */
-		std::map<BasicBlock*,int> BddVar;
+		std::map<llvm::BasicBlock*, int> BddVar;
 		/**
 		 * \brief stores the index of the source basicBlock in the BDD
 		 */
-		std::map<BasicBlock*,int> BddVarStart;
+		std::map<llvm::BasicBlock*, int> BddVarStart;
 
-		std::map<int, BasicBlock*> levels;
+		std::map<int, llvm::BasicBlock*> levels;
 
-		BDD computef(std::list<BasicBlock*> path);
+		BDD computef(std::list<llvm::BasicBlock*> path);
 
 		/**
 		 * \brief Bdd that stores the various seen paths
@@ -79,7 +77,7 @@ class PathTree_bb : public PathTree {
 		 * When considering the source BasicBlock, the map should be
 		 * BddVarStart, else it should be BddVar
 		 */
-		BDD getBDDfromBasicBlock(BasicBlock * b,std::map<BasicBlock*,int> &map, int &n);
+		BDD getBDDfromBasicBlock(llvm::BasicBlock * b, std::map<llvm::BasicBlock*, int> &map, int &n);
 
 		/**
 		 * \brief returns the name of the basicBlock associated
@@ -92,7 +90,7 @@ class PathTree_bb : public PathTree {
 			int i,
 			SMTpass * smt = NULL);
 
-		void createBDDVars(BasicBlock * Start, std::set<BasicBlock*> * Pr, std::map<BasicBlock*,int> &map, std::set<BasicBlock*> * seen, bool start = false);
+		void createBDDVars(llvm::BasicBlock * Start, std::set<llvm::BasicBlock*> * Pr, std::map<llvm::BasicBlock*, int> &map, std::set<llvm::BasicBlock*> * seen, bool start = false);
 
 		/**
 		 * \brief dump the BDD "graph" in a .dot file. 
@@ -101,19 +99,19 @@ class PathTree_bb : public PathTree {
 		void DumpDotBDD(BDD graph, std::string filename);
 
 	public:
-		PathTree_bb(BasicBlock * Start);
+		PathTree_bb(llvm::BasicBlock * Start);
 
 		~PathTree_bb();
 
 		/**
 		 * \brief insert a path in the Bdd
 		 */
-		void insert(std::list<BasicBlock*> path, bool primed = false);
+		void insert(std::list<llvm::BasicBlock*> path, bool primed = false);
 
 		/**
 		 * \brief remove a path from the Bdd
 		 */
-		void remove(std::list<BasicBlock*> path, bool primed = false);
+		void remove(std::list<llvm::BasicBlock*> path, bool primed = false);
 
 		/** 
 		 * \brief clear the Bdd. The result will be an empty Bdd
@@ -123,7 +121,7 @@ class PathTree_bb : public PathTree {
 		/** 
 		 * \brief check if the Bdd contains the path given as argument
 		 */
-		bool exist(std::list<BasicBlock*> path, bool primed = false);
+		bool exist(std::list<llvm::BasicBlock*> path, bool primed = false);
 
 		/** 
 		 * \brief merge the two Bdds into Bdd. Bdd_prime is cleared

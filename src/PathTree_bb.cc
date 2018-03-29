@@ -12,6 +12,8 @@
 #include "Analyzer.h"
 #include "Pr.h"
 
+using namespace llvm;
+
 void PathTree_bb::createBDDVars(BasicBlock * Start, std::set<BasicBlock*> * Pr, std::map<BasicBlock*,int> &map, std::set<BasicBlock*> * seen, bool start) {
 	int n;
 	getBDDfromBasicBlock(Start,map,n);

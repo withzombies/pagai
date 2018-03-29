@@ -11,8 +11,6 @@
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/Analysis/LoopInfo.h"
 
-using namespace llvm;
-
 /**
  * \class Live
  * \brief Liveness analysis
@@ -20,7 +18,7 @@ using namespace llvm;
  * Analysis that provides liveness information for
  * LLVM IR Values.
  */
-class Live : public FunctionPass {
+class Live : public llvm::FunctionPass {
 
 	private:
 
@@ -33,8 +31,8 @@ class Live : public FunctionPass {
 			/** 
 			 * \brief The set of blocks which contain a use of the value.
 			 */
-			SmallPtrSet< BasicBlock *, 4> Used;
-			SmallPtrSet< BasicBlock *, 4> UsedPHI;
+            llvm::SmallPtrSet< llvm::BasicBlock *, 4> Used;
+            llvm::SmallPtrSet< llvm::BasicBlock *, 4> UsedPHI;
 
 			/** 
 			 * \brief A conservative approximation of the set of blocks in
@@ -42,43 +40,43 @@ class Live : public FunctionPass {
 			 * by the definition, and from which blocks containing uses of the
 			 * value are reachable.
 			 */
-			SmallPtrSet< BasicBlock *, 4> LiveThrough;
-			SmallPtrSet< BasicBlock *, 4> LiveThroughPHI;
+            llvm::SmallPtrSet< llvm::BasicBlock *, 4> LiveThrough;
+            llvm::SmallPtrSet< llvm::BasicBlock *, 4> LiveThroughPHI;
 		};
 
 		/** 
 		 * \brief Remembers the Memo for each Value. This is populated on
 		 * demand.
 		 */
-		DenseMap< Value *, Memo> Memos;
+        llvm::DenseMap< llvm::Value *, Memo> Memos;
 
 		/** 
 		 * \brief Retrieve an existing Memo for the given value if one
 		 * is available, otherwise compute a new one.
 		 */
-		Memo &getMemo( Value *V);
+		Memo &getMemo( llvm::Value *V);
 
 		/** 
 		 * \brief Compute a new Memo for the given value.
 		 */
-		Memo &compute( Value *V);
+		Memo &compute( llvm::Value *V);
 
 	public:
 		static char ID;
 		Live();
 
 		const char * getPassName() const;
-		virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-		virtual bool runOnFunction(Function &F);
+		virtual void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
+		virtual bool runOnFunction(llvm::Function &F);
 		virtual void releaseMemory();
 
 		/** 
 		 * \brief Test if the given value is used in the given block.
 		 */
-		bool isUsedInBlock( Value *V,  BasicBlock *BB);
-		bool isUsedInPHIBlock( Value *V,  BasicBlock *BB);
+		bool isUsedInBlock( llvm::Value *V, llvm::BasicBlock *BB);
+		bool isUsedInPHIBlock( llvm::Value *V, llvm::BasicBlock *BB);
 
-		bool isLiveByLinearityInBlock(Value *V, BasicBlock *BB, bool PHIblock);
+		bool isLiveByLinearityInBlock(llvm::Value *V, llvm::BasicBlock *BB, bool PHIblock);
 
 		/** 
 		 * \brief Test if the given value is known to be
@@ -88,7 +86,7 @@ class Live : public FunctionPass {
 		 * dominated by the value's definition, and there exists a block
 		 * reachable from it that contains a use. 	
 		 */
-		bool isLiveThroughBlock( Value *V,  BasicBlock *BB, bool PHIblock);
+		bool isLiveThroughBlock( llvm::Value *V, llvm::BasicBlock *BB, bool PHIblock);
 };
 
 

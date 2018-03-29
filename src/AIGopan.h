@@ -8,8 +8,6 @@
 
 #include "AISimple.h"
 
-using namespace llvm;
-
 /**
  * \class AIGopan
  * \brief Gopan&Reps Implementation.

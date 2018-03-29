@@ -12,6 +12,8 @@
 #include "Analyzer.h"
 #include "Pr.h"
 
+using namespace llvm;
+
 void PathTree_br::createBDDVars(BasicBlock * Start, std::set<BasicBlock*> * Pr, std::map<BranchInst*,int> &map, std::set<BasicBlock*> * seen, bool start) {
 	int n;
 	BranchInst * br = getConditionnalBranch(Start,start);

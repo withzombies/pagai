@@ -22,6 +22,8 @@
 
 #define MAX 0xFFFFFFFF
 
+using namespace llvm;
+
 // map M1 for pass1
 std::multimap<const Value*,Info> M1;
 

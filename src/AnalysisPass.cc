@@ -5,6 +5,8 @@
 #include "AnalysisPass.h"
 #include "config.h"
 
+using namespace llvm;
+
 bool AnalysisPass::asserts_proved(Function * F) {
 	Pr * FPr = Pr::getInstance(F);
 	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {

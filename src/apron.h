@@ -13,8 +13,6 @@
 #include "Analyzer.h"
 #include "Node.h"
 
-using namespace llvm;
-
 /**
  * \brief initialize the apron library. 
  *

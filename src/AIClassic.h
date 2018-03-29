@@ -8,8 +8,6 @@
 
 #include "AISimple.h"
 
-using namespace llvm;
-
 /**
  * \class AIClassic
  * \brief Pass implementing the basic abstract interpretation algorithm

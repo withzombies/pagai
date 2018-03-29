@@ -1,5 +1,6 @@
 #ifndef GLOBALTOLOCAL_H
 #define GLOBALTOLOCAL_H
+
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Constants.h"
@@ -12,18 +13,16 @@
 #   include "llvm/InstVisitor.h"
 #endif
 
-using namespace llvm;
-
-class GlobalToLocal : public ModulePass {
+class GlobalToLocal : public llvm::ModulePass {
  public:
   static char ID;
-  GlobalToLocal() : ModulePass(ID) {}
+  GlobalToLocal() : llvm::ModulePass(ID) {}
 
-  bool runOnModule(Module &M);
+  bool runOnModule(llvm::Module &M);
 	
-  bool hasOnlyOneFunction(Module &M);
+  bool hasOnlyOneFunction(llvm::Module &M);
 
-  bool replaceAllUsesInFunction(Function * F, Value * oldvalue, Value * newvalue);
+  bool replaceAllUsesInFunction(llvm::Function * F, llvm::Value * oldvalue, llvm::Value * newvalue);
 };
 
 #endif

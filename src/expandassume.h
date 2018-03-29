@@ -1,5 +1,6 @@
 #ifndef EXPANDASSUME_H
 #define EXPANDASSUME_H
+
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Constants.h"
@@ -13,26 +14,23 @@
 #endif
 #include <set>
 
-
-using namespace llvm;
-
-class ExpandAssume : public FunctionPass {
+class ExpandAssume : public llvm::FunctionPass {
 	// make sure we do not expand twice the same branch inst
-	std::set<Value*> seen;
+	std::set<llvm::Value*> seen;
  public:
   static char ID;
-  ExpandAssume() : FunctionPass(ID) {}
+  ExpandAssume() : llvm::FunctionPass(ID) {}
 
-  bool runOnFunction(Function &F);
-  bool stepFunction(Function &F);
+  bool runOnFunction(llvm::Function &F);
+  bool stepFunction(llvm::Function &F);
 
-  bool visitCallInst(CallInst &CI);
+  bool visitCallInst(llvm::CallInst &CI);
 
  private:
-  TerminatorInst * SplitBlockAndInsertIfThen(Value *Cond,
-		Instruction *SplitBefore,
+  llvm::TerminatorInst * SplitBlockAndInsertIfThen(llvm::Value *Cond,
+		llvm::Instruction *SplitBefore,
 		bool Unreachable,
-		MDNode *BranchWeights = NULL);
+		llvm::MDNode *BranchWeights = NULL);
 	
 };
 

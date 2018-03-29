@@ -38,23 +38,21 @@
 
 #include "llvm/Support/TimeValue.h"
 
-using namespace llvm;
-
 extern int n_paths;
 extern int n_totalpaths;
 
-extern std::map<params,std::map<Function*,sys::TimeValue*> > Total_time;
-extern std::map<params,std::map<Function*,sys::TimeValue*> > Total_time_SMT;
+extern std::map<params,std::map<llvm::Function*, llvm::sys::TimeValue*> > Total_time;
+extern std::map<params,std::map<llvm::Function*, llvm::sys::TimeValue*> > Total_time_SMT;
 
 /**
  * \brief count the number of ascending iterations
  */
-extern std::map<params,std::map<Function*,int> > asc_iterations;
+extern std::map<params,std::map<llvm::Function*,int> > asc_iterations;
 
 /** 
  * \brief count the number of descending iterations
  */
-extern std::map<params,std::map<Function*,int> > desc_iterations;
+extern std::map<params,std::map<llvm::Function*,int> > desc_iterations;
 
 extern void ReleaseTimingData();
 
@@ -65,14 +63,14 @@ extern void ReleaseTimingData();
 extern std::map<params,std::set<llvm::Function*> > ignoreFunction;
 extern std::map<llvm::Function*,int> numNarrowingSeedsInFunction;
 
-extern bool ignored(Function * F);
+extern bool ignored(llvm::Function * F);
 extern int nb_ignored();
 
-extern sys::TimeValue TIMEOUT_LIMIT;
-extern sys::TimeValue start_timing;
+extern llvm::sys::TimeValue TIMEOUT_LIMIT;
+extern llvm::sys::TimeValue start_timing;
 
-#define START() do {start_timing = sys::TimeValue::now();} while (0)
-#define TIMEOUT_COND() (sys::TimeValue::now() - start_timing > TIMEOUT_LIMIT)
+#define START() do {start_timing = llvm::sys::TimeValue::now();} while (0)
+#define TIMEOUT_COND() (llvm::sys::TimeValue::now() - start_timing > TIMEOUT_LIMIT)
 
 #define TIMEOUT(X) do {if(hasTimeout() && (TIMEOUT_COND())) {*Out << "ERROR: TIMEOUT\n"; X;}} while (0)
 #endif

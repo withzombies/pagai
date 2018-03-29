@@ -12,20 +12,19 @@
 #   include "llvm/InstVisitor.h"
 #endif
 
-using namespace llvm;
-
-class RemoveUndet : public ModulePass {
+class RemoveUndet : public llvm::ModulePass {
 	
 	private:
-		std::map<const Type*,Constant*> undet_functions;
+		std::map<const llvm::Type*, llvm::Constant*> undet_functions;
 		
-		Constant* getNondetFn (Module * M, Type *type);
+        llvm::Constant* getNondetFn (llvm::Module * M, llvm::Type *type);
 
 	public:
 		static char ID;
-		RemoveUndet() : ModulePass(ID) {}
+		RemoveUndet() : llvm::ModulePass(ID) {}
 
-		bool runOnModule(Module &M);
+		bool runOnModule(llvm::Module &M);
 
 };
+
 #endif

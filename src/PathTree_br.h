@@ -17,8 +17,6 @@
 #include "SMTpass.h"
 #include "PathTree.h"
 
-using namespace llvm;
-
 /**
  * \class PathTree_br
  * \brief represents set of paths in the graph, by storing the
@@ -45,15 +43,15 @@ class PathTree_br : public PathTree {
 		/**
 		 * \brief stores the index of the basicBlock in the BDD
 		 */
-		std::map<BranchInst*,int> BddVar;
+		std::map<llvm::BranchInst*, int> BddVar;
 		/**
 		 * \brief stores the index of the source basicBlock in the BDD
 		 */
-		std::map<BranchInst*,int> BddVarStart;
+		std::map<llvm::BranchInst*, int> BddVarStart;
 
-		std::map<int, BranchInst*> levels;
+		std::map<int, llvm::BranchInst*> levels;
 
-		BDD computef(std::list<BasicBlock*> path);
+		BDD computef(std::list<llvm::BasicBlock*> path);
 
 		/**
 		 * \brief Bdd that stores the various seen paths
@@ -79,10 +77,10 @@ class PathTree_br : public PathTree {
 		 * When considering the source BasicBlock, the map should be
 		 * BddVarStart, else it should be BddVar
 		 */
-		BDD getBDDfromBranchInst(BranchInst * b,std::map<BranchInst*,int> &map, int &n);
+		BDD getBDDfromBranchInst(llvm::BranchInst * b, std::map<llvm::BranchInst*, int> &map, int &n);
 
 
-		BranchInst * getConditionnalBranch(BasicBlock * b, bool start = false);
+        llvm::BranchInst * getConditionnalBranch(llvm::BasicBlock * b, bool start = false);
 
 		/**
 		 * \brief returns the name of the basicBlock associated
@@ -95,9 +93,9 @@ class PathTree_br : public PathTree {
 			int i,
 			SMTpass * smt = NULL);
 		
-		BranchInst * getBranchFromLevel(int const i);
+        llvm::BranchInst * getBranchFromLevel(int const i);
 
-		void createBDDVars(BasicBlock * Start, std::set<BasicBlock*> * Pr, std::map<BranchInst*,int> &map, std::set<BasicBlock*> * seen, bool start = false);
+		void createBDDVars(llvm::BasicBlock * Start, std::set<llvm::BasicBlock*> * Pr, std::map<llvm::BranchInst*, int> &map, std::set<llvm::BasicBlock*> * seen, bool start = false);
 
 		/**
 		 * \brief dump the BDD "graph" in a .dot file. 
@@ -106,19 +104,19 @@ class PathTree_br : public PathTree {
 		void DumpDotBDD(BDD graph, std::string filename);
 
 	public:
-		PathTree_br(BasicBlock * Start);
+		PathTree_br(llvm::BasicBlock * Start);
 
 		~PathTree_br();
 
 		/**
 		 * \brief insert a path in the Bdd
 		 */
-		void insert(std::list<BasicBlock*> path, bool primed = false);
+		void insert(std::list<llvm::BasicBlock*> path, bool primed = false);
 
 		/**
 		 * \brief remove a path from the Bdd
 		 */
-		void remove(std::list<BasicBlock*> path, bool primed = false);
+		void remove(std::list<llvm::BasicBlock*> path, bool primed = false);
 
 		/** 
 		 * \brief clear the Bdd. The result will be an empty Bdd
@@ -128,7 +126,7 @@ class PathTree_br : public PathTree {
 		/** 
 		 * \brief check if the Bdd contains the path given as argument
 		 */
-		bool exist(std::list<BasicBlock*> path, bool primed = false);
+		bool exist(std::list<llvm::BasicBlock*> path, bool primed = false);
 
 		/** 
 		 * \brief merge the two Bdds into Bdd. Bdd_prime is cleared

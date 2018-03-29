@@ -15,8 +15,6 @@
 
 #include "AIpass.h"
 
-using namespace llvm;
-
 /**
  * \class AIGuided
  * \brief Implements the Guided Static Analysis algorithm.
@@ -26,14 +24,14 @@ using namespace llvm;
  * transitions of the CFG. The subset in stored in a BDD using the PathTree
  * class.
  */
-class AIGuided : public ModulePass, public AIPass {
+class AIGuided : public llvm::ModulePass, public AIPass {
 
 	private:
 		/**
 		 * \brief remembers all the paths that have already been
 		 * visited
 		 */
-		std::map<BasicBlock*,std::set<BasicBlock* > * > pathtree;
+		std::map<llvm::BasicBlock*, std::set<llvm::BasicBlock* > * > pathtree;
 
 		/**
 		 * \brief Temporary Pathtree that stores the transitions that have been visited
@@ -77,7 +75,7 @@ class AIGuided : public ModulePass, public AIPass {
 		}
 
 		~AIGuided () {
-			for (std::map<BasicBlock*,std::set<BasicBlock*>*>::iterator 
+			for (std::map<llvm::BasicBlock*, std::set<llvm::BasicBlock*>*>::iterator 
 				it = pathtree.begin(),
 				et = pathtree.end(); 
 				it != et; 
@@ -89,14 +87,14 @@ class AIGuided : public ModulePass, public AIPass {
 
 		const char *getPassName() const;
 
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
-		bool runOnModule(Module &M);
+		bool runOnModule(llvm::Module &M);
 
-		void computeFunction(Function * F);
+		void computeFunction(llvm::Function * F);
 
-		std::set<BasicBlock*> getPredecessors(BasicBlock * b) const;
-		std::set<BasicBlock*> getSuccessors(BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getPredecessors(llvm::BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getSuccessors(llvm::BasicBlock * b) const;
 
 		/**
 		 * \brief compute and update the Abstract value of the Node n

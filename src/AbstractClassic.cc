@@ -21,6 +21,8 @@
 #include "Analyzer.h"
 #include "Debug.h"
 
+using namespace llvm;
+
 AbstractClassic::AbstractClassic(ap_manager_t* _man, Environment * env) {
 	main = new ap_abstract1_t(ap_abstract1_bottom(_man,env->getEnv()));
 	pilot = NULL;

@@ -41,45 +41,45 @@ class AnalysisPass {
 		 * displayed, for each C files corresponding to the Module
 		 */
 		virtual void computeResultsPositions(
-			Function * F,
-			std::map<std::string,std::multimap<std::pair<int,int>,BasicBlock*> > * files 
+			llvm::Function * F,
+			std::map<std::string, std::multimap<std::pair<int, int>, llvm::BasicBlock*> > * files 
 		) = 0;
 
 		/** 
 		 * \brief returns true iff all the asserts in the Function are proved
 		 * correct by the AIpass
 		 */
-		bool asserts_proved(Function * F);
+		bool asserts_proved(llvm::Function * F);
 
 		/** 
 		 * \brief generates annotated C code for every C file used in this
 		 * bitcode
 		 */
-		void generateAnnotatedFiles(Module * M, bool outputfile);
-		void generateAnnotatedCode(llvm::raw_ostream * oss, std::string filename, std::multimap<std::pair<int,int>,BasicBlock*> * positions);
+		void generateAnnotatedFiles(llvm::Module * M, bool outputfile);
+		void generateAnnotatedCode(llvm::raw_ostream * oss, std::string filename, std::multimap<std::pair<int, int>, llvm::BasicBlock*> * positions);
 
 		/** 
 		 * \brief inserts pagai invariants into the LLVM Module
 		 */
-		virtual void InstrumentLLVMBitcode(Function * F) = 0;
+		virtual void InstrumentLLVMBitcode(llvm::Function * F) = 0;
 
 		/** 
 		 * \brief print an invariant on oss, with an optional padding
 		 */
-		virtual void printInvariant(BasicBlock * b, std::string left, llvm::raw_ostream * oss) = 0;
+		virtual void printInvariant(llvm::BasicBlock * b, std::string left, llvm::raw_ostream * oss) = 0;
 
 		/** 
 		 * \brief print the invariant the appropriate way 
 		 * This method is typically called after the analysis of a function is finished
 		 */
-		void printResult(Function * F);
+		void printResult(llvm::Function * F);
 
 		/** 
 		 * \brief print the invariant in LLVM IR style
 		 */
-		void printResult_oldoutput(Function * F);
+		void printResult_oldoutput(llvm::Function * F);
 
-		std::string getUndefinedBehaviourMessage(BasicBlock * b);
+		std::string getUndefinedBehaviourMessage(llvm::BasicBlock * b);
 
 };
 #endif

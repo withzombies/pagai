@@ -24,8 +24,6 @@
 #include "AbstractDisj.h"
 #include "SMT_manager.h"
 
-using namespace llvm;
-
 /**
  * \class SMTpass
  * \brief SMT-formula creation pass
@@ -34,8 +32,9 @@ using namespace llvm;
  * It is a singleton design : we use getInstance() to get an object of type
  * SMTpass * 
  */
-class SMTpass : private InstVisitor<SMTpass> {
-	friend class InstVisitor<SMTpass>;
+class SMTpass : private llvm::InstVisitor<SMTpass> {
+
+	friend class llvm::InstVisitor<SMTpass>;
 	
 	private:
 		
@@ -49,13 +48,13 @@ class SMTpass : private InstVisitor<SMTpass> {
 		/**
 		 * \brief stores the rho formula associated to each function
 		 */
-		std::map<Function*,SMT_expr> rho;
+		std::map<llvm::Function*,SMT_expr> rho;
 
 		/**
 		 * \brief stores the already computed varnames, since the computation of
 		 * VarNames seems costly
 		 */
-		static std::map<Value*,std::string> VarNames;
+		static std::map<llvm::Value*,std::string> VarNames;
 
 		/**
 		 * \brief when constructing rho, we use this vector
@@ -75,8 +74,8 @@ class SMTpass : private InstVisitor<SMTpass> {
 		 * edges, nodes, values, undeterministic choices, ...
 		 */
 		static const std::string getDisjunctiveIndexName(AbstractDisj * A, int index);
-		static const std::string getUndeterministicChoiceName(Value * v);
-		static const std::string getValueName(Value * v, bool primed);
+		static const std::string getUndeterministicChoiceName(llvm::Value * v);
+		static const std::string getValueName(llvm::Value * v, bool primed);
 		/**
 		 * \}
 		 */
@@ -85,19 +84,19 @@ class SMTpass : private InstVisitor<SMTpass> {
 		/**  
 		 * \brief get the expression associated to a value
 		 */
-		SMT_expr getValueExpr(Value * v, bool primed);
+		SMT_expr getValueExpr(llvm::Value * v, bool primed);
 
 		/**
 		 * \return the SMT type of the value
 		 */
-		SMT_type getValueType(Value * v);
+		SMT_type getValueType(llvm::Value * v);
 
 		/**
 		 * \brief function to use for getting a variable from a value
 		 */
-		SMT_var getVar(Value * v, bool primed);
+		SMT_var getVar(llvm::Value * v, bool primed);
 
-		SMT_var getBoolVar(Value * v, bool primed);
+		SMT_var getBoolVar(llvm::Value * v, bool primed);
 
 		/**
 		 * \brief take a string name as input, and find if it
@@ -119,28 +118,28 @@ class SMTpass : private InstVisitor<SMTpass> {
 			bool &isEdge, 
 			bool &isIndex,
 			bool &start, 
-			BasicBlock * &src, 
-			BasicBlock * &dest,
+			llvm::BasicBlock * &src, 
+			llvm::BasicBlock * &dest,
 			int &index);
 		
 		/**
 		 * \brief called by visitPHINode
 		 */
-		SMT_expr construct_phi_ite(PHINode &I, unsigned i, unsigned n);
+		SMT_expr construct_phi_ite(llvm::PHINode &I, unsigned i, unsigned n);
 
 		/**
 		 * \brief say if the value needs to be primed in the basicblock
 		 */
-		bool is_primed(BasicBlock * b, Instruction &I);
+		bool is_primed(llvm::BasicBlock * b, llvm::Instruction &I);
 
 		/**
 		 * \brief recursive function called by computeRho
 		 */
-		void computeRhoRec(	Function &F, 
-							std::set<BasicBlock*> * visited,
-							BasicBlock * dest);
-		void computeRho(Function &F);
-		void computePrSuccAndPred(Function &F);
+		void computeRhoRec(	llvm::Function &F, 
+							std::set<llvm::BasicBlock*> * visited,
+							llvm::BasicBlock * dest);
+		void computeRho(llvm::Function &F);
+		void computePrSuccAndPred(llvm::Function &F);
 
 	public:
 		static char ID;
@@ -159,14 +158,14 @@ class SMTpass : private InstVisitor<SMTpass> {
 		/**
 		 * \brief get the SMT formula Rho. Rho is computed only once
 		 */
-		SMT_expr getRho(Function &F);
+		SMT_expr getRho(llvm::Function &F);
 
 		/** 
 		 * \brief returns a name for a string
 		 * this name is unique for the Value *
 		 */
-		static const std::string getVarName(Value * v);
-		static const std::string getEdgeName(BasicBlock* b1, BasicBlock* b2);
+		static const std::string getVarName(llvm::Value * v);
+		static const std::string getEdgeName(llvm::BasicBlock* b1, llvm::BasicBlock* b2);
 
 		/**
 		 * \brief push the context of the SMT manager
@@ -193,7 +192,7 @@ class SMTpass : private InstVisitor<SMTpass> {
 		 * parameter of the function: constraint
 		 */
 		SMT_expr createSMTformula(
-			BasicBlock * source, 
+			llvm::BasicBlock * source, 
 			bool use_X_d, 
 			params t,
 			SMT_expr constraint);
@@ -206,8 +205,8 @@ class SMTpass : private InstVisitor<SMTpass> {
 		 */
 		int SMTsolve(
 				SMT_expr expr, 
-				std::list<BasicBlock*> * path, 
-				Function * F, 
+				std::list<llvm::BasicBlock*> * path, 
+				llvm::Function * F, 
 				params passID);
 
 		/** 
@@ -219,9 +218,9 @@ class SMTpass : private InstVisitor<SMTpass> {
 		 */
 		int SMTsolve(
 				SMT_expr expr, 
-				std::list<BasicBlock*> * path, 
+				std::list<llvm::BasicBlock*> * path, 
 				int &index,
-				Function * F, 
+				llvm::Function * F, 
 				params passID);
 
 		/**
@@ -233,21 +232,21 @@ class SMTpass : private InstVisitor<SMTpass> {
 		/**
 		 * \brief gets the name of the node associated to a specific basicblock
 		 */
-		static const std::string getNodeName(BasicBlock* b, bool src);
+		static const std::string getNodeName(llvm::BasicBlock* b, bool src);
 
-		static const std::string getNodeSubName(BasicBlock* b);
-		static BasicBlock * getNodeBasicBlock(std::string name);
+		static const std::string getNodeSubName(llvm::BasicBlock* b);
+		static llvm::BasicBlock * getNodeBasicBlock(std::string name);
 
 		/**
 		 * \{
 		 * \name XToSmt - transform an apron object of type X into an SMT expression
 		 */
 		SMT_expr texpr1ToSmt(ap_texpr1_t texpr);
-		SMT_expr linexpr1ToSmt(BasicBlock * b, ap_linexpr1_t linexpr, bool &integer, bool &skip);
+		SMT_expr linexpr1ToSmt(llvm::BasicBlock * b, ap_linexpr1_t linexpr, bool &integer, bool &skip);
 		SMT_expr scalarToSmt(ap_scalar_t * scalar, bool integer, double &value, bool &infinity);
 		SMT_expr tcons1ToSmt(ap_tcons1_t tcons);
-		SMT_expr lincons1ToSmt(BasicBlock * b, ap_lincons1_t lincons,bool &skip);
-		SMT_expr AbstractToSmt(BasicBlock * b, Abstract * A);
+		SMT_expr lincons1ToSmt(llvm::BasicBlock * b, ap_lincons1_t lincons,bool &skip);
+		SMT_expr AbstractToSmt(llvm::BasicBlock * b, Abstract * A);
 		/** 
 		 * \}
 		 */
@@ -259,53 +258,53 @@ class SMTpass : private InstVisitor<SMTpass> {
 		 * predicate, as detailed in the paper, so that we can deduce which
 		 * disjunct to choose.
 		 */
-		SMT_expr AbstractDisjToSmt(BasicBlock * b, AbstractDisj * A, bool insert_booleans);
+		SMT_expr AbstractDisjToSmt(llvm::BasicBlock * b, AbstractDisj * A, bool insert_booleans);
 
 		/** 
 		 * \{
 		 * \name Visit methods
 		 */
 	private:
-		void visitReturnInst (ReturnInst &I);
-		void visitBranchInst (BranchInst &I);
-		void visitSwitchInst (SwitchInst &I);
-		void visitIndirectBrInst (IndirectBrInst &I);
-		void visitInvokeInst (InvokeInst &I);
+		void visitReturnInst (llvm::ReturnInst &I);
+		void visitBranchInst (llvm::BranchInst &I);
+		void visitSwitchInst (llvm::SwitchInst &I);
+		void visitIndirectBrInst (llvm::IndirectBrInst &I);
+		void visitInvokeInst (llvm::InvokeInst &I);
 #if LLVM_VERSION_MAJOR < 3 || LLVM_VERSION_MINOR == 0
-		void visitUnwindInst (UnwindInst &I);
+		void visitUnwindInst (llvm::UnwindInst &I);
 #endif
-		void visitUnreachableInst (UnreachableInst &I);
-		void visitAllocaInst (AllocaInst &I);
-		void visitLoadInst (LoadInst &I);
-		void visitStoreInst (StoreInst &I);
-		void visitGetElementPtrInst (GetElementPtrInst &I);
-		void visitPHINode (PHINode &I);
-		void visitTruncInst (TruncInst &I);
-		void visitZExtInst (ZExtInst &I);
-		void visitSExtInst (SExtInst &I);
-		void visitFPTruncInst (FPTruncInst &I);
-		void visitFPExtInst (FPExtInst &I);
-		void visitFPToUIInst (FPToUIInst &I);
-		void visitFPToSIInst (FPToSIInst &I);
-		void visitUIToFPInst (UIToFPInst &I);
-		void visitSIToFPInst (SIToFPInst &I);
-		void visitPtrToIntInst (PtrToIntInst &I);
-		void visitIntToPtrInst (IntToPtrInst &I);
-		void visitBitCastInst (BitCastInst &I);
-		void visitSelectInst (SelectInst &I);
-		void visitCallInst(CallInst &I);
-		void visitVAArgInst (VAArgInst &I);
-		void visitExtractElementInst (ExtractElementInst &I);
-		void visitInsertElementInst (InsertElementInst &I);
-		void visitShuffleVectorInst (ShuffleVectorInst &I);
-		void visitExtractValueInst (ExtractValueInst &I);
-		void visitInsertValueInst (InsertValueInst &I);
-		void visitTerminatorInst (TerminatorInst &I);
-		void visitBinaryOperator (BinaryOperator &I);
-		void visitCmpInst (CmpInst &I);
-		void visitCastInst (CastInst &I);
+		void visitUnreachableInst (llvm::UnreachableInst &I);
+		void visitAllocaInst (llvm::AllocaInst &I);
+		void visitLoadInst (llvm::LoadInst &I);
+		void visitStoreInst (llvm::StoreInst &I);
+		void visitGetElementPtrInst (llvm::GetElementPtrInst &I);
+		void visitPHINode (llvm::PHINode &I);
+		void visitTruncInst (llvm::TruncInst &I);
+		void visitZExtInst (llvm::ZExtInst &I);
+		void visitSExtInst (llvm::SExtInst &I);
+		void visitFPTruncInst (llvm::FPTruncInst &I);
+		void visitFPExtInst (llvm::FPExtInst &I);
+		void visitFPToUIInst (llvm::FPToUIInst &I);
+		void visitFPToSIInst (llvm::FPToSIInst &I);
+		void visitUIToFPInst (llvm::UIToFPInst &I);
+		void visitSIToFPInst (llvm::SIToFPInst &I);
+		void visitPtrToIntInst (llvm::PtrToIntInst &I);
+		void visitIntToPtrInst (llvm::IntToPtrInst &I);
+		void visitBitCastInst (llvm::BitCastInst &I);
+		void visitSelectInst (llvm::SelectInst &I);
+		void visitCallInst(llvm::CallInst &I);
+		void visitVAArgInst (llvm::VAArgInst &I);
+		void visitExtractElementInst (llvm::ExtractElementInst &I);
+		void visitInsertElementInst (llvm::InsertElementInst &I);
+		void visitShuffleVectorInst (llvm::ShuffleVectorInst &I);
+		void visitExtractValueInst (llvm::ExtractValueInst &I);
+		void visitInsertValueInst (llvm::InsertValueInst &I);
+		void visitTerminatorInst (llvm::TerminatorInst &I);
+		void visitBinaryOperator (llvm::BinaryOperator &I);
+		void visitCmpInst (llvm::CmpInst &I);
+		void visitCastInst (llvm::CastInst &I);
 
-		void visitInstruction(Instruction &I) {
+		void visitInstruction(llvm::Instruction &I) {
 			//ferrs() << I.getOpcodeName();
 			//assert(0 && ": Instruction not interpretable yet!");
 		}

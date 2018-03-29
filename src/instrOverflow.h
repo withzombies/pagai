@@ -20,42 +20,40 @@
 
 #include <map>
 
-using namespace llvm;
-
-class instrOverflow : public FunctionPass,
-	public InstVisitor<instrOverflow, bool> {
+class instrOverflow : public llvm::FunctionPass,
+	public llvm::InstVisitor<instrOverflow, bool> {
 
 		private:
-			std::map<CallInst*, Instruction*> replaced;
+			std::map<llvm::CallInst*, llvm::Instruction*> replaced;
 
 			bool pass1;
 
 		public:
 			static char ID;
-			instrOverflow() : FunctionPass(ID) {}
-			void getAnalysisUsage(AnalysisUsage &AU) const;
+			instrOverflow() : llvm::FunctionPass(ID) {}
+			void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
-			bool runOnFunction(Function &F);
-			bool updateFunction(Function &F);
+			bool runOnFunction(llvm::Function &F);
+			bool updateFunction(llvm::Function &F);
 
 			void replaceWithUsualOp(
-					Instruction * old, 
+					llvm::Instruction * old, 
 					unsigned intrinsicID,
-					std::vector<Value*> * args,
-					CallInst * intrinsicCall
+					std::vector<llvm::Value*> * args,
+					llvm::CallInst * intrinsicCall
 					);
 
 			void replaceWithCmp(
-					Instruction * old, 
+					llvm::Instruction * old, 
 					unsigned intrinsicID,
-					CallInst * intrinsicCall
+					llvm::CallInst * intrinsicCall
 					);
 
-			bool visitExtractValueInst(ExtractValueInst &inst);
-			bool visitBranchInst(BranchInst &inst);
-			bool visitCallInst(CallInst &inst);
+			bool visitExtractValueInst(llvm::ExtractValueInst &inst);
+			bool visitBranchInst(llvm::BranchInst &inst);
+			bool visitCallInst(llvm::CallInst &inst);
 
-			bool visitInstruction(Instruction &inst) {return false;}
+			bool visitInstruction(llvm::Instruction &inst) {return false;}
 	};
 
 

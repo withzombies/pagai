@@ -16,8 +16,6 @@
 
 #include "SMTpass.h"
 
-using namespace llvm;
-
 /**
  * \class PathTree
  * \brief BDD representing sets of paths in the graph
@@ -31,12 +29,12 @@ class PathTree {
 		/**
 		 * \brief insert a path in the Bdd
 		 */
-		virtual void insert(std::list<BasicBlock*> path, bool primed = false) = 0;
+		virtual void insert(std::list<llvm::BasicBlock*> path, bool primed = false) = 0;
 
 		/**
 		 * \brief remove a path from the Bdd
 		 */
-		virtual void remove(std::list<BasicBlock*> path, bool primed = false) = 0;
+		virtual void remove(std::list<llvm::BasicBlock*> path, bool primed = false) = 0;
 
 		/** 
 		 * \brief clear the Bdd. The result will be an empty Bdd
@@ -46,7 +44,7 @@ class PathTree {
 		/** 
 		 * \brief check if the Bdd contains the path given as argument
 		 */
-		virtual bool exist(std::list<BasicBlock*> path, bool primed = false) = 0;
+		virtual bool exist(std::list<llvm::BasicBlock*> path, bool primed = false) = 0;
 
 		/** 
 		 * \brief merge the two Bdds into Bdd. Bdd_prime is cleared

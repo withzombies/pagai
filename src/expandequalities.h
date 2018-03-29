@@ -1,5 +1,6 @@
 #ifndef EXPANDEQUALITIES_H
 #define EXPANDEQUALITIES_H
+
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/Constants.h"
@@ -13,26 +14,23 @@
 #endif
 #include <set>
 
-
-using namespace llvm;
-
-class ExpandEqualities : public FunctionPass, 
-	public InstVisitor<ExpandEqualities, void> {
+class ExpandEqualities : public llvm::FunctionPass, 
+	public llvm::InstVisitor<ExpandEqualities, void> {
 	// make sure we do not expand twice the same branch inst
-	std::set<Value*> seen;
+	std::set<llvm::Value*> seen;
  public:
   static char ID;
-  ExpandEqualities() : FunctionPass(ID) {}
+  ExpandEqualities() : llvm::FunctionPass(ID) {}
 
-  bool runOnFunction(Function &F);
+  bool runOnFunction(llvm::Function &F);
 
-  void visitBranchInst(BranchInst &I);
+  void visitBranchInst(llvm::BranchInst &I);
 
  private:
-  TerminatorInst * SplitBlockAndInsertIfThen(Value *Cond,
-		Instruction *SplitBefore,
+  llvm::TerminatorInst * SplitBlockAndInsertIfThen(llvm::Value *Cond,
+		llvm::Instruction *SplitBefore,
 		bool Unreachable,
-		MDNode *BranchWeights = NULL);
+		llvm::MDNode *BranchWeights = NULL);
 	
 };
 

@@ -20,28 +20,26 @@
 #include "AIdis.h"
 #include "Debug.h"
 
-using namespace llvm;
-
 /**
  * \class CompareNarrowing
  * \brief Compare the precision of the classical narrowing with Halbwach's
  * narrowing
  */
 template<Techniques T>
-class CompareNarrowing : public ModulePass {
+class CompareNarrowing : public llvm::ModulePass {
 	
 	private:	
 		SMTpass * LSMT;
 	
-		std::map<params, sys::TimeValue *> Time;
-		std::map<params, sys::TimeValue *> Eq_Time;
+		std::map<params, llvm::sys::TimeValue *> Time;
+		std::map<params, llvm::sys::TimeValue *> Eq_Time;
 		std::map<params, int> total_asc;
 		std::map<params, int> total_desc;
 
 		// count the number of warnings emitted by each technique
-		std::map<params,int> Warnings;
+		std::map<params, int> Warnings;
 		// count the number of safe properties emitted by each technique
-		std::map<params,int> Safe_properties;
+		std::map<params, int> Safe_properties;
 
 	public:
 		/**
@@ -49,26 +47,26 @@ class CompareNarrowing : public ModulePass {
 		 */
 		static char ID;
 
-		CompareNarrowing() : ModulePass(ID)
+		CompareNarrowing() : llvm::ModulePass(ID)
 		{}
 
 		~CompareNarrowing() {}
 		
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
-		void AddTime(params P, Function * F);
-		void AddEqTime(params P, Function * F);
+		void AddTime(params P, llvm::Function * F);
+		void AddEqTime(params P, llvm::Function * F);
 		
 		void printTime(params P);
 		void printEqTime(params P);
 
-		void ComputeIterations(params P, Function * F);
+		void ComputeIterations(params P, llvm::Function * F);
 	
-		void CountNumberOfWarnings(params P, Function * F);
+		void CountNumberOfWarnings(params P, llvm::Function * F);
 		
 		void printIterations(params P);
 
-		bool runOnModule(Module &M);
+		bool runOnModule(llvm::Module &M);
 	
 		const char * getPassName() const;
 };
@@ -82,7 +80,7 @@ const char * CompareNarrowing<T>::getPassName() const {
 }
 
 template<Techniques T>
-void CompareNarrowing<T>::getAnalysisUsage(AnalysisUsage &AU) const {
+void CompareNarrowing<T>::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
 	switch(T) {
 		case LOOKAHEAD_WIDENING:
 			AU.addRequired<ModulePassWrapper<AIGopan, 0> >();
@@ -121,7 +119,7 @@ void CompareNarrowing<T>::getAnalysisUsage(AnalysisUsage &AU) const {
 }
 
 template<Techniques T>
-void CompareNarrowing<T>::ComputeIterations(params P, Function * F) {
+void CompareNarrowing<T>::ComputeIterations(params P, llvm::Function * F) {
 	
 	if (total_asc.count(P)) {
 		total_asc[P] = total_asc[P] + asc_iterations[P][F];
@@ -133,11 +131,11 @@ void CompareNarrowing<T>::ComputeIterations(params P, Function * F) {
 }
 
 template<Techniques T>
-void CompareNarrowing<T>::CountNumberOfWarnings(params P, Function * F) {
-	BasicBlock * b;
+void CompareNarrowing<T>::CountNumberOfWarnings(params P, llvm::Function * F) {
+	llvm::BasicBlock * b;
 	Node * n;
 	Pr * FPr = Pr::getInstance(F);
-	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
+	for (llvm::Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
 		b = i;
 		n = Nodes[b];
 		if (FPr->getAssert()->count(b) || FPr->getUndefinedBehaviour()->count(b)) {
@@ -166,24 +164,24 @@ void CompareNarrowing<T>::printIterations(params P) {
 }
 
 template<Techniques T>
-void CompareNarrowing<T>::AddEqTime(params P, Function * F) {
+void CompareNarrowing<T>::AddEqTime(params P, llvm::Function * F) {
 	
 	if (Eq_Time.count(P)) {
 		*Eq_Time[P] = *Eq_Time[P]+*Total_time[P][F];
 	} else {
-		sys::TimeValue * zero = new sys::TimeValue((double)0);
+        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Eq_Time[P] = zero;
 		*Eq_Time[P] = *Total_time[P][F];
 	}
 }
 
 template<Techniques T>
-void CompareNarrowing<T>::AddTime(params P, Function * F) {
+void CompareNarrowing<T>::AddTime(params P, llvm::Function * F) {
 	
 	if (Time.count(P)) {
 		*Time[P] = *Time[P]+*Total_time[P][F];
 	} else {
-		sys::TimeValue * zero = new sys::TimeValue((double)0);
+        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Time[P] = zero;
 		*Time[P] = *Total_time[P][F];
 	}
@@ -192,7 +190,7 @@ void CompareNarrowing<T>::AddTime(params P, Function * F) {
 template<Techniques T>
 void CompareNarrowing<T>::printEqTime(params P) {
 	if (!Eq_Time.count(P)) {
-		sys::TimeValue * zero = new sys::TimeValue((double)0);
+        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Eq_Time[P] = zero;
 	}
 	std::string tname;
@@ -207,7 +205,7 @@ void CompareNarrowing<T>::printEqTime(params P) {
 template<Techniques T>
 void CompareNarrowing<T>::printTime(params P) {
 	if (!Time.count(P)) {
-		sys::TimeValue * zero = new sys::TimeValue((double)0);
+        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Time[P] = zero;
 	}
 	std::string tname;
@@ -220,9 +218,9 @@ void CompareNarrowing<T>::printTime(params P) {
 }
 
 template<Techniques T>
-bool CompareNarrowing<T>::runOnModule(Module &M) {
-	Function * F;
-	BasicBlock * b;
+bool CompareNarrowing<T>::runOnModule(llvm::Module &M) {
+	llvm::Function * F;
+	llvm::BasicBlock * b;
 	Node * n;
 	LSMT = SMTpass::getInstance();
 
@@ -246,14 +244,14 @@ bool CompareNarrowing<T>::runOnModule(Module &M) {
 	P1.TH = useThreshold(0);
 	P2.TH = useThreshold(1);
 
-	changeColor(raw_ostream::BLUE);
+	changeColor(llvm::raw_ostream::BLUE);
 	*Dbg << "\n\n\n"
 			<< "---------------------------------\n"
 			<< "-      COMPARING NARROWING      -\n"
 			<< "---------------------------------\n";
 	resetColor();
 
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (llvm::Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
 		LSMT->reset_SMTcontext();
 		F = mIt;
 		
@@ -270,7 +268,7 @@ bool CompareNarrowing<T>::runOnModule(Module &M) {
 		CountNumberOfWarnings(P2,F);
 
 		bool distinct = false;
-		for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
+		for (llvm::Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
 			b = i;
 			n = Nodes[b];
 			Pr * FPr = Pr::getInstance(F);
@@ -319,7 +317,7 @@ bool CompareNarrowing<T>::runOnModule(Module &M) {
 		}
 	}
 
-	changeColor(raw_ostream::MAGENTA);
+	changeColor(llvm::raw_ostream::MAGENTA);
 	*Out << ApronManagerToString(getApronManager(0)) << " ABSTRACT DOMAIN\n\n\n" 
 		<< "IMPROVED NARROWING -- CLASSIC" << "\n";
 	resetColor();

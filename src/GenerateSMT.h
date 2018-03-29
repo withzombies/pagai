@@ -14,17 +14,15 @@
 #include "SMT_manager.h"
 #include "SMTpass.h"
 
-using namespace llvm;
-
 /**
  * \class GenerateSMT
  * \brief Pass that only computes the SMT-formula and outputs it
  */
-class GenerateSMT : public ModulePass {
+class GenerateSMT : public llvm::ModulePass {
 	
 	private:
 		SMTpass * LSMT;
-		DominatorTree * DT;
+        llvm::DominatorTree * DT;
 
 	public:
 		static char ID;
@@ -33,11 +31,12 @@ class GenerateSMT : public ModulePass {
 		~GenerateSMT();
 
 		const char * getPassName() const;
-		void getAnalysisUsage(AnalysisUsage &AU) const;
-		bool runOnModule(Module &M);
-		bool runOnFunction(Function &F);
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
+		bool runOnModule(llvm::Module &M);
+		bool runOnFunction(llvm::Function &F);
 
-		void printBasicBlock(BasicBlock* b);
+		void printBasicBlock(llvm::BasicBlock* b);
 
 };
+
 #endif

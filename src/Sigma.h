@@ -13,8 +13,6 @@
 
 #include "cuddObj.hh"
 
-using namespace llvm;
-
 /**
  * \class Sigma
  * \brief class used by AIdis for computing the sigma function
@@ -34,9 +32,9 @@ class Sigma {
 		 */
 		int Max_Disj;
 
-		void init(BasicBlock * Start);
+		void init(llvm::BasicBlock * Start);
 
-		void createADDVars(BasicBlock * Start, std::set<BasicBlock*> * Pr, std::map<BasicBlock*,int> &map, std::set<BasicBlock*> * seen, bool start = false);
+		void createADDVars(llvm::BasicBlock * Start, std::set<llvm::BasicBlock*> * Pr, std::map<llvm::BasicBlock*, int> &map, std::set<llvm::BasicBlock*> * seen, bool start = false);
 
 		/**
 		 * \{
@@ -51,12 +49,12 @@ class Sigma {
 		/**
 		 * \brief stores the index of the basicBlock in the ADD
 		 */
-		std::map<BasicBlock*,int> AddVar;
+		std::map<llvm::BasicBlock*, int> AddVar;
 
 		/**
 		 * \brief stores the index of the source basicBlock in the ADD
 		 */
-		std::map<BasicBlock*,int> AddVarSource;
+		std::map<llvm::BasicBlock*, int> AddVarSource;
 
 		/**
 		 * \brief number of levels in the ADD
@@ -71,40 +69,40 @@ class Sigma {
 		 * the map should be AddVar or AddVarSource, depending if we consider
 		 * the starting point or not
 		 */
-		ADD getADDfromBasicBlock(BasicBlock * b,std::map<BasicBlock*,int> &map);
-		ADD getADDfromBasicBlock(BasicBlock * b,std::map<BasicBlock*,int> &map, int &n);
+		ADD getADDfromBasicBlock(llvm::BasicBlock * b, std::map<llvm::BasicBlock*, int> &map);
+		ADD getADDfromBasicBlock(llvm::BasicBlock * b, std::map<llvm::BasicBlock*, int> &map, int &n);
 
-		ADD computef(std::list<BasicBlock*> path, int start);
+		ADD computef(std::list<llvm::BasicBlock*> path, int start);
 
 		/** 
 		 * \brief Add that stores the various seen paths
 		 */
-		std::map<int,ADD*> Add;
+		std::map<int, ADD*> Add;
 
 		/**
 		 * \brief insert a path in the Bdd
 		 */
-		void insert(std::list<BasicBlock*> path, int start);
+		void insert(std::list<llvm::BasicBlock*> path, int start);
 
 		/**
 		 * \brief remove a path from the Bdd
 		 */
-		void remove(std::list<BasicBlock*> path, int start);
+		void remove(std::list<llvm::BasicBlock*> path, int start);
 
 		/**
 		 * \brief check if the Bdd contains the path given as argument
 		 */
-		bool exist(std::list<BasicBlock*> path, int start);
+		bool exist(std::list<llvm::BasicBlock*> path, int start);
 	
 		/**
 		 * \brief get the actual value of sigma stored in the BDD for sigma(path,start)
 		 */
-		int getActualValue(std::list<BasicBlock*> path, int start);
+		int getActualValue(std::list<llvm::BasicBlock*> path, int start);
 
 		/**
 		 * \brief set the value of sigma(path,start)
 		 */
-		void setActualValue(std::list<BasicBlock*> path, int start, int value);
+		void setActualValue(std::list<llvm::BasicBlock*> path, int start, int value);
 
 		void DumpDotADD(ADD graph, std::string filename);
 
@@ -112,8 +110,8 @@ class Sigma {
 
 	public:
 		
-		Sigma(BasicBlock * Start, int _Max_Disj);
-		Sigma(BasicBlock * Start);
+		Sigma(llvm::BasicBlock * Start, int _Max_Disj);
+		Sigma(llvm::BasicBlock * Start);
 		~Sigma();
 
 		/**
@@ -124,7 +122,7 @@ class Sigma {
 		void clear();
 
 		int getSigma(
-			std::list<BasicBlock*> path, 
+			std::list<llvm::BasicBlock*> path, 
 			int start,
 			Abstract * Xtemp,
 			AIPass * pass,

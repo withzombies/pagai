@@ -1,5 +1,6 @@
 #ifndef NAMEALLVALUES_H
 #define NAMEALLVALUES_H
+
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Analysis/CFG.h"
 #include "config.h"
@@ -13,18 +14,15 @@
 #include "llvm/IR/Function.h"
 #include <set>
 
-
-using namespace llvm;
-
-class NameAllValues : public FunctionPass, 
-	public InstVisitor<NameAllValues, void> {
+class NameAllValues : public llvm::FunctionPass, 
+	public llvm::InstVisitor<NameAllValues, void> {
 	// make sure we do not expand twice the same branch inst
-	std::set<Value*> seen;
+	std::set<llvm::Value*> seen;
  public:
   static char ID;
-  NameAllValues() : FunctionPass(ID) {}
+  NameAllValues() : llvm::FunctionPass(ID) {}
 
-  bool runOnFunction(Function &F);
+  bool runOnFunction(llvm::Function &F);
 	
 };
 

@@ -19,8 +19,6 @@
 #include "Environment.h"
 #include "Expr.h"
 
-using namespace llvm;
-
 class Abstract;
 class Live;
 class Expr;
@@ -80,7 +78,7 @@ class Node {
 		/**
 		 * \brief constructor
 		 */
-		Node(BasicBlock * _bb);
+		Node(llvm::BasicBlock * _bb);
 
 		~Node();
 
@@ -97,7 +95,7 @@ class Node {
 		/**
 		 * \brief BasicBlock associated to the Node
 		 */
-		BasicBlock * bb;
+        llvm::BasicBlock * bb;
 
 		/** 
 		 * \brief sccId identifies the strongly connected component the node is in
@@ -130,12 +128,12 @@ class Node {
 		 * Value is live, then the variable should not be removed from the Abstract
 		 * domain's dimensions
 		 */
-		std::map<Value*,std::set<ap_var_t> > intVar;
+		std::map<llvm::Value*,std::set<ap_var_t> > intVar;
 
 		/**
 		 * \brief same as intVar, but for real variables
 		 */
-		std::map<Value*,std::set<ap_var_t> > realVar;
+		std::map<llvm::Value*,std::set<ap_var_t> > realVar;
 
 
 		/**
@@ -147,14 +145,14 @@ class Node {
 		/**
 		 * \brief add a new variable into the abstract domain
 		 */
-		void add_var(Value * val);
+		void add_var(llvm::Value * val);
 };
 
 /** 
  * \brief Map that associate each BasicBlock of the Module with its Node
  * object
  */
-extern std::map<BasicBlock *,Node *> Nodes;
+extern std::map<llvm::BasicBlock *,Node *> Nodes;
 
 /**
  * \class NodeCompare

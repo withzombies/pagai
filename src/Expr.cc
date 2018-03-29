@@ -17,6 +17,8 @@
 #include "AIpass.h"
 #include "Live.h"
 
+using namespace llvm;
+
 std::map<Value*, ap_texpr1_t*> Exprs;
 std::map<ap_var_t, ap_texpr1_t*> Exprs_var;
 

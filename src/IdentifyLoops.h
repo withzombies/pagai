@@ -15,21 +15,17 @@
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
 
+extern std::set<llvm::BasicBlock *> Loop_headers;
 
-using namespace llvm;
-
-extern std::set<BasicBlock *> Loop_headers;
-
-class IdentifyLoops : public FunctionPass {
+class IdentifyLoops : public llvm::FunctionPass {
  public:
   static char ID;
-  IdentifyLoops() : FunctionPass(ID) {}
+  IdentifyLoops() : llvm::FunctionPass(ID) {}
 
-  bool runOnFunction(Function &F);
+  bool runOnFunction(llvm::Function &F);
 		
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+  virtual void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 	
 };
 
 #endif
-

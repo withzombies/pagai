@@ -19,6 +19,7 @@
 #include "SMTpass.h"
 
 using namespace std;
+using namespace llvm;
 
 char GenerateSMT::ID = 0;
 static RegisterPass<GenerateSMT>

@@ -25,8 +25,6 @@
 // TODO DM
 #define LLVM_DEBUG_VERSION (12 << 16)
 
-using namespace llvm;
-
 /**
  * \class compare_Info
  * \brief class for comparing Info objects
@@ -45,36 +43,36 @@ class compare_Info
  */
 class recoverName {
 	private :
-		static void pass1(Function *F);
+		static void pass1(llvm::Function *F);
 		
-		static Info resolveMetDescriptor(MDNode* md);
+		static Info resolveMetDescriptor(llvm::MDNode* md);
 
-		static void update_line_column(Instruction * I, unsigned & line, unsigned & column);
-		static void print_set(std::set<Info,compare_Info> * s);
+		static void update_line_column(llvm::Instruction * I, unsigned & line, unsigned & column);
+		static void print_set(std::set<Info, compare_Info> * s);
 
-		static std::set<Info,compare_Info> getPossibleMappings(const Value * V, std::set<const Value *> * seen);
+		static std::set<Info, compare_Info> getPossibleMappings(const llvm::Value * V, std::set<const llvm::Value *> * seen);
 		
 		static void fill_info_set(
-				BasicBlock * b, 
+				llvm::BasicBlock * b, 
 				std::set<Info> * infos, 
-				Value * val,
-				std::set<BasicBlock*> * seen
+				llvm::Value * val,
+				std::set<llvm::BasicBlock*> * seen
 				);
 
 	public:
-		static std::set<Info> getMDInfos_rec(Value* v,std::set<Value*> & seen);
-		static Info getMDInfos(const Value* V);
-		static int process(Function* F);
-		static int getBasicBlockLineNo(BasicBlock* BB);
-		static int getBasicBlockColumnNo(BasicBlock* BB);
-		static std::string getSourceFileName(Function * F);
-		static std::string getSourceFileDir(Function * F);
-		static Instruction * getFirstMetadata(Function * F);
-		static Instruction * getFirstMetadata(BasicBlock * b);
-		static bool hasMetadata(Module * M);
-		static bool hasMetadata(Function * F);
-		static bool hasMetadata(BasicBlock * b);
-		static bool is_readable(Function * F);
+		static std::set<Info> getMDInfos_rec(llvm::Value* v,std::set<llvm::Value*> & seen);
+		static Info getMDInfos(const llvm::Value* V);
+		static int process(llvm::Function* F);
+		static int getBasicBlockLineNo(llvm::BasicBlock* BB);
+		static int getBasicBlockColumnNo(llvm::BasicBlock* BB);
+		static std::string getSourceFileName(llvm::Function * F);
+		static std::string getSourceFileDir(llvm::Function * F);
+		static llvm::Instruction * getFirstMetadata(llvm::Function * F);
+		static llvm::Instruction * getFirstMetadata(llvm::BasicBlock * b);
+		static bool hasMetadata(llvm::Module * M);
+		static bool hasMetadata(llvm::Function * F);
+		static bool hasMetadata(llvm::BasicBlock * b);
+		static bool is_readable(llvm::Function * F);
 };
 
 #endif

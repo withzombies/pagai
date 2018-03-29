@@ -16,6 +16,7 @@
 
 //#define DUMP_ADD	
 
+using namespace llvm;
 
 void Sigma::createADDVars(BasicBlock * Start, std::set<BasicBlock*> * Pr, std::map<BasicBlock*,int> &map, std::set<BasicBlock*> * seen, bool start) {
 	int n;

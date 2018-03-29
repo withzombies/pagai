@@ -15,21 +15,19 @@
 
 #include "AIpass.h"
 
-using namespace llvm;
-
 /**
  * \class AIpf 
  * \brief Abstract Interpretation with Path Focusing algorithm (using SMT-solving)
  */
-class AIpf : public ModulePass, public AIPass {
+class AIpf : public llvm::ModulePass, public AIPass {
 
 	public:
 		static char ID;	
 
 	protected:
 		
-		std::map<BasicBlock*,PathTree*> U;
-		std::map<BasicBlock*,PathTree*> V;
+		std::map<llvm::BasicBlock*, PathTree*> U;
+		std::map<llvm::BasicBlock*, PathTree*> V;
 
 		void init()
 			{
@@ -66,16 +64,16 @@ class AIpf : public ModulePass, public AIPass {
 
 		const char *getPassName() const;
 
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
-		bool runOnModule(Module &M);
+		bool runOnModule(llvm::Module &M);
 
-		void computeFunction(Function * F);
+		void computeFunction(llvm::Function * F);
 
-		std::set<BasicBlock*> getPredecessors(BasicBlock * b) const;
-		std::set<BasicBlock*> getSuccessors(BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getPredecessors(llvm::BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getSuccessors(llvm::BasicBlock * b) const;
 
-		virtual void assert_properties(params P, Function * F) {}
+		virtual void assert_properties(params P, llvm::Function * F) {}
 		virtual void intersect_with_known_properties(Abstract * Xtemp, Node * n, params P) {}
 
 		/**

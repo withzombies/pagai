@@ -11,8 +11,6 @@
 
 #include "AIopt.h"
 
-using namespace llvm;
-
 /**
  * \class AIopt_incr
  * \brief AIopt Implementation that uses the result of a previous analysis
@@ -42,9 +40,9 @@ class AIopt_incr : public AIopt {
 
 		const char *getPassName() const;
 
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
-		void assert_properties(params P, Function * F);
+		void assert_properties(params P, llvm::Function * F);
 		void intersect_with_known_properties(Abstract * Xtemp, Node * n, params P);
 };
 

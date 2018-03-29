@@ -11,8 +11,6 @@
 
 #include "AIpf.h"
 
-using namespace llvm;
-
 /**
  * \class AIpf_incr
  * \brief Abstract Interpretation with Path Focusing algorithm (using SMT-solving) that uses the result of a previous analysis
@@ -41,9 +39,9 @@ class AIpf_incr : public AIpf {
 
 		const char *getPassName() const;
 
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
-		void assert_properties(params P, Function * F);
+		void assert_properties(params P, llvm::Function * F);
 		void intersect_with_known_properties(Abstract * Xtemp, Node * n, params P);
 
 };

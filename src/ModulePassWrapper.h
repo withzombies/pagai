@@ -8,8 +8,6 @@
 
 #include "Analyzer.h"
 
-using namespace llvm;
-
 /**
  * \brief Wrapper to allow instanciating an LLVM pass multiple times.
  *

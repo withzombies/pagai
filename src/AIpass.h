@@ -28,8 +28,6 @@
 #include "AbstractMan.h"
 #include "AnalysisPass.h"
 
-using namespace llvm;
-
 class SMTpass;
 class Live;
 class Node;
@@ -42,8 +40,9 @@ class Node;
  * perform Abstract Interpretation (i.e. graph traversal on the CFG,
  * Apron Manager, SMTpass solver, ...).
  */
-class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
-	friend class InstVisitor<AIPass>;
+class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
+
+	friend class llvm::InstVisitor<AIPass>;
 
 	protected:
 		/** 
@@ -87,7 +86,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		/**
 		 * \brief path we currently focus on
 		 */
-		std::vector<BasicBlock*> focuspath;
+		std::vector<llvm::BasicBlock*> focuspath;
 
 		/**
 		 * \brief index in focuspath of the focuspath's basicblock we are working on
@@ -149,7 +148,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 */
 		void assert_invariant(
 				params P,
-				Function * F
+				llvm::Function * F
 				);
 
 		/**
@@ -196,10 +195,10 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		/**
 		 * \brief print a path on standard output
 		 */
-		static void printPath(std::list<BasicBlock*> path);
+		static void printPath(std::list<llvm::BasicBlock*> path);
 	protected:
 
-		virtual void computeFunction(Function * F) = 0;
+		virtual void computeFunction(llvm::Function * F) = 0;
 
 		/** 
 		 * \brief compute and update the Abstract value of the Node n
@@ -220,7 +219,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * (iterates over the nodes, calling computeNode for each of
 		 * them)
 		 */
-		virtual void ascendingIter(Node * n, Function * F, bool dont_reset = false);
+		virtual void ascendingIter(Node * n, llvm::Function * F, bool dont_reset = false);
 
 		/** 
 		 * \brief Narrowing algorithm (iterates over the nodes, calling
@@ -231,7 +230,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		void loopiter(
 			Node * n, 
 			Abstract * &Xtemp,
-			std::list<BasicBlock*> * path,
+			std::list<llvm::BasicBlock*> * path,
 			bool &only_join,
 			PathTree * const U,
 			PathTree * const V);
@@ -239,7 +238,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		/** 
 		 * \brief delete all pathtrees inside the map and clear the map
 		 */
-		void ClearPathtreeMap(std::map<BasicBlock*,PathTree*> & pathtree);
+		void ClearPathtreeMap(std::map<llvm::BasicBlock*,PathTree*> & pathtree);
 
 		/** 
 		 * \{
@@ -249,9 +248,9 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * return true iff there there some Xd values that were not equal to Xs
 		 * same principle for the two other functions
 		 */
-		bool copy_Xd_to_Xs(Function * F);
-		void copy_Xs_to_Xf(Function * F);
-		void copy_Xf_to_Xs(Function * F);
+		bool copy_Xd_to_Xs(llvm::Function * F);
+		void copy_Xs_to_Xf(llvm::Function * F);
+		void copy_Xf_to_Xs(llvm::Function * F);
 		/**
 		 * \}
 		 */
@@ -263,14 +262,14 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		void computeTransform (	
 			AbstractMan * aman,
 			Node * n, 
-			std::list<BasicBlock*> path, 
+			std::list<llvm::BasicBlock*> path, 
 			Abstract *Xtemp);
 
 		/** 
 		 * \brief compute Seeds for Halbwach's narrowing
 		 * returns true iff one ore more seeds have been found
 		 */
-		bool computeNarrowingSeed(Function * F);
+		bool computeNarrowingSeed(llvm::Function * F);
 
 		/** 
 		 * \brief compute the new environment of Node n, based on 
@@ -282,7 +281,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * \brief creates the constraint arrays resulting from a
 		 * value.
 		 */
-		bool computeCondition(Value * val, 
+		bool computeCondition(llvm::Value * val, 
 				bool result,
 				int cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
@@ -291,7 +290,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * \brief creates the constraint arrays resulting from a
 		 * comparison instruction.
 		 */
-		bool computeCmpCondition(CmpInst * inst, 
+		bool computeCmpCondition(llvm::CmpInst * inst, 
 				bool result,
 				int cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
@@ -300,7 +299,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * \brief creates the constraint arrays resulting from a
 		 * Constant integer
 		 */
-		bool computeConstantCondition(ConstantInt * inst, 
+		bool computeConstantCondition(llvm::ConstantInt * inst, 
 				bool result,
 				int cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
@@ -309,7 +308,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * \brief creates the constraint arrays resulting from a
 		 * boolean PHINode
 		 */
-		bool computePHINodeCondition(PHINode * inst, 
+		bool computePHINodeCondition(llvm::PHINode * inst, 
 				bool result,
 				int cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
@@ -318,7 +317,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * \brief creates the constraint arrays resulting from a
 		 * boolean Binary Operator
 		 */
-		bool computeBinaryOpCondition(BinaryOperator * inst, 
+		bool computeBinaryOpCondition(llvm::BinaryOperator * inst, 
 				bool result,
 				int cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
@@ -327,7 +326,7 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * \brief creates the constraint arrays resulting from a
 		 * cast between a boolean and an integer
 		 */
-		bool computeCastCondition(CastInst * inst, 
+		bool computeCastCondition(llvm::CastInst * inst, 
 				bool result,
 				int cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
@@ -336,54 +335,54 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 * \brief Insert all the dimensions of the environment into the node
 		 * variables of n
 		 */
-		void insert_env_vars_into_node_vars(Environment * env, Node * n, Value * V);
+		void insert_env_vars_into_node_vars(Environment * env, Node * n, llvm::Value * V);
 
 		/**
 		 * \brief initialize the function by creating the Node
 		 * objects, and computing the strongly connected components.
 		 */
-		void initFunction(Function * F);
+		void initFunction(llvm::Function * F);
 
 		/** 
 		 * \brief free internal data after the analysis of a
 		 * function
 		 * Has to be called after the analysis of each function
 		 */
-		void TerminateFunction(Function * F);
+		void TerminateFunction(llvm::Function * F);
 		
 		/** 
 		 * \brief print a basicBlock on standard output
 		 */
-		static void printBasicBlock(BasicBlock * b);
+		static void printBasicBlock(llvm::BasicBlock * b);
 
 		/** 
 		 * \brief process the sequence of positions where an invariant has to be
 		 * displayed
 		 */
 		void computeResultsPositions(
-			Function * F,
-			std::map<std::string,std::multimap<std::pair<int,int>,BasicBlock*> > * files 
+			llvm::Function * F,
+			std::map<std::string, std::multimap<std::pair<int, int>, llvm::BasicBlock*> > * files 
 		);
 
 		/** 
 		 * \brief inserts pagai invariants into the LLVM Module
 		 */
-		void InstrumentLLVMBitcode(Function * F);
+		void InstrumentLLVMBitcode(llvm::Function * F);
 
 		/** 
 		 * \brief print an invariant on oss, with an optional padding
 		 */
-		void printInvariant(BasicBlock * b, std::string left, llvm::raw_ostream * oss);
+		void printInvariant(llvm::BasicBlock * b, std::string left, llvm::raw_ostream * oss);
 
 		/** 
 		 * \brief computes the set of predecessors for a BasicBlock
 		 */
-		virtual std::set<BasicBlock*> getPredecessors(BasicBlock * b) const = 0;
+		virtual std::set<llvm::BasicBlock*> getPredecessors(llvm::BasicBlock * b) const = 0;
 
 		/** 
 		 * \brief computes the set of Successors for a BasicBlock
 		 */
-		virtual std::set<BasicBlock*> getSuccessors(BasicBlock * b) const = 0;
+		virtual std::set<llvm::BasicBlock*> getSuccessors(llvm::BasicBlock * b) const = 0;
 
 	private:
 		/**
@@ -393,54 +392,55 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		 */
 		void printCanonizedInvariant(const Abstract * abs, llvm::raw_ostream & stream, std::string * left = NULL) const;
 
-		void visitInstAndAddVarIfNecessary(Instruction &I);
+		void visitInstAndAddVarIfNecessary(llvm::Instruction &I);
+
 		/** \{
 		 *  \name Visit methods
 		 */
-		void visitReturnInst (ReturnInst &I);
-		void visitBranchInst (BranchInst &I);
-		void visitSwitchInst (SwitchInst &I);
-		void visitIndirectBrInst (IndirectBrInst &I);
-		void visitInvokeInst (InvokeInst &I);
+		void visitReturnInst (llvm::ReturnInst &I);
+		void visitBranchInst (llvm::BranchInst &I);
+		void visitSwitchInst (llvm::SwitchInst &I);
+		void visitIndirectBrInst (llvm::IndirectBrInst &I);
+		void visitInvokeInst (llvm::InvokeInst &I);
 #if LLVM_VERSION_MAJOR < 3 || LLVM_VERSION_MINOR == 0
-		void visitUnwindInst (UnwindInst &I);
+		void visitUnwindInst (llvm::UnwindInst &I);
 #endif
-		void visitUnreachableInst (UnreachableInst &I);
-		void visitICmpInst (ICmpInst &I);
-		void visitFCmpInst (FCmpInst &I);
-		void visitAllocaInst (AllocaInst &I);
-		void visitLoadInst (LoadInst &I);
-		void visitStoreInst (StoreInst &I);
-		void visitGetElementPtrInst (GetElementPtrInst &I);
-		void visitPHINode (PHINode &I);
-		void visitTruncInst (TruncInst &I);
-		void visitZExtInst (ZExtInst &I);
-		void visitSExtInst (SExtInst &I);
-		void visitFPTruncInst (FPTruncInst &I);
-		void visitFPExtInst (FPExtInst &I);
-		void visitFPToUIInst (FPToUIInst &I);
-		void visitFPToSIInst (FPToSIInst &I);
-		void visitUIToFPInst (UIToFPInst &I);
-		void visitSIToFPInst (SIToFPInst &I);
-		void visitPtrToIntInst (PtrToIntInst &I);
-		void visitIntToPtrInst (IntToPtrInst &I);
-		void visitBitCastInst (BitCastInst &I);
-		void visitSelectInst (SelectInst &I);
-		void visitCallInst(CallInst &I);
-		void visitVAArgInst (VAArgInst &I);
-		void visitExtractElementInst (ExtractElementInst &I);
-		void visitInsertElementInst (InsertElementInst &I);
-		void visitShuffleVectorInst (ShuffleVectorInst &I);
-		void visitExtractValueInst (ExtractValueInst &I);
-		void visitInsertValueInst (InsertValueInst &I);
-		void visitTerminatorInst (TerminatorInst &I);
-		void visitBinaryOperator (BinaryOperator &I);
-		void visitCmpInst (CmpInst &I);
-		void visitCastInst (CastInst &I);
+		void visitUnreachableInst (llvm::UnreachableInst &I);
+		void visitICmpInst (llvm::ICmpInst &I);
+		void visitFCmpInst (llvm::FCmpInst &I);
+		void visitAllocaInst (llvm::AllocaInst &I);
+		void visitLoadInst (llvm::LoadInst &I);
+		void visitStoreInst (llvm::StoreInst &I);
+		void visitGetElementPtrInst (llvm::GetElementPtrInst &I);
+		void visitPHINode (llvm::PHINode &I);
+		void visitTruncInst (llvm::TruncInst &I);
+		void visitZExtInst (llvm::ZExtInst &I);
+		void visitSExtInst (llvm::SExtInst &I);
+		void visitFPTruncInst (llvm::FPTruncInst &I);
+		void visitFPExtInst (llvm::FPExtInst &I);
+		void visitFPToUIInst (llvm::FPToUIInst &I);
+		void visitFPToSIInst (llvm::FPToSIInst &I);
+		void visitUIToFPInst (llvm::UIToFPInst &I);
+		void visitSIToFPInst (llvm::SIToFPInst &I);
+		void visitPtrToIntInst (llvm::PtrToIntInst &I);
+		void visitIntToPtrInst (llvm::IntToPtrInst &I);
+		void visitBitCastInst (llvm::BitCastInst &I);
+		void visitSelectInst (llvm::SelectInst &I);
+		void visitCallInst(llvm::CallInst &I);
+		void visitVAArgInst (llvm::VAArgInst &I);
+		void visitExtractElementInst (llvm::ExtractElementInst &I);
+		void visitInsertElementInst (llvm::InsertElementInst &I);
+		void visitShuffleVectorInst (llvm::ShuffleVectorInst &I);
+		void visitExtractValueInst (llvm::ExtractValueInst &I);
+		void visitInsertValueInst (llvm::InsertValueInst &I);
+		void visitTerminatorInst (llvm::TerminatorInst &I);
+		void visitBinaryOperator (llvm::BinaryOperator &I);
+		void visitCmpInst (llvm::CmpInst &I);
+		void visitCastInst (llvm::CastInst &I);
 
 
-		void visitInstruction(Instruction &I) {
-			ferrs() << I;
+		void visitInstruction(llvm::Instruction &I) {
+            llvm::ferrs() << I;
 			assert(0 && "Instruction not interpretable yet!");
 		}
 		/** 

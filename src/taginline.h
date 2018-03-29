@@ -13,24 +13,22 @@
 #   include "llvm/InstVisitor.h"
 #endif
 
-using namespace llvm;
-
-class TagInline : public ModulePass {
+class TagInline : public llvm::ModulePass {
 
 	private:	
 		static std::vector<const char *> ToAnalyze;
 
 	public:
 		static char ID;
-		TagInline() : ModulePass(ID) {}
+		TagInline() : llvm::ModulePass(ID) {}
 
-		bool runOnModule(Module &M);
+		bool runOnModule(llvm::Module &M);
 
-		static ArrayRef<const char *> GetFunctionsToAnalyze();
+		static llvm::ArrayRef<const char *> GetFunctionsToAnalyze();
 	
 		const char * getPassName() const;
 
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
 };
 #endif

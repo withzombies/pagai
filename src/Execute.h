@@ -11,8 +11,6 @@
 
 #include "llvm/Support/FormattedStream.h"
 
-using namespace llvm;
-
 /**
  * \class execute
  * \brief class that creates and runs the llvm passes

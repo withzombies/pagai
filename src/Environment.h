@@ -15,8 +15,6 @@
 #include "Node.h"
 #include "config.h"
 
-using namespace llvm;
-
 /**
  * \class Environment
  * \brief wrapper around ap_environment_t apron type
@@ -77,7 +75,7 @@ class Environment {
 		 * \brief same as get_vars, but gets only variables that are live in b
 		 */
 		void get_vars_live_in(
-				BasicBlock * b, Live * LV,
+				llvm::BasicBlock * b, Live * LV,
 				std::set<ap_var_t> * intdims, 
 				std::set<ap_var_t> * realdims);
 
@@ -107,7 +105,7 @@ class Environment {
 		void display(llvm::raw_ostream &stream) const;
 
 		
-		void to_MDNode(LLVMContext * C, std::vector<METADATA_TYPE*> * met);
+		void to_MDNode(llvm::LLVMContext * C, std::vector<METADATA_TYPE*> * met);
 
 	private:
 

@@ -10,8 +10,6 @@
 #include "llvm/Pass.h"
 #include "AIpass.h"
 
-using namespace llvm;
-
 /**
  * \class AISimple
  * \brief Base class implementing the basic abstract interpretation algorithm
@@ -20,7 +18,7 @@ using namespace llvm;
  * algorithms that do not use SMTpass solving to chose the order in which
  * nodes are visited (i.e. Classic, and Gopan&Reps).
  */
-class AISimple : public ModulePass, public AIPass {
+class AISimple : public llvm::ModulePass, public AIPass {
 
 	public:
 
@@ -33,22 +31,22 @@ class AISimple : public ModulePass, public AIPass {
 		 * \brief Apply the simple abstract interpretation algorithm
 		 * (ascending iterations + narrowing) on function F.
 		 */
-		void computeFunc(Function * F);
+		void computeFunc(llvm::Function * F);
 
-		std::set<BasicBlock*> getPredecessors(BasicBlock * b) const;
-		std::set<BasicBlock*> getSuccessors(BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getPredecessors(llvm::BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getSuccessors(llvm::BasicBlock * b) const;
 
 		/**
 		 * \{
 		 * \name LLVM pass manager stuff
 		 */
 		virtual const char *getPassName() const = 0;
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 		/**
 		 * \}
 		 */
 
-		bool runOnModule(Module &M);
+		bool runOnModule(llvm::Module &M);
 
 		/**
 		 * \brief compute and update the Abstract value of the Node n
@@ -62,7 +60,7 @@ class AISimple : public ModulePass, public AIPass {
 		 */
 		void narrowNode(Node * n);
 
-		void computeFunction(Function * F);
+		void computeFunction(llvm::Function * F);
 };
 
 #endif

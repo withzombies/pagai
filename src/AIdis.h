@@ -15,16 +15,14 @@
 #include "AIpass.h"
 #include "Sigma.h"
 
-using namespace llvm;
-
 /**
  * \class AIdis
  * \brief Pass that computes disjunctive invariants
  */
-class AIdis : public ModulePass, public AIPass {
+class AIdis : public llvm::ModulePass, public AIPass {
 
 	private:
-		std::map<BasicBlock*,Sigma*> S;
+		std::map<llvm::BasicBlock*,Sigma*> S;
 
 		/**
 		 * \brief maximum number of disjunct per control point
@@ -35,7 +33,7 @@ class AIdis : public ModulePass, public AIPass {
 		 * \brief remembers all the paths that have already been
 		 * visited
 		 */
-		std::map<BasicBlock*,PathTree*> pathtree;
+		std::map<llvm::BasicBlock*,PathTree*> pathtree;
 
 		std::priority_queue<Node*,std::vector<Node*>,NodeCompare> A_prime;
 
@@ -52,7 +50,7 @@ class AIdis : public ModulePass, public AIPass {
 		 * details
 		 */
 		int sigma(
-			std::list<BasicBlock*> path, 
+			std::list<llvm::BasicBlock*> path, 
 			int start,
 			Abstract * Xtemp,
 			bool source);
@@ -85,7 +83,7 @@ class AIdis : public ModulePass, public AIPass {
 		
 
 		~AIdis () {
-			for (std::map<BasicBlock*,PathTree*>::iterator 
+			for (std::map<llvm::BasicBlock*, PathTree*>::iterator 
 				it = pathtree.begin(),
 				et = pathtree.end(); 
 				it != et; 
@@ -97,14 +95,14 @@ class AIdis : public ModulePass, public AIPass {
 
 		const char *getPassName() const;
 
-		void getAnalysisUsage(AnalysisUsage &AU) const;
+		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
-		bool runOnModule(Module &M);
+		bool runOnModule(llvm::Module &M);
 
-		void computeFunction(Function * F);
+		void computeFunction(llvm::Function * F);
 
-		std::set<BasicBlock*> getPredecessors(BasicBlock * b) const;
-		std::set<BasicBlock*> getSuccessors(BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getPredecessors(llvm::BasicBlock * b) const;
+		std::set<llvm::BasicBlock*> getSuccessors(llvm::BasicBlock * b) const;
 
 		/**
 		 * \brief compute and update the Abstract value of the Node n
@@ -123,7 +121,7 @@ class AIdis : public ModulePass, public AIPass {
 			int index,
 			int Sigma,
 			Abstract * &Xtemp,
-			std::list<BasicBlock*> * path,
+			std::list<llvm::BasicBlock*> * path,
 			bool &only_join,
 			PathTree * const U,
 			PathTree * const V);
