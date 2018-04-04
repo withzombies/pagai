@@ -4,6 +4,8 @@
  * \author Julien Henry
  */
 #include <fstream>
+#include <vector>
+#include <cstdlib>
 
 #include "config.h"
 #if LLVM_VERSION_ATLEAST(3, 5)
@@ -98,6 +100,31 @@ std::string GetExecutablePath(const char *Argv0) {
   return llvm::sys::fs::getMainExecutable(Argv0, MainAddr);
 }
 
+void fill_with_compiler_search_paths(std::vector<std::string> & paths)
+{
+	const std::string tmp_filename = "/tmp/cpp_compiler_search_paths.txt";
+	system(("cpp -Wp,-v /dev/null -o /dev/null 2> " + tmp_filename).c_str());
+
+	std::ifstream tmpfile(tmp_filename);
+
+	std::string testpath;
+	while (getline(tmpfile, testpath)) {
+		// trim left
+		size_t i = 0;
+		while (testpath[i] == ' ') {
+			++i;
+		}
+		testpath = testpath.substr(i);
+
+		std::ifstream test_exists(testpath);
+		if (test_exists.good()) {
+			paths.emplace_back(testpath);
+		}
+	}
+
+	remove(tmp_filename.c_str());
+}
+
 std::string parse_conf() {
 	std::ifstream conffile;
 	std::map<std::string,std::string> conf;
@@ -173,13 +200,17 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 		//args.push_back("-fsanitize=local-bounds");
 	}
 	
-	args.push_back("-I");
-	args.push_back("/usr/local/include");
-	args.push_back("-I");
-	args.push_back("/usr/include");
-	for (std::vector<std::string>::iterator it = IncludePaths.begin(), et = IncludePaths.end(); it != et; it++) {
-	   args.push_back("-I");
-	   args.push_back(const_cast<const char*>(it->c_str()));
+	// default system paths
+	std::vector<std::string> compiler_search_paths;
+	fill_with_compiler_search_paths(compiler_search_paths);
+	for (auto & path : compiler_search_paths) {
+		args.push_back("-I");
+		args.push_back(path.c_str());
+	}
+	// additional paths (from pagai's command line)
+	for (auto & path : IncludePaths) {
+		args.push_back("-I");
+		args.push_back(path.c_str());
 	}
 	//args.push_back(IncludePaths.front().c_str());
 
