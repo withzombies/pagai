@@ -187,6 +187,11 @@ target_link_libraries(pagai
     ${GMP_LIBRARIES}
 )
 
+# Tests
+
+enable_testing()
+add_subdirectory(tests)
+
 # Create documentation target (requires doxygen)
 
 find_program(DOXYGEN_EXE doxygen)
