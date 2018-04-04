@@ -386,6 +386,13 @@ class AIPass : public AnalysisPass, private InstVisitor<AIPass> {
 		virtual std::set<BasicBlock*> getSuccessors(BasicBlock * b) const = 0;
 
 	private:
+		/**
+		 * \brief Print canonized forms of invariant lists (apron's canonicalize seems not to do the job)
+		 *
+		 * The terms are in-order from run to run, and the inequalities are in-order from run to run.
+		 */
+		void printCanonizedInvariant(const Abstract * abs, llvm::raw_ostream & stream, std::string * left = NULL) const;
+
 		void visitInstAndAddVarIfNecessary(Instruction &I);
 		/** \{
 		 *  \name Visit methods

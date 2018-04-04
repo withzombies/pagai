@@ -11,7 +11,6 @@
 #include <pthread.h>
 #include <errno.h>
 
-
 #include "llvm/IR/Instructions.h"
 #include "llvm/Analysis/CFG.h"
 #include "llvm/IR/IntrinsicInst.h"
@@ -25,6 +24,7 @@
 #include "Node.h"
 #include "Debug.h"
 #include "recoverName.h"
+#include "utilities.h"
 
 using namespace llvm;
 
@@ -222,8 +222,8 @@ void AIPass::printInvariant(BasicBlock * b, std::string left, llvm::raw_ostream 
 				resetColor(oss);
 			} else {
 				changeColor(raw_ostream::MAGENTA,oss);
-				*oss << "/* invariant:\n"; 
-				Nodes[b]->X_s[passID]->display(*oss,&left);
+				*oss << "/* invariant:\n";
+				printCanonizedInvariant(Nodes[b]->X_s[passID], *oss, &left);
 				*oss << left << "*/\n";
 				resetColor(oss);
 			}
@@ -232,6 +232,35 @@ void AIPass::printInvariant(BasicBlock * b, std::string left, llvm::raw_ostream 
 	}
 }
 
+void AIPass::printCanonizedInvariant(const Abstract * abs, llvm::raw_ostream & stream, std::string * left) const
+{
+	// render invariants on tmp string ...
+
+	std::string tmp_str;
+	llvm::raw_string_ostream tmp_out(tmp_str);
+	abs->display(tmp_out);
+
+	// ... and post-process the string to print canonized form
+	
+    // split the string into list of lines
+	std::vector<std::string> lines;
+    std::string line;
+    std::istringstream iss(tmp_out.str());
+    while (getline(iss, line)) {
+        lines.emplace_back(line);
+    }
+
+    // sort terms within lines
+	for (size_t i = 0; i < lines.size(); ++i) {
+		lines[i] = utilities::canonize_line(lines[i]);
+	}
+
+    // now that each line's terms are sorted, sort lines
+	std::sort(lines.begin(), lines.end()); // lexicographical order is OK here
+	for (const std::string & line : lines) {
+		stream << *left << line << '\n';
+	}
+}
 
 void AIPass::InstrumentLLVMBitcode(Function * F) {
 	BasicBlock * b;
