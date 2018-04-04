@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
+# Check that user does an "out-of-source" build
+if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+    message(FATAL_ERROR "In-source build is not enabled. This avoids polluting the source tree and eases clean-up. "
+                        "Please build from a different directory.\n"
+                        "    Example: mkdir build && cd build && cmake ..\n"
+                        "Before that, please clean up manually files that CMake generated in the source tree:\n"
+                        "    rm -rf CMakeCache.txt CMakeFiles/")
+endif()
+
 project(PAGAI CXX)
 
 set(CMAKE_CXX_STANDARD 11)
