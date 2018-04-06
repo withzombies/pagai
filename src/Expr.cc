@@ -409,7 +409,7 @@ ap_texpr1_t * Expr::visitPHINode (PHINode &I){
 	// There is no need to introduce PHIvars...
 	if (I.getNumIncomingValues() == 1) {
 		pv = I.getIncomingValue(0);
-		ap_texpr1_t * res;
+		ap_texpr1_t * res = nullptr;
 		if (isa<UndefValue>(pv)) {
 			res = create_ap_expr(dyn_cast<Constant>(pv));
 		}

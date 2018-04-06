@@ -105,7 +105,11 @@ std::string GetExecutablePath(const char *Argv0) {
 void fill_with_compiler_search_paths(std::vector<std::string> & paths)
 {
 	const std::string tmp_filename = "/tmp/cpp_compiler_search_paths.txt";
-	system(("cpp -Wp,-v /dev/null -o /dev/null 2> " + tmp_filename).c_str());
+	int result = system(("cpp -Wp,-v /dev/null -o /dev/null 2> " + tmp_filename).c_str());
+	if (result != 0) {
+		// could not execute command => we do not add compiler paths
+		return;
+	}
 
 	std::ifstream tmpfile(tmp_filename);
 
