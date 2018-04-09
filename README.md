@@ -14,6 +14,11 @@ Some examples are given [on the website](https://pagai.gricad-pages.univ-grenobl
 
 ## Contributing
 
+### Project Wiki
+
+Developers can get more information about the project (e.g. how to test code coverage, continuous integration)
+by visiting the [project's wiki](https://gricad-gitlab.univ-grenoble-alpes.fr/pagai/pagai/wikis/home).
+
 ### Report Issues
 
 Feel free to report any issue to [the gitlab issues page](https://gricad-gitlab.univ-grenoble-alpes.fr/pagai/pagai/issues)

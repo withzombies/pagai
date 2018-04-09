@@ -29,7 +29,7 @@ endmacro()
 macro(COMMON_TEST_CREATE_TARGET TEST_NAME TEST_DRIVER)
     if(NOT ARG_ONLY_IF_CONFIG OR "${ARG_ONLY_IF_CONFIG}" STREQUAL "${CONFIG}")
         add_test(
-            NAME "${TEST_NAME}"
+			NAME "${TEST_NAME}"
             COMMAND ${TEST_DRIVER}
                 $<TARGET_FILE:pagai>
                 ${ARGN}                     # Type-specific pagai arguments
