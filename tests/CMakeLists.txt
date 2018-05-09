@@ -29,7 +29,7 @@ endmacro()
 macro(COMMON_TEST_CREATE_TARGET TEST_NAME TEST_DRIVER)
     if(NOT ARG_ONLY_IF_CONFIG OR "${ARG_ONLY_IF_CONFIG}" STREQUAL "${CONFIG}")
         add_test(
-			NAME "${TEST_NAME}"
+            NAME "${TEST_NAME}"
             COMMAND ${TEST_DRIVER}
                 $<TARGET_FILE:pagai>
                 ${ARGN}                     # Type-specific pagai arguments
@@ -119,6 +119,7 @@ endfunction()
 add_nonreg_test(empty_main)
 add_nonreg_test(one_variable_for)
 add_nonreg_test(one_variable_while)
+add_nonreg_test(compare_techs PAGAI_EXTRA_ARGS -c lw -c g -c pf -c lw+pf -c s -c dis -c pf_incr -c incr)
 
 add_asserts_test(simple)
 add_asserts_test(two_variables_for)
