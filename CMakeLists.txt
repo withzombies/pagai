@@ -160,28 +160,12 @@ add_executable(pagai
 
 # Must be configured here (after all CMake variables are defined)
 include(cmake/MakeConfigFile.cmake)
+include(cmake/CodeCoverage.cmake)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LLVM_CXX_FLAGS} -Wall -Wextra -pedantic")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LLVM_LD_FLAGS}")
 if(ENABLE_COVERAGE)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        find_program(LCOV_EXE lcov)
-        find_program(GENHTML_EXE genhtml)
-
-        if(LCOV_EXE AND GENHTML_EXE)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Wno-deprecated -Woverloaded-virtual -Wwrite-strings --coverage")
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-
-            add_custom_target(coverage_capture ${LCOV_EXE} --capture --directory ${CMAKE_BINARY_DIR} --output-file coverage_all.info)
-            add_custom_target(coverage_extract ${LCOV_EXE} --extract coverage_all.info "*/pagai/src/*" --output-file coverage_pagai_src.info DEPENDS coverage_capture)
-            add_custom_target(coverage ${GENHTML_EXE} coverage_pagai_src.info --output-directory coverage DEPENDS coverage_extract)
-        else()
-            message(WARNING "lcov or genhtml could not have been found (lcov is probably not installed) "
-                            "thus coverage tests are not supported")
-        endif()
-    else()
-        message(WARNING "Compiler is not GNU (g++) thus coverage tests are not supported")
-    endif()
+    create_code_coverage_targets(pagai)
 endif()
 
 include_directories(

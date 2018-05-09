@@ -131,3 +131,7 @@ add_unit_test(canonize_line PAGAI_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/utilitie
 # Known bug reproduction
 
 add_known_bug_reproduction(three_variables_for DIFFERENT_OUTPUTS ONLY_IF_CONFIG llvm3.6)        # Issue #6 on GitLab
+
+# Check target
+
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS build_tests)
