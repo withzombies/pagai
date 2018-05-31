@@ -20,14 +20,16 @@
 extern std::set<llvm::BasicBlock *> Loop_headers;
 
 class IdentifyLoops : public llvm::FunctionPass {
- public:
-  static char ID;
-  IdentifyLoops() : llvm::FunctionPass(ID) {}
 
-  bool runOnFunction(llvm::Function &F);
-		
-  virtual void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
-	
+	public:
+		static char ID;
+
+		IdentifyLoops() : llvm::FunctionPass(ID) {}
+
+		bool runOnFunction(llvm::Function &F);
+
+		virtual void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
+
 };
 
 #endif

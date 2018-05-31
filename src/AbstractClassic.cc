@@ -109,8 +109,8 @@ void AbstractClassic::meet_tcons_array(Constraint_array* tcons) {
 		// lines, but there is a memory leak when using it
 		//*main = ap_abstract1_change_environment(man,true,main,lcenv.getEnv(),false);
 		ap_abstract1_t new_main = ap_abstract1_change_environment(man,false,main,lcenv.getEnv(),false);
-	    ap_abstract1_clear(man,main);
-	    *main = new_main;
+		ap_abstract1_clear(man,main);
+		*main = new_main;
 	}
 	*main = ap_abstract1_meet_tcons_array(man,true,main,tcons->to_tcons1_array());
 	canonicalize();
@@ -118,16 +118,16 @@ void AbstractClassic::meet_tcons_array(Constraint_array* tcons) {
 
 void AbstractClassic::canonicalize() {
   /*DM: this code, from JH, was supposed to
-    "delete from the abstract values the constraints with very large coefficients, to prevent some very high analysis time".
-    Unfortunately it tends to create UNREACHABLE values where there should not be.
-    Temporarily disabled until we find the reason.
+	"delete from the abstract values the constraints with very large coefficients, to prevent some very high analysis time".
+	Unfortunately it tends to create UNREACHABLE values where there should not be.
+	Temporarily disabled until we find the reason.
   */
 
 #ifdef SIMPLIFY_CONSTRAINTS
-	// 
-	//  iterate over the constraints forming the abstract value; 
+	//
+	//  iterate over the constraints forming the abstract value;
 	//  if a constraint is "too complicated", delete it
-	//  
+	//
 	//  "too complicated" == the constraints coefficients are huge
 	//
 	ap_tcons1_array_t tcons_array = ap_abstract1_to_tcons_array(man,main);
@@ -150,16 +150,16 @@ void AbstractClassic::canonicalize() {
 	// TODO: memory leak ?
 	*main = ap_abstract1_of_tcons_array(man,main->env,&tcons_array);
 	ap_tcons1_array_clear(&tcons_array);
-	
+
 	// APRON canonicalize
 #endif
 	ap_abstract1_canonicalize(man,main);
 }
 
 void AbstractClassic::assign_texpr_array(
-		ap_var_t* tvar, 
-		ap_texpr1_t* texpr, 
-		size_t size, 
+		ap_var_t* tvar,
+		ap_texpr1_t* texpr,
+		size_t size,
 		ap_abstract1_t* dest
 		) {
 	*main = ap_abstract1_assign_texpr_array(man,true,main,
@@ -170,22 +170,22 @@ void AbstractClassic::assign_texpr_array(
 	canonicalize();
 }
 
-void AbstractClassic::join_array(Environment * env, std::vector<Abstract*> X_pred) {
+void AbstractClassic::join_array(Environment * env, const std::vector<Abstract*> & X_pred) {
 	size_t size = X_pred.size();
-	ap_abstract1_clear(man,main);
+	ap_abstract1_clear(man, main);
 
-    std::vector<ap_abstract1_t> Xmain;
-    Xmain.resize(size);
+	std::vector<ap_abstract1_t> Xmain;
+	Xmain.resize(size);
 
 	for (unsigned i=0; i < size; i++) {
-		Xmain[i] = ap_abstract1_change_environment(man,false,X_pred[i]->main,env->getEnv(),false);
+		Xmain[i] = ap_abstract1_change_environment(man, false, X_pred[i]->main, env->getEnv(), false);
 		delete X_pred[i];
 	}
 
 	if (size > 1) {
-		*main = ap_abstract1_join_array(man,&Xmain[0],size);	
-		for (unsigned i=0; i < size; i++) {
-			ap_abstract1_clear(man,&Xmain[i]);
+		*main = ap_abstract1_join_array(man, &Xmain[0], size);
+		for (unsigned i = 0; i < size; i++) {
+			ap_abstract1_clear(man, &Xmain[i]);
 		}
 	} else {
 		*main = Xmain[0];
@@ -197,21 +197,21 @@ void AbstractClassic::join_array_dpUcm(Environment *env, Abstract* n) {
 	std::vector<Abstract*> v;
 	v.push_back(n);
 	v.push_back(new AbstractClassic(this));
-	join_array(env,v);
+	join_array(env, v);
 }
 
 void AbstractClassic::meet(Abstract* A) {
 	ap_abstract1_t tmp = *main;
-	*main = ap_abstract1_meet(man,false,main,A->main);
-	ap_abstract1_clear(man,&tmp);
+	*main = ap_abstract1_meet(man, false, main, A->main);
+	ap_abstract1_clear(man, &tmp);
 }
 
 ap_tcons1_array_t AbstractClassic::to_tcons_array() {
-	return ap_abstract1_to_tcons_array(man,main);
+	return ap_abstract1_to_tcons_array(man, main);
 }
 
 ap_lincons1_array_t AbstractClassic::to_lincons_array() {
-	return ap_abstract1_to_lincons_array(man,main);
+	return ap_abstract1_to_lincons_array(man, main);
 }
 
 void AbstractClassic::print() {
@@ -235,7 +235,7 @@ void AbstractClassic::display(llvm::raw_ostream &stream, std::string * left) con
 		 ap_gentyp_t* gentyp = ap_generator1_gentypref(&gen);
 		 std::string * out;
 		 if (*gentyp == AP_GEN_RAY) {
-			 out = &rays; 
+			 out = &rays;
 			 if (!first_ray) *out += ",";
 			 first_ray = false;
 		 } else if (*gentyp == AP_GEN_VERTEX) {
@@ -255,39 +255,39 @@ void AbstractClassic::display(llvm::raw_ostream &stream, std::string * left) con
 		 legend = "[";
 		 for (size_t j = 0; j < env_size; j++) {
 			 if (j > 0) *out += ",";
-		     ap_var_t var = ap_environment_var_of_dim(env,j);
+			 ap_var_t var = ap_environment_var_of_dim(env,j);
 			 legend += ((Value*)var)->getName();
 			 legend += " ";
-		     bool zero = ap_generator1_get_coeff(coeff,&gen,var);
+			 bool zero = ap_generator1_get_coeff(coeff,&gen,var);
 			 if (!zero) {
-				// we suppose here that the coeff is of type scalar 
-		     	ap_scalar_t * scalar = coeff->val.scalar;
-		     	switch(scalar->discr) {
-		     	   case AP_SCALAR_DOUBLE:
-		     	   	{
-		     	   	double dbl = scalar->val.dbl;
+				// we suppose here that the coeff is of type scalar
+			 	ap_scalar_t * scalar = coeff->val.scalar;
+			 	switch(scalar->discr) {
+			 	   case AP_SCALAR_DOUBLE:
+			 	   	{
+			 	   	double dbl = scalar->val.dbl;
 					std::ostringstream oss;
 					oss << dbl;
 					*out += oss.str();
-		     	   	}
-		     	   	break;
-		     	   case AP_SCALAR_MPQ:
-		     	   	{
-		     	   	mpq_ptr mpq = scalar->val.mpq;
+			 	   	}
+			 	   	break;
+			 	   case AP_SCALAR_MPQ:
+			 	   	{
+			 	   	mpq_ptr mpq = scalar->val.mpq;
 					std::ostringstream oss;
 					oss << mpq;
 					*out += oss.str();
-		     	   	}
-		     	   	break;
-		     	   case AP_SCALAR_MPFR:
-		     	   	{
-		     	   	mpfr_ptr mpfr = scalar->val.mpfr;
+			 	   	}
+			 	   	break;
+			 	   case AP_SCALAR_MPFR:
+			 	   	{
+			 	   	mpfr_ptr mpfr = scalar->val.mpfr;
 					std::ostringstream oss;
 					oss << mpfr;
 					*out += oss.str();
-		     	   	}
-		     	   	break;
-		     	}
+			 	   	}
+			 	   	break;
+			 	}
 			 }
 		 }
 		 legend += "]";
@@ -299,7 +299,6 @@ void AbstractClassic::display(llvm::raw_ostream &stream, std::string * left) con
 	*Out << "sage: Polyhedron(vertices=" + vertices + ", rays=" + rays + ", lines=" + lines + ")\n";
 	*Out << "sage: legend=" + legend + "\n";
 #endif
-	
 
 #if 1
 	DEBUG(
@@ -308,9 +307,9 @@ void AbstractClassic::display(llvm::raw_ostream &stream, std::string * left) con
 	stream << "Abstract value environment:\n" << env << "\n";
 	);
 
-	ap_tcons1_array_t tcons_array = ap_abstract1_to_tcons_array(man,main);
+	ap_tcons1_array_t tcons_array = ap_abstract1_to_tcons_array(man, main);
 	size_t size = ap_tcons1_array_size(&tcons_array);
-	if (ap_abstract1_is_bottom(man,main)) {
+	if (ap_abstract1_is_bottom(man, main)) {
 		if (left != NULL) stream << *left;
 		stream << "UNREACHABLE\n";
 	} else if (size == 0) {
@@ -318,7 +317,7 @@ void AbstractClassic::display(llvm::raw_ostream &stream, std::string * left) con
 		stream << "TOP\n";
 	} else {
 		for (size_t k = 0; k < size; k++) {
-			ap_tcons1_t cons = ap_tcons1_array_get(&tcons_array,k);
+			ap_tcons1_t cons = ap_tcons1_array_get(&tcons_array, k);
 			if (left != NULL) stream << *left;
 			stream << cons << "\n";
 		}
@@ -345,10 +344,10 @@ void AbstractClassic::display(llvm::raw_ostream &stream, std::string * left) con
 void AbstractClassic::to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met) {
 
 	LLVMContext& C = Inst->getContext();
-	ap_tcons1_array_t tcons_array = ap_abstract1_to_tcons_array(man,main);
+	ap_tcons1_array_t tcons_array = ap_abstract1_to_tcons_array(man, main);
 	size_t size = ap_tcons1_array_size(&tcons_array);
 	//met->push_back(Inst->getParent());
-	if (ap_abstract1_is_bottom(man,main)) {
+	if (ap_abstract1_is_bottom(man, main)) {
 		met->push_back(MDString::get(C, "false"));
 	} else if (size == 0) {
 		met->push_back(MDString::get(C, "true"));
@@ -357,17 +356,17 @@ void AbstractClassic::to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_T
 		// alternative invariant representation
 		Environment env(this);
 		std::vector<METADATA_TYPE*> MDenv;
-		env.to_MDNode(&C,&MDenv);
+		env.to_MDNode(&C, &MDenv);
 		met->push_back(MDNode::get(C,MDenv));
 		std::vector<METADATA_TYPE*> MDconstraints;
 		for (size_t k = 0; k < size; k++) {
-			ap_tcons1_t cons = ap_tcons1_array_get(&tcons_array,k);
+			ap_tcons1_t cons = ap_tcons1_array_get(&tcons_array, k);
 
 			std::vector<METADATA_TYPE*> c;
-			ap_tcons1_t_to_MDNode(cons,Inst,&c);
-			MDconstraints.push_back(MDNode::get(C,c));
+			ap_tcons1_t_to_MDNode(cons,Inst, &c);
+			MDconstraints.push_back(MDNode::get(C, c));
 		}
-		met->push_back(MDNode::get(C,MDconstraints));
+		met->push_back(MDNode::get(C, MDconstraints));
 #else
 		for (size_t k = 0; k < size; k++) {
 			ap_tcons1_t cons = ap_tcons1_array_get(&tcons_array,k);
@@ -392,28 +391,28 @@ void AbstractClassic::to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_T
 }
 
 void AbstractClassic::insert_as_LLVM_invariant(llvm::Instruction * Inst) {
-	ap_tcons1_array_t tcons_array = ap_abstract1_to_tcons_array(man,main);
+	ap_tcons1_array_t tcons_array = ap_abstract1_to_tcons_array(man, main);
 	size_t size = ap_tcons1_array_size(&tcons_array);
-    LLVMContext &Context = Inst->getContext();
-	
+	LLVMContext &Context = Inst->getContext();
+
 	IRBuilder<> Builder(Context);
 	Builder.SetInsertPoint(Inst);
 	Value * invariant = ConstantInt::getTrue(Context);
-	if (ap_abstract1_is_bottom(man,main)) {
+	if (ap_abstract1_is_bottom(man, main)) {
 		invariant = ConstantInt::getFalse(Context);
 	} else if (size == 0) {
 		invariant = ConstantInt::getTrue(Context);
 	} else {
 		for (size_t k = 0; k < size; k++) {
-			ap_tcons1_t cons = ap_tcons1_array_get(&tcons_array,k);
-			invariant = Builder.CreateAnd(invariant,ap_tcons1_to_LLVM(cons,&Builder));
+			ap_tcons1_t cons = ap_tcons1_array_get(&tcons_array, k);
+			invariant = Builder.CreateAnd(invariant,ap_tcons1_to_LLVM(cons, &Builder));
 		}
 	}
 
 	Constant * invFn = Inst->getParent()->getParent()->getParent()->getOrInsertFunction(
-			"pagai.invariant", 
-			Type::getVoidTy(Context), 
+			"pagai.invariant",
+			Type::getVoidTy(Context),
 			Type::getInt1Ty(Context),
 			NULL);
-	Builder.CreateCall(invFn,invariant);	
+	Builder.CreateCall(invFn, invariant);
 }

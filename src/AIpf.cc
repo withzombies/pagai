@@ -40,37 +40,34 @@ bool AIpf::runOnModule(Module &M) {
 	Function * F = nullptr;
 	LSMT = SMTpass::getInstance();
 	*Dbg << "// analysis: " << getPassName() << "\n";
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		F = mIt;
 
 		// if the function is only a declaration, do nothing
 		if (F->begin() == F->end()) continue;
 		if (definedMain() && !isMain(F)) continue;
 		Pr * FPr = Pr::getInstance(F);
-		if (SVComp() && FPr->getAssert()->size() == 0) continue;
+		if (SVComp() && FPr->getAssert().empty()) continue;
 
 		sys::TimeValue * time = new sys::TimeValue(0,0);
 		*time = sys::TimeValue::now();
 		Total_time[passID][F] = time;
 
 		initFunction(F);
-		
+
 		// we create the new pathtree
-		std::set<BasicBlock*>* Pr = FPr->getPr();
-		for (std::set<BasicBlock*>::iterator it = Pr->begin(), et = Pr->end();
-			it != et;
-			it++) {
-			if ((*it)->getTerminator()->getNumSuccessors() > 0
-					&& ! FPr->inUndefBehaviour(*it)
-					&& ! FPr->inAssert(*it)
+		for (BasicBlock * bb : FPr->getPr()) {
+			if (bb->getTerminator()->getNumSuccessors() > 0
+					&& ! FPr->inUndefBehaviour(bb)
+					&& ! FPr->inAssert(bb)
 					) {
-				U[*it] = new PathTree_br(*it);
-				V[*it] = new PathTree_br(*it);
+				U[bb] = new PathTree_br(bb);
+				V[bb] = new PathTree_br(bb);
 			}
 		}
 
 		computeFunction(F);
-		*Total_time[passID][F] = sys::TimeValue::now()-*Total_time[passID][F];
+		*Total_time[passID][F] = sys::TimeValue::now() - *Total_time[passID][F];
 
 		TerminateFunction(F);
 		printResult(F);
@@ -78,32 +75,30 @@ bool AIpf::runOnModule(Module &M) {
 		// deleting the pathtrees
 		ClearPathtreeMap(U);
 		ClearPathtreeMap(V);
-		
+
 		LSMT->reset_SMTcontext();
 	}
-    assert(F != nullptr);
+	assert(F != nullptr);
 	generateAnnotatedFiles(F->getParent(),OutputAnnotatedFile());
-	
+
 	SMTpass::releaseMemory();
 	return false;
 }
 
 void AIpf::computeFunction(Function * F) {
 	BasicBlock * b;
-	Node * n;
+	Node * const n = Nodes[F->begin()];
 	unknown = false;
 
 	// A = {first basicblock}
 	b = F->begin();
 	if (b == F->end()) return;
-	n = Nodes[b];
 
 
 	// get the information about live variables from the LiveValues pass
 	LV = &(getAnalysis<Live>(*F));
 
 	LSMT->push_context();
-
 	DEBUG(
 	if (!quiet_mode())
 		*Dbg << "Computing Rho...";
@@ -123,13 +118,8 @@ void AIpf::computeFunction(Function * F) {
 		*Dbg << "OK\n";
 		);
 
-	
-	// add all function's arguments into the environment of the first bb
-	for (Function::arg_iterator a = F->arg_begin(), e = F->arg_end(); a != e; ++a) {
-		Argument * arg = a;
-		if (!(arg->use_empty()))
-			n->add_var(arg);
-	}
+	addFunctionArgumentsTo(n, F);
+
 	// first abstract value is top
 	computeEnv(n);
 	Environment env(n,LV);
@@ -217,25 +207,22 @@ void AIpf::computeNode(Node * n) {
 			LSMT->man->SMT_print(smtexpr);
 		);
 		// if the result is unsat, then the computation of this node is finished
-		int res;
-	
-		res = LSMT->SMTsolve(smtexpr,&path,n->bb->getParent(),passID);
-		
-		LSMT->pop_context();
+		int res = LSMT->SMTsolve(smtexpr, path, n->bb->getParent(), passID);
 
+		LSMT->pop_context();
 		if (res != 1 || path.size() == 1) {
 			if (res == -1) {
 				unknown = true;
 			}
 			return;
 		}
-	
+
 		TIMEOUT(unknown = true; return;);
 
 		DEBUG(
 			printPath(path);
 		);
-	
+
 		Succ = Nodes[path.back()];
 
 		asc_iterations[passID][n->bb->getParent()]++;
@@ -243,7 +230,7 @@ void AIpf::computeNode(Node * n) {
 		// computing the image of the abstract value by the path's tranformation
 		Xtemp = aman->NewAbstract(n->X_s[passID]);
 		computeTransform(aman,path,Xtemp);
-		
+
 		DEBUG(
 			*Dbg << "POLYHEDRON AT THE STARTING NODE\n";
 			n->X_s[passID]->print();
@@ -259,8 +246,8 @@ void AIpf::computeNode(Node * n) {
 		// if we have a self loop, we apply loopiter
 		if (Succ == n) {
 			loopiter(n,Xtemp,&path,only_join,U[n->bb],V[n->bb]);
-		} 
-		
+		}
+
 		Join.clear();
 		Join.push_back(aman->NewAbstract(Succ->X_s[passID]));
 		Join.push_back(aman->NewAbstract(Xtemp));
@@ -280,7 +267,7 @@ void AIpf::computeNode(Node * n) {
 				*Dbg << "NO WIDENING\n";
 			);
 		}
-		
+
 		DEBUG(
 			*Dbg << "BEFORE:\n";
 			Succ->X_s[passID]->print();
@@ -341,7 +328,8 @@ void AIpf::narrowNode(Node * n) {
 			LSMT->man->SMT_print(smtexpr);
 		);
 		// if the result is unsat, then the computation of this node is finished
-		int res = LSMT->SMTsolve(smtexpr,&path,n->bb->getParent(),passID);
+		int res = LSMT->SMTsolve(smtexpr, path, n->bb->getParent(), passID);
+
 		LSMT->pop_context();
 		if (res != 1 || path.size() == 1) {
 			if (res == -1) {
@@ -349,15 +337,15 @@ void AIpf::narrowNode(Node * n) {
 			}
 			return;
 		}
-		
+
 		TIMEOUT(unknown = true; return;);
 
 		DEBUG(
 			printPath(path);
 		);
-		
+
 		desc_iterations[passID][n->bb->getParent()]++;
-		
+
 		Succ = Nodes[path.back()];
 
 		// computing the image of the abstract value by the path's tranformation

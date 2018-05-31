@@ -27,7 +27,7 @@ void SMTlib2driver::error (const yy::location& l, const std::string& m) {
 	std::cerr << l << ": " << m << std::endl;
 	std::cerr << "log:\n" << log.str() << "\n";
 }
-     
+
 void SMTlib2driver::error (const std::string& m) {
 	std::cerr << m << std::endl;
 }

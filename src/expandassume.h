@@ -34,7 +34,7 @@ class ExpandAssume : public llvm::FunctionPass {
 		llvm::Instruction *SplitBefore,
 		bool Unreachable,
 		llvm::MDNode *BranchWeights = NULL);
-	
+
 };
 
 #endif

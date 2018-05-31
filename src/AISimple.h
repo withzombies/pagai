@@ -24,7 +24,6 @@
 class AISimple : public llvm::ModulePass, public AIPass {
 
 	public:
-
 		AISimple (char &_ID, Apron_Manager_Type _man, bool _NewNarrow, bool _Threshold) : ModulePass(_ID), AIPass(_man,_NewNarrow, _Threshold) {}
 
 		AISimple (char & ID) : ModulePass(ID) {}
@@ -56,7 +55,7 @@ class AISimple : public llvm::ModulePass, public AIPass {
 		 * \param n the starting point
 		 */
 		void computeNode(Node * n);
-		
+
 		/**
 		 * \brief apply narrowing at node n
 		 * \param n the starting point

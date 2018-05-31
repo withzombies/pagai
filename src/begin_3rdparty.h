@@ -7,11 +7,11 @@
  * It is not necessary to include it for standard header files as they are already warning-less.
  */
 #ifdef __GNUC__ // actually recognized by both GCC and clang
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wunused-parameter"
-#   pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#   pragma GCC diagnostic ignored "-Wpedantic"
-#   ifdef __clang__
-#       pragma GCC diagnostic ignored "-Winconsistent-missing-override"
-#   endif
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wunused-parameter"
+#	pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#	pragma GCC diagnostic ignored "-Wpedantic"
+#	ifdef __clang__
+#		pragma GCC diagnostic ignored "-Winconsistent-missing-override"
+#	endif
 #endif

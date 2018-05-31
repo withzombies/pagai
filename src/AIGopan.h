@@ -27,7 +27,7 @@ class AIGopan : public AISimple {
 		 * this ID is different (in address) from a class to another,
 		 * hence this cannot be factored in the base class.
 		 */
-		static char ID;	
+		static char ID;
 
 	public:
 
@@ -37,7 +37,7 @@ class AIGopan : public AISimple {
 			passID.N = _NewNarrow;
 			passID.TH = _Threshold;
 		}
-		
+
 		AIGopan (): AISimple(ID) {
 			init();
 			passID.D = getApronManager();

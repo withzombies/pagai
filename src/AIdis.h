@@ -52,7 +52,7 @@ class AIdis : public llvm::ModulePass, public AIPass {
 		 * details
 		 */
 		int sigma(
-			std::list<llvm::BasicBlock*> path, 
+			std::list<llvm::BasicBlock*> path,
 			int start,
 			Abstract * Xtemp);
 
@@ -64,7 +64,7 @@ class AIdis : public llvm::ModulePass, public AIPass {
 			}
 
 	public:
-		static char ID;	
+		static char ID;
 
 	public:
 
@@ -74,25 +74,22 @@ class AIdis : public llvm::ModulePass, public AIPass {
 			passID.N = _NewNarrow;
 			passID.TH = _Threshold;
 		}
-		
+
 		AIdis() : ModulePass(ID) {
 			init();
 			passID.D = getApronManager();
 			passID.N = useNewNarrowing();
 			passID.TH = useThreshold();
 		}
-		
+
 
 		~AIdis () {
-			for (std::map<llvm::BasicBlock*, PathTree*>::iterator 
-				it = pathtree.begin(),
-				et = pathtree.end(); 
-				it != et; 
-				it++) {
-				if ((*it).second != NULL)
-					delete (*it).second;
+			for (auto & entry : pathtree) {
+				if (entry.second != NULL) {
+					delete entry.second;
 				}
 			}
+		}
 
 		const char *getPassName() const;
 
@@ -110,7 +107,7 @@ class AIdis : public llvm::ModulePass, public AIPass {
 		 * \param n the starting point
 		 */
 		void computeNode(Node * n);
-		
+
 		/**
 		 * \brief apply narrowing at node n
 		 * \param n the starting point
@@ -118,7 +115,7 @@ class AIdis : public llvm::ModulePass, public AIPass {
 		void narrowNode(Node * n);
 
 		void loopiter(
-			Node * n, 
+			Node * n,
 			int index,
 			int Sigma,
 			Abstract * &Xtemp,

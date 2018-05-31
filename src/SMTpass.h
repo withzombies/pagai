@@ -32,14 +32,14 @@
  *
  * Uses SMTpass::man as an abstraction layer to access the SMT solver.
  * It is a singleton design : we use getInstance() to get an object of type
- * SMTpass * 
+ * SMTpass *
  */
 class SMTpass : private llvm::InstVisitor<SMTpass> {
 
 	friend class llvm::InstVisitor<SMTpass>;
-	
+
 	private:
-		
+
 		SMTpass();
 		~SMTpass();
 
@@ -71,7 +71,7 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 
 		/**
 		 * \{
-		 * \name get*Name functions 
+		 * \name get*Name functions
 		 * these following methods are used to create a variable name for
 		 * edges, nodes, values, undeterministic choices, ...
 		 */
@@ -83,7 +83,7 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		 */
 
 
-		/**  
+		/**
 		 * \brief get the expression associated to a value
 		 */
 		SMT_expr getValueExpr(llvm::Value * v, bool primed);
@@ -115,15 +115,15 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		 * - isIndex is true
 		 * - index is the associated index
 		 */
-		static void getElementFromString(	
+		static void getElementFromString(
 			std::string name,
-			bool &isEdge, 
+			bool &isEdge,
 			bool &isIndex,
-			bool &start, 
-			llvm::BasicBlock * &src, 
+			bool &start,
+			llvm::BasicBlock * &src,
 			llvm::BasicBlock * &dest,
 			int &index);
-		
+
 		/**
 		 * \brief called by visitPHINode
 		 */
@@ -137,8 +137,8 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		/**
 		 * \brief recursive function called by computeRho
 		 */
-		void computeRhoRec(	llvm::Function &F, 
-							std::set<llvm::BasicBlock*> * visited,
+		void computeRhoRec(	llvm::Function &F,
+							std::set<llvm::BasicBlock*> & visited,
 							llvm::BasicBlock * dest);
 		void computeRho(llvm::Function &F);
 		void computePrSuccAndPred(llvm::Function &F);
@@ -162,7 +162,7 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		 */
 		SMT_expr getRho(llvm::Function &F);
 
-		/** 
+		/**
 		 * \brief returns a name for a string
 		 * this name is unique for the Value *
 		 */
@@ -183,7 +183,7 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		 * \brief assert an expression in the solver
 		 */
 		void SMT_assert(SMT_expr expr);
-		
+
 		/**
 		 * \brief compute and return the SMT formula associated to
 		 * the BasicBlock source
@@ -194,8 +194,8 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		 * parameter of the function: constraint
 		 */
 		SMT_expr createSMTformula(
-			llvm::BasicBlock * source, 
-			bool use_X_d, 
+			llvm::BasicBlock * source,
+			bool use_X_d,
 			params t,
 			SMT_expr constraint);
 
@@ -206,23 +206,23 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		 * the model
 		 */
 		int SMTsolve(
-				SMT_expr expr, 
-				std::list<llvm::BasicBlock*> * path, 
-				llvm::Function * F, 
+				SMT_expr expr,
+				std::list<llvm::BasicBlock*> & path,
+				llvm::Function * F,
 				params passID);
 
-		/** 
+		/**
 		 * \brief solve an SMT formula and computes its model in case of a 'sat'
-		 * formula. 
+		 * formula.
 		 *
 		 * In the case of a pass using disjunctive invariants, index is set to
 		 * the associated index of the disjunct to focus on.
 		 */
 		int SMTsolve(
-				SMT_expr expr, 
-				std::list<llvm::BasicBlock*> * path, 
+				SMT_expr expr,
+				std::list<llvm::BasicBlock*> & path,
 				int &index,
-				llvm::Function * F, 
+				llvm::Function * F,
 				params passID);
 
 		/**
@@ -249,12 +249,12 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		SMT_expr tcons1ToSmt(ap_tcons1_t tcons);
 		SMT_expr lincons1ToSmt(llvm::BasicBlock * b, ap_lincons1_t lincons,bool &skip);
 		SMT_expr AbstractToSmt(llvm::BasicBlock * b, Abstract * A);
-		/** 
+		/**
 		 * \}
 		 */
 
 		/**
-		 * \brief Creates an SMT formula associated to a disjunctive invariant. 
+		 * \brief Creates an SMT formula associated to a disjunctive invariant.
 		 *
 		 * If insert_booleans is true, each disjunct is cunjunct with a boolean
 		 * predicate, as detailed in the paper, so that we can deduce which
@@ -262,7 +262,7 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		 */
 		SMT_expr AbstractDisjToSmt(llvm::BasicBlock * b, AbstractDisj * A, bool insert_booleans);
 
-		/** 
+		/**
 		 * \{
 		 * \name Visit methods
 		 */
@@ -307,7 +307,7 @@ class SMTpass : private llvm::InstVisitor<SMTpass> {
 		void visitCastInst (llvm::CastInst &I);
 
 		void visitInstruction(llvm::Instruction &I) {
-        	(void) I;
+			(void) I;
 			//ferrs() << I.getOpcodeName();
 			//assert(0 && ": Instruction not interpretable yet!");
 		}

@@ -12,11 +12,11 @@
 
 using namespace llvm;
 
-Constant* RemoveUndet::getNondetFn (Module * M, Type *type) {
+Constant* RemoveUndet::getNondetFn (Module * M, Type * type) {
 	Constant* res = undet_functions[type];
 	if (res == NULL) {
-		res = M->getOrInsertFunction 
-			(boost::str 
+		res = M->getOrInsertFunction
+			(boost::str
 			 (boost::format ("nondet_%d") % undet_functions.size ()), type, NULL);
 
 		if (Function *f = dyn_cast<Function>(res)) {
@@ -32,24 +32,20 @@ bool RemoveUndet::runOnModule(Module &M) {
 	bool Changed = false;
 
 	//Iterate over all functions, basic blocks and instructions.
-	for (Module::iterator FI = M.begin(), E = M.end(); FI != E; ++FI)
-	{
-		for (Function::iterator b = FI->begin(), be = FI->end(); b != be; ++b)
-		{
-			for (BasicBlock::iterator i = b->begin(), ie = b->end(); 
-					i != ie;) 
-			{
-				if (AllocaInst *AI = dyn_cast<AllocaInst>(i))
-				{
-					Constant *fun = getNondetFn (&M,AI->getAllocatedType ());
+	for (Module::iterator FI = M.begin(); FI != M.end(); ++FI) {
+		for (Function::iterator b = FI->begin(); b != FI->end(); ++b) {
+			BasicBlock::iterator i = b->begin();
+			while (i != b->end()) {
+				if (AllocaInst *AI = dyn_cast<AllocaInst>(i)) {
+					Constant *fun = getNondetFn(&M, AI->getAllocatedType());
 
-					IRBuilder<> Builder(FI->getContext ());
-					Builder.SetInsertPoint (&*(++i));
-					Builder.CreateStore (Builder.CreateCall (fun), AI);
+					IRBuilder<> Builder(FI->getContext());
+					Builder.SetInsertPoint(&*(++i));
+					Builder.CreateStore (Builder.CreateCall(fun), AI);
 					Changed = true;
-				}	
-				else
+				} else {
 					++i;
+				}
 			}
 		}
 	}

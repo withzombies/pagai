@@ -18,10 +18,9 @@
 class AIpf_incr : public AIpf {
 
 	public:
-		static char ID;	
+		static char ID;
 
 	public:
-
 		AIpf_incr(char &_ID, Apron_Manager_Type _man, bool _NewNarrow, bool _Threshold) : AIpf(_ID,_man,_NewNarrow,_Threshold) {
 			init();
 		}
@@ -29,7 +28,7 @@ class AIpf_incr : public AIpf {
 		AIpf_incr (): AIpf(ID) {
 			init();
 		}
-		
+
 		void init()
 			{
 				passID.T = PATH_FOCUSING_INCR;

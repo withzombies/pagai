@@ -42,7 +42,7 @@ bool AIdis::runOnModule(Module &M) {
 
 	*Dbg << "// analysis: DISJUNCTIVE\n";
 
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		F = mIt;
 
 		// if the function is only a declaration, do nothing
@@ -57,34 +57,26 @@ bool AIdis::runOnModule(Module &M) {
 
 
 		// we create the new pathtree and Sigma
-		Pr * FPr = Pr::getInstance(F);
-		std::set<BasicBlock*>* Pr = FPr->getPr(); 
-		for (std::set<BasicBlock*>::iterator it = Pr->begin(), et = Pr->end();
-			it != et;
-			it++) {
-			pathtree[*it] = new PathTree_br(*it);
-			S[*it] = new Sigma(*it,Max_Disj);
+		for (BasicBlock * bb : Pr::getInstance(F)->getPr()) {
+			pathtree[bb] = new PathTree_br(bb);
+			S[bb] = new Sigma(bb, Max_Disj);
 		}
 
 		computeFunction(F);
 		*Total_time[passID][F] = sys::TimeValue::now()-*Total_time[passID][F];
-		
+
 		TerminateFunction(F);
 		printResult(F);
 
 		// we delete the previous pathtree
-		for (std::map<BasicBlock*,PathTree*>::iterator it = pathtree.begin(), et = pathtree.end();
-			it != et;
-			it++) {
-			delete (*it).second;
+		for (auto & entry : pathtree) {
+			delete entry.second;
 		}
 		pathtree.clear();
 
 		// we delete the previous Sigma
-		for (std::map<BasicBlock*,Sigma*>::iterator it = S.begin(), et = S.end();
-			it != et;
-			it++) {
-			delete (*it).second;
+		for (auto & entry : S) {
+			delete entry.second;
 		}
 		S.clear();
 
@@ -94,8 +86,6 @@ bool AIdis::runOnModule(Module &M) {
 	generateAnnotatedFiles(F->getParent(),OutputAnnotatedFile());
 	return 0;
 }
-
-
 
 void AIdis::computeFunction(Function * F) {
 	BasicBlock * b;
@@ -111,32 +101,31 @@ void AIdis::computeFunction(Function * F) {
 	LV = &(getAnalysis<Live>(*F));
 
 	LSMT->push_context();
+
 	DEBUG(
 	if (!quiet_mode())
 		*Dbg << "Computing Rho...";
-		);
+	);
 	LSMT->SMT_assert(LSMT->getRho(*F));
 	DEBUG(
 	if (!quiet_mode())
 		*Dbg << "OK\n";
-		);
+	);
 
-	// add all function's arguments into the environment of the first bb
-	for (Function::arg_iterator a = F->arg_begin(), e = F->arg_end(); a != e; ++a) {
-		Argument * arg = a;
-		if (!(arg->use_empty()))
-			n->add_var(arg);
-	}
+	addFunctionArgumentsTo(n, F);
+
 	// first abstract value is top
 	computeEnv(n);
 	Environment env(n,LV);
 	n->X_s[passID]->set_top(&env);
 	n->X_d[passID]->set_top(&env);
 
-	while (!A_prime.empty()) 
-			A_prime.pop();
-	while (!A.empty()) 
-			A.pop();
+	while (!A_prime.empty()) {
+		A_prime.pop();
+	}
+	while (!A.empty()) {
+		A.pop();
+	}
 
 	//A' <- initial state
 	A_prime.push(n);
@@ -144,7 +133,7 @@ void AIdis::computeFunction(Function * F) {
 	// Abstract Interpretation algorithm
 	START();
 	while (!A_prime.empty() && !unknown) {
-		
+
 		// compute the new paths starting in a point in A'
 		is_computed.clear();
 		while (!A_prime.empty()) {
@@ -164,9 +153,9 @@ void AIdis::computeFunction(Function * F) {
 
 		// we set X_d abstract values to bottom for narrowing
 		Pr * FPr = Pr::getInstance(F);
-		for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
-			b = i;
-			if (FPr->getPr()->count(i) && Nodes[b] != n) {
+		for (Function::iterator it = F->begin(); it != F->end(); ++it) {
+			b = it;
+			if (FPr->getPr().count(it) && Nodes[b] != n) {
 				Nodes[b]->X_d[passID]->set_bottom(&env);
 			}
 		}
@@ -188,17 +177,15 @@ end:
 }
 
 std::set<BasicBlock*> AIdis::getPredecessors(BasicBlock * b) const {
-	Pr * FPr = Pr::getInstance(b->getParent());
-	return FPr->getPrPredecessors(b);
+	return Pr::getInstance(b->getParent())->getPrPredecessors(b);
 }
 
 std::set<BasicBlock*> AIdis::getSuccessors(BasicBlock * b) const {
-	Pr * FPr = Pr::getInstance(b->getParent());
-	return FPr->getPrSuccessors(b);
+	return Pr::getInstance(b->getParent())->getPrSuccessors(b);
 }
 
 int AIdis::sigma(
-		std::list<BasicBlock*> path, 
+		std::list<BasicBlock*> path,
 		int start,
 		Abstract * Xtemp) {
 	return S[path.front()]->getSigma(path,start,Xtemp,this);
@@ -209,17 +196,17 @@ void AIdis::computeNewPaths(Node * n) {
 	Abstract * Xtemp = NULL;
 	std::vector<Abstract*> Join;
 
+	bool useXd = false;
+
 	// first, we set X_d abstract values to X_s
 	Pr * FPr = Pr::getInstance(n->bb->getParent());
 	std::set<BasicBlock*> successors = FPr->getPrSuccessors(n->bb);
-	for (std::set<BasicBlock*>::iterator it = successors.begin(),
-			et = successors.end();
-			it != et;
-			it++) {
-		Succ = Nodes[*it];
+	for (BasicBlock * bb : successors) {
+		Succ = Nodes[bb];
 		delete Succ->X_d[passID];
 		Succ->X_d[passID] = aman->NewAbstract(Succ->X_s[passID]);
 	}
+
 	while (true) {
 		DEBUG(
 			changeColor(raw_ostream::RED);
@@ -228,15 +215,14 @@ void AIdis::computeNewPaths(Node * n) {
 		);
 		// creating the SMTpass formula we want to check
 		LSMT->push_context();
-		SMT_expr smtexpr = LSMT->createSMTformula(n->bb,false,passID,
-				pathtree[n->bb]->generateSMTformula(LSMT,true));
+		SMT_expr pathtree_smt = pathtree[n->bb]->generateSMTformula(LSMT,true);
+		SMT_expr smtexpr = LSMT->createSMTformula(n->bb,useXd,passID,pathtree_smt);
 		std::list<BasicBlock*> path;
 		DEBUG_SMT(
 			LSMT->man->SMT_print(smtexpr);
 		);
-		int res;
 		int index = 0;
-		res = LSMT->SMTsolve(smtexpr,&path,index,n->bb->getParent(),passID);
+		int res = LSMT->SMTsolve(smtexpr, path, index, n->bb->getParent(), passID);
 		LSMT->pop_context();
 
 		// if the result is unsat, then the computation of this node is finished
@@ -290,12 +276,12 @@ void AIdis::computeNewPaths(Node * n) {
 }
 
 void AIdis::loopiter(
-		Node * n, 
+		Node * n,
 		int index,
 		int Sigma,
-		Abstract * &Xtemp, 
+		Abstract * &Xtemp,
 		std::list<BasicBlock*> * path,
-		bool &only_join, 
+		bool &only_join,
 		PathTree * const U,
 		PathTree * const V
 		) {
@@ -317,7 +303,7 @@ void AIdis::loopiter(
 			Xtemp->join_array(&Xtemp_env,Join);
 
 			DEBUG(
-				*Dbg << "BEFORE MINIWIDENING\n";	
+				*Dbg << "BEFORE MINIWIDENING\n";
 				*Dbg << "Succ->X:\n";
 				SuccDis->print();
 				*Dbg << "Xtemp:\n";
@@ -333,12 +319,12 @@ void AIdis::loopiter(
 			else
 				Xtemp->widening(SuccDis->getDisjunct(Sigma));
 			DEBUG(
-				*Dbg << "MINIWIDENING!\n";	
+				*Dbg << "MINIWIDENING!\n";
 			);
 			delete SuccDis->getDisjunct(Sigma);
 			SuccDis->setDisjunct(Sigma,Xtemp);
 			DEBUG(
-				*Dbg << "AFTER MINIWIDENING\n";	
+				*Dbg << "AFTER MINIWIDENING\n";
 				Xtemp->print();
 			);
 
@@ -350,7 +336,7 @@ void AIdis::loopiter(
 				*Dbg << "POLYHEDRON AFTER PATH TRANSFORMATION (AFTER MINIWIDENING)\n";
 				Xtemp->print();
 			);
-			
+
 			delete SuccDis->getDisjunct(index);
 			SuccDis->setDisjunct(index,Xpred);
 			only_join = true;
@@ -392,15 +378,15 @@ void AIdis::computeNode(Node * n) {
 		);
 		LSMT->push_context();
 		// creating the SMTpass formula we want to check
-		SMT_expr smtexpr = LSMT->createSMTformula(b,false,passID,pathtree[b]->generateSMTformula(LSMT));
+		SMT_expr pathtree_smt = pathtree[n->bb]->generateSMTformula(LSMT);
+		SMT_expr smtexpr = LSMT->createSMTformula(b,false,passID,pathtree_smt);
 		std::list<BasicBlock*> path;
 		DEBUG_SMT(
 			LSMT->man->SMT_print(smtexpr);
 		);
 		// if the result is unsat, then the computation of this node is finished
-		int res;
-		int index;
-		res = LSMT->SMTsolve(smtexpr,&path,index,n->bb->getParent(),passID);
+		int index = 0;
+		int res = LSMT->SMTsolve(smtexpr, path, index, n->bb->getParent(), passID);
 		LSMT->pop_context();
 		if (res != 1 || path.size() == 1) {
 			if (res == -1) {
@@ -416,9 +402,9 @@ void AIdis::computeNode(Node * n) {
 			printPath(path);
 		);
 		Succ = Nodes[path.back()];
-		
+
 		asc_iterations[passID][n->bb->getParent()]++;
-		
+
 		// computing the image of the abstract value by the path's tranformation
 		AbstractDisj * Xdisj = dynamic_cast<AbstractDisj*>(n->X_s[passID]);
 		Xtemp = Xdisj->man_disj->NewAbstract(Xdisj->getDisjunct(index));
@@ -442,7 +428,7 @@ void AIdis::computeNode(Node * n) {
 		// if we have a self loop, we apply loopiter
 		if (Succ == n) {
 			loopiter(n,index,Sigma,Xtemp,&path,only_join,U[index],V[index]);
-		} 
+		}
 		Join.clear();
 		Join.push_back(Xdisj->man_disj->NewAbstract(SuccDisj->getDisjunct(Sigma)));
 		Join.push_back(Xdisj->man_disj->NewAbstract(Xtemp));
@@ -471,18 +457,18 @@ void AIdis::computeNode(Node * n) {
 		);
 		A.push(Succ);
 		is_computed[Succ] = false;
-		// we have to search for new paths starting at Succ, 
+		// we have to search for new paths starting at Succ,
 		// since the associated abstract value has changed
 		A_prime.push(Succ);
 	}
 
 end:
 	//delete U;
-	for (std::map<int,PathTree*>::iterator it = U.begin(), et = U.end(); it != et; it++) {
-		delete it->second;
+	for (auto & entry : U) {
+		delete entry.second;
 	}
-	for (std::map<int,PathTree*>::iterator it = V.begin(), et = V.end(); it != et; it++) {
-		delete it->second;
+	for (auto & entry : V) {
+		delete entry.second;
 	}
 }
 
@@ -505,15 +491,15 @@ void AIdis::narrowNode(Node * n) {
 		);
 		LSMT->push_context();
 		// creating the SMTpass formula we want to check
-		SMT_expr smtexpr = LSMT->createSMTformula(n->bb,true,passID,pathtree[n->bb]->generateSMTformula(LSMT));
+		SMT_expr pathtree_smt = pathtree[n->bb]->generateSMTformula(LSMT);
+		SMT_expr smtexpr = LSMT->createSMTformula(n->bb,true,passID,pathtree_smt);
 		std::list<BasicBlock*> path;
 		DEBUG_SMT(
 			LSMT->man->SMT_print(smtexpr);
 		);
 		// if the result is unsat, then the computation of this node is finished
-		int res;
 		int index = 0;
-		res = LSMT->SMTsolve(smtexpr,&path,index,n->bb->getParent(),passID);
+		int res = LSMT->SMTsolve(smtexpr, path, index, n->bb->getParent(), passID);
 		LSMT->pop_context();
 		if (res != 1 || path.size() == 1) {
 			if (res == -1) unknown = true;
@@ -525,7 +511,7 @@ void AIdis::narrowNode(Node * n) {
 		DEBUG(
 			printPath(path);
 		);
-		
+
 		Succ = Nodes[path.back()];
 
 		desc_iterations[passID][n->bb->getParent()]++;
@@ -534,7 +520,7 @@ void AIdis::narrowNode(Node * n) {
 		AbstractDisj * Xdisj = dynamic_cast<AbstractDisj*>(n->X_s[passID]);
 		Xtemp = Xdisj->man_disj->NewAbstract(Xdisj->getDisjunct(index));
 		computeTransform(Xdisj->man_disj,path,Xtemp);
-		
+
 		int Sigma = sigma(path,index,Xtemp);
 
 		DEBUG(

@@ -20,11 +20,13 @@ bool ExpandAssume::runOnFunction(Function &F) {
 }
 
 bool ExpandAssume::stepFunction(Function &F) {
-	for (Function::iterator bi = F.begin(), be = F.end(); bi != be; ++bi) {
-		for (BasicBlock::iterator i = bi->begin(), e = bi->end(); i != e; ++i) {
+	for (Function::iterator bi = F.begin(); bi != F.end(); ++bi) {
+		for (BasicBlock::iterator i = bi->begin(); i != bi->end(); ++i) {
 			if (CallInst * CI = dyn_cast<CallInst>(i)) {
 				// cannot use the pattern visitor here, as the graph is modified on the fly
-				if (visitCallInst(*CI)) return true;
+				if (visitCallInst(*CI)) {
+					return true;
+				}
 			}
 		}
 	}
@@ -38,21 +40,24 @@ bool ExpandAssume::visitCallInst(CallInst &CI) {
 	const std::string pagai_assume ("pagai_assume");
 
 	Function * F = CI.getCalledFunction();
-	if (F == NULL) return false;
-	std::string fname = F->getName();
-	if (fname.compare(SVcomp_assume)
-		&& fname.compare(assume)
-		&& fname.compare(pagai_assume)) 
+	if (F == NULL) {
 		return false;
+	}
+	std::string fname = F->getName();
+	if (fname.compare(SVcomp_assume) && fname.compare(assume) && fname.compare(pagai_assume)) {
+		return false;
+	}
 	Value * cond = CI.getOperand(0);
-	if (seen.count(cond)) return false;
+	if (seen.count(cond)) {
+		return false;
+	}
 	seen.insert(cond);
 	if (ZExtInst * zext = dyn_cast<ZExtInst>(cond)) {
 		cond = zext->getOperand(0);
 	} else {
 		return false;
 	}
-	SplitBlockAndInsertIfThen(cond,&CI,true);
+	SplitBlockAndInsertIfThen(cond, &CI, true);
 	return true;
 }
 
@@ -66,10 +71,11 @@ TerminatorInst *ExpandAssume::SplitBlockAndInsertIfThen(Value *Cond,
 	LLVMContext &C = Head->getContext();
 	BasicBlock *ThenBlock = BasicBlock::Create(C, "", Head->getParent(), Tail);
 	TerminatorInst *CheckTerm;
-	if (Unreachable)
+	if (Unreachable) {
 		CheckTerm = new UnreachableInst(C, ThenBlock);
-	else
+	} else {
 		CheckTerm = BranchInst::Create(Tail, ThenBlock);
+	}
 	CheckTerm->setDebugLoc(SplitBefore->getDebugLoc());
 	BranchInst *HeadNewTerm =
 		BranchInst::Create(/*ifTrue*/Tail, /*ifFalse*/ThenBlock, Cond);

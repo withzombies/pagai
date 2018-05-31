@@ -17,7 +17,7 @@
 #include "SMT_manager.h"
 
 /**
- * \class yices 
+ * \class yices
  * \brief Interface with the yices API
  */
 class yices: public SMT_manager {
@@ -27,7 +27,7 @@ class yices: public SMT_manager {
 		SMT_expr int0, real0;
 
 	public:
-		
+
 		yices();
 		~yices();
 
@@ -65,7 +65,7 @@ class yices: public SMT_manager {
 
 		SMT_expr SMT_mk_div (SMT_expr a1, SMT_expr a2, bool integer = true);
 		SMT_expr SMT_mk_rem (SMT_expr a1, SMT_expr a2);
- 
+
 		SMT_expr SMT_mk_int2real(SMT_expr a);
 		SMT_expr SMT_mk_real2int(SMT_expr a);
 		SMT_expr SMT_mk_is_int(SMT_expr a);
@@ -78,7 +78,7 @@ class yices: public SMT_manager {
 
 		void SMT_print(SMT_expr a);
 		void SMT_assert(SMT_expr a);
-		int SMT_check(SMT_expr a, std::set<std::string> * true_booleans);
+		int SMT_check(SMT_expr a, std::set<std::string> & true_booleans);
 };
 #endif
 #endif

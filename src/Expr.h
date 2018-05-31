@@ -101,7 +101,7 @@ class Expr : public llvm::InstVisitor<Expr,ap_texpr1_t*> {
 
 		void print();
 
-		/** 
+		/**
 		 * \{
 		 * \name Visit methods
 		 */

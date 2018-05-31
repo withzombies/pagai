@@ -39,8 +39,8 @@ struct params {
 	bool TH;
 
 	bool operator<(const params& A) const
-	{ return (T<A.T) 
-		|| (T==A.T && D < A.D) 
+	{ return (T<A.T)
+		|| (T==A.T && D < A.D)
 			|| (T==A.T && D==A.D && N < A.N)
 			|| (T==A.T && D==A.D && N == A.N && TH < A.TH); }
 };
@@ -63,7 +63,7 @@ class Node {
 		int lowlink;
 		bool isInStack;
 
-		/** 
+		/**
 		 * \brief recursive version of the tarjan's algorithm
 		 * compute both the loop heads and the Strongly connected components
 		 * Must be called with n=1 and and empty allocated stack
@@ -99,7 +99,7 @@ class Node {
 		 */
         llvm::BasicBlock * bb;
 
-		/** 
+		/**
 		 * \brief sccId identifies the strongly connected component the node is in
 		 */
 		int sccId;
@@ -139,7 +139,7 @@ class Node {
 
 
 		/**
-		 * \brief compute the strongly connected components of the CFG 
+		 * \brief compute the strongly connected components of the CFG
 		 * and loop headers
 		 */
 		void computeSCC();
@@ -150,7 +150,7 @@ class Node {
 		void add_var(llvm::Value * val);
 };
 
-/** 
+/**
  * \brief Map that associate each BasicBlock of the Module with its Node
  * object
  */

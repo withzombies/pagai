@@ -48,7 +48,7 @@ const char * AIopt::getPassName() const {
 void AIopt::getAnalysisUsage(AnalysisUsage &AU) const {
 	AU.setPreservesAll();
 	AU.addRequired<Live>();
-    //AU.addRequiredTransitive<AliasAnalysis>();
+	//AU.addRequiredTransitive<AliasAnalysis>();
 }
 
 bool AIopt::runOnModule(Module &M) {
@@ -57,14 +57,14 @@ bool AIopt::runOnModule(Module &M) {
 
 	*Dbg << "// analysis: " << getPassName() << "\n";
 
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		F = mIt;
 
 		// if the function is only a declaration, do nothing
 		if (F->begin() == F->end()) continue;
 		if (definedMain() && !isMain(F)) continue;
 		Pr * FPr = Pr::getInstance(F);
-		if (SVComp() && FPr->getAssert()->size() == 0) continue;
+		if (SVComp() && FPr->getAssert().empty()) continue;
 
 		sys::TimeValue * time = new sys::TimeValue(0,0);
 		*time = sys::TimeValue::now();
@@ -73,26 +73,20 @@ bool AIopt::runOnModule(Module &M) {
 		initFunction(F);
 
 		// we create the new pathtree
-		std::set<BasicBlock*>* Pr = FPr->getPr();
-		for (std::set<BasicBlock*>::iterator it = Pr->begin(), et = Pr->end();
-			it != et;
-			it++) {
-			if ((*it)->getTerminator()->getNumSuccessors() > 0
-					&& ! FPr->inUndefBehaviour(*it)
-					&& ! FPr->inAssert(*it)
-					) {
-				pathtree[*it] = new PathTree_br(*it);
-				U[*it] = new PathTree_br(*it);
-				V[*it] = new PathTree_br(*it);
+		for (BasicBlock * bb : FPr->getPr()) {
+			if (bb->getTerminator()->getNumSuccessors() > 0 && ! FPr->inUndefBehaviour(bb) && ! FPr->inAssert(bb)) {
+				pathtree[bb] = new PathTree_br(bb);
+				U[bb] = new PathTree_br(bb);
+				V[bb] = new PathTree_br(bb);
 			}
 		}
 
 		computeFunction(F);
 #if 0
 		struct timespec max_wait;
-        memset(&max_wait, 0, sizeof(max_wait));
-        /* wait at most 2 seconds */
-        max_wait.tv_sec = 1;
+		memset(&max_wait, 0, sizeof(max_wait));
+		/* wait at most 2 seconds */
+		max_wait.tv_sec = 1;
 		int timeout = computeFunction_or_timeout(F,&max_wait);
 
 		if (timeout) {
@@ -100,7 +94,7 @@ bool AIopt::runOnModule(Module &M) {
 		}
 #endif
 		*Total_time[passID][F] = sys::TimeValue::now()-*Total_time[passID][F];
-		
+
 		TerminateFunction(F);
 		printResult(F);
 
@@ -113,7 +107,7 @@ bool AIopt::runOnModule(Module &M) {
 	}
 	assert(F != nullptr);
 	generateAnnotatedFiles(F->getParent(),OutputAnnotatedFile());
-	
+
 	SMTpass::releaseMemory();
 	return 0;
 }
@@ -131,11 +125,11 @@ void AIopt::computeFunction(Function * F) {
 	LV = &(getAnalysis<Live>(*F));
 
 	LSMT->push_context();
-	
+
 	DEBUG(
 	if (!quiet_mode())
 		*Dbg << "Computing Rho...";
-		);
+	);
 	LSMT->SMT_assert(LSMT->getRho(*F));
 
 	// we assert b_i => I_i for each block
@@ -149,24 +143,22 @@ void AIopt::computeFunction(Function * F) {
 	DEBUG(
 	if (!quiet_mode())
 		*Dbg << "OK\n";
-		);
-	
-	// add all function's arguments into the environment of the first bb
-	for (Function::arg_iterator a = F->arg_begin(), e = F->arg_end(); a != e; ++a) {
-		Argument * arg = a;
-		if (!(arg->use_empty()))
-			n->add_var(arg);
-	}
+	);
+
+	addFunctionArgumentsTo(n, F);
+
 	// first abstract value is top
 	computeEnv(n);
 	Environment env(n,LV);
 	n->X_s[passID]->set_top(&env);
 	n->X_d[passID]->set_top(&env);
-	
-	while (!A_prime.empty()) 
-			A_prime.pop();
-	while (!A.empty()) 
-			A.pop();
+
+	while (!A_prime.empty()) {
+		A_prime.pop();
+	}
+	while (!A.empty()) {
+		A.pop();
+	}
 
 	//A' <- initial state
 	A_prime.push(n);
@@ -174,7 +166,7 @@ void AIopt::computeFunction(Function * F) {
 	// Abstract Interpretation algorithm
 	START();
 	while (!A_prime.empty() && !unknown) {
-		
+
 		// compute the new paths starting in a point in A'
 		is_computed.clear();
 		while (!A_prime.empty()) {
@@ -203,9 +195,9 @@ void AIopt::computeFunction(Function * F) {
 
 		// we set X_d abstract values to bottom for narrowing
 		Pr * FPr = Pr::getInstance(F);
-		for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
-			b = i;
-			if (FPr->getPr()->count(i) && Nodes[b] != n) {
+		for (Function::iterator it = F->begin(); it != F->end(); ++it) {
+			b = it;
+			if (FPr->getPr().count(it) && Nodes[b] != n) {
 				Nodes[b]->X_d[passID]->set_bottom(&env);
 			}
 		}
@@ -257,7 +249,7 @@ void AIopt::computeNewPaths(Node * n) {
 	if (is_computed.count(n) && is_computed[n]) {
 		return;
 	}
-		
+
 	if (!pathtree.count(n->bb)) {
 		// this is a block without any successors...
 		is_computed[n] = true;
@@ -267,15 +259,11 @@ void AIopt::computeNewPaths(Node * n) {
 	// first, we set X_d abstract values to X_s
 	Pr * FPr = Pr::getInstance(n->bb->getParent());
 	std::set<BasicBlock*> successors = FPr->getPrSuccessors(n->bb);
-	for (std::set<BasicBlock*>::iterator it = successors.begin(),
-			et = successors.end();
-			it != et;
-			it++) {
-		Succ = Nodes[*it];
+	for (BasicBlock * bb : successors) {
+		Succ = Nodes[bb];
 		delete Succ->X_d[passID];
 		Succ->X_d[passID] = aman->NewAbstract(Succ->X_s[passID]);
 	}
-
 
 	while (true) {
 		is_computed[n] = true;
@@ -297,8 +285,7 @@ void AIopt::computeNewPaths(Node * n) {
 				<< "\n\n";
 			LSMT->man->SMT_print(smtexpr);
 		);
-		int res;
-		res = LSMT->SMTsolve(smtexpr,&path,n->bb->getParent(),passID);
+		int res = LSMT->SMTsolve(smtexpr, path, n->bb->getParent(), passID);
 
 		LSMT->pop_context();
 
@@ -343,9 +330,9 @@ void AIopt::computeNewPaths(Node * n) {
 		// there is a new path that has to be explored
 		pathtree[n->bb]->insert(path,false);
 		DEBUG(
-			*Dbg << "THE FOLLOWING PATH IS INSERTED INTO P'\n";	
+			*Dbg << "THE FOLLOWING PATH IS INSERTED INTO P'\n";
 			printPath(path);
-			*Dbg << "NEW SUCC:" << *SuccX << "\n";	
+			*Dbg << "NEW SUCC:" << *SuccX << "\n";
 		);
 		A.push(n);
 		A.push(Succ);
@@ -375,7 +362,7 @@ void AIopt::computeNode(Node * n) {
 		is_computed[n] = true;
 		return;
 	}
-	
+
 	DEBUG (
 		changeColor(raw_ostream::GREEN);
 		*Dbg << "#######################################################\n";
@@ -405,8 +392,7 @@ void AIopt::computeNode(Node * n) {
 			LSMT->man->SMT_print(smtexpr);
 		);
 		// if the result is unsat, then the computation of this node is finished
-		int res;
-		res = LSMT->SMTsolve(smtexpr,&path,n->bb->getParent(),passID);
+		int res = LSMT->SMTsolve(smtexpr, path, n->bb->getParent(), passID);
 
 		LSMT->pop_context();
 		if (res != 1 || path.size() == 1) {
@@ -423,7 +409,7 @@ void AIopt::computeNode(Node * n) {
 			printPath(path);
 		);
 		Succ = Nodes[path.back()];
-		
+
 		asc_iterations[passID][n->bb->getParent()]++;
 
 		// computing the image of the abstract value by the path's tranformation
@@ -435,14 +421,14 @@ void AIopt::computeNode(Node * n) {
 			*Dbg << "POLYHEDRON AFTER PATH TRANSFORMATION\n";
 			Xtemp->print();
 		);
-		
+
 		Environment Xtemp_env(Xtemp);
 		Succ->X_s[passID]->change_environment(&Xtemp_env);
 
 		// if we have a self loop, we apply loopiter
 		if (Succ == n) {
 			loopiter(n,Xtemp,&path,only_join,U[n->bb],V[n->bb]);
-		} 
+		}
 		Join.clear();
 		Join.push_back(aman->NewAbstract(Succ->X_s[passID]));
 		Join.push_back(aman->NewAbstract(Xtemp));
@@ -450,16 +436,17 @@ void AIopt::computeNode(Node * n) {
 
 		Pr * FPr = Pr::getInstance(b->getParent());
 		if (FPr->inPw(Succ->bb) && ((Succ != n) || !only_join)) {
-				if (W->exist(path)) {
-					if (use_threshold)
-						Xtemp->widening_threshold(Succ->X_s[passID],threshold);
-					else
-						Xtemp->widening(Succ->X_s[passID]);
-					DEBUG(*Dbg << "WIDENING! \n";);
-					W->clear();
+			if (W->exist(path)) {
+				if (use_threshold) {
+					Xtemp->widening_threshold(Succ->X_s[passID],threshold);
 				} else {
-					W->insert(path);
+					Xtemp->widening(Succ->X_s[passID]);
 				}
+				DEBUG(*Dbg << "WIDENING! \n";);
+				W->clear();
+			} else {
+				W->insert(path);
+			}
 		} else {
 			DEBUG(*Dbg << "NO WIDENING\n";);
 		}
@@ -485,7 +472,7 @@ void AIopt::computeNode(Node * n) {
 		);
 		A.push(Succ);
 		is_computed[Succ] = false;
-		// we have to search for new paths starting at Succ, 
+		// we have to search for new paths starting at Succ,
 		// since the associated abstract value has changed
 		A_prime.push(Succ);
 	}
@@ -527,8 +514,7 @@ void AIopt::narrowNode(Node * n) {
 			LSMT->man->SMT_print(smtexpr);
 		);
 		// if the result is unsat, then the computation of this node is finished
-		int res;
-		res = LSMT->SMTsolve(smtexpr,&path,n->bb->getParent(),passID);
+		int res = LSMT->SMTsolve(smtexpr, path, n->bb->getParent(), passID);
 
 		LSMT->pop_context();
 		if (res != 1 || path.size() == 1) {
@@ -541,7 +527,7 @@ void AIopt::narrowNode(Node * n) {
 		DEBUG(
 			printPath(path);
 		);
-		
+
 		Succ = Nodes[path.back()];
 
 		desc_iterations[passID][n->bb->getParent()]++;

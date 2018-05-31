@@ -16,24 +16,26 @@
 
 using namespace llvm;
 
-void PathTree_br::createBDDVars(BasicBlock * Start, std::set<BasicBlock*> * Pr, std::map<BranchInst*,int> &map, std::set<BasicBlock*> * seen, bool start) {
+void PathTree_br::createBDDVars(BasicBlock * Start, const std::set<BasicBlock*> & Pr, std::map<BranchInst*,int> & map, std::set<BasicBlock*> & seen, bool start) {
 	int n;
 	BranchInst * br = getConditionnalBranch(Start,start);
-	if (br != NULL)
-		getBDDfromBranchInst(br,map,n);
-	seen->insert(Start);
-	if ( start || !Pr->count(Start)) {
-		for (succ_iterator PI = succ_begin(Start), E = succ_end(Start); PI != E; ++PI) {
+	if (br != NULL) {
+		getBDDfromBranchInst(br, map, n);
+	}
+	seen.insert(Start);
+	if (start || !Pr.count(Start)) {
+		for (succ_iterator PI = succ_begin(Start); PI != succ_end(Start); ++PI) {
 			BasicBlock *Succ = *PI;
-			if (!seen->count(Succ))
-				createBDDVars(Succ,Pr,BddVar,seen);
+			if (!seen.count(Succ)) {
+				createBDDVars(Succ, Pr, BddVar, seen);
+			}
 		}
 	}
 }
 
 BranchInst * PathTree_br::getConditionnalBranch(BasicBlock * b, bool start) {
 	// access the branch inst of the basicblock if exists
-	for (BasicBlock::iterator i = b->begin(), ie = b->end(); i != ie; ++i) {
+	for (BasicBlock::iterator i = b->begin(); i != b->end(); ++i) {
 		if (BranchInst* Inst = dyn_cast<BranchInst>(&*i)) {
 			  if (Inst->isUnconditional() && !start) return NULL;
 			  return Inst;
@@ -53,41 +55,39 @@ PathTree_br::PathTree_br(BasicBlock * Start) {
 
 	// we compute all the levels of the BDD
 	Function * F = Start->getParent();
-	Pr * FPr = Pr::getInstance(F);
-	std::set<BasicBlock*> * Pr = FPr->getPr();
 	std::set<BasicBlock*> seen;
-	createBDDVars(Start,Pr,BddVarStart,&seen,true);
+	createBDDVars(Start, Pr::getInstance(F)->getPr(), BddVarStart, seen, true);
 }
 
 PathTree_br::~PathTree_br() {
 	delete Bdd;
 	delete Bdd_prime;
-	delete mgr;	
+	delete mgr;
 }
 
 BDD PathTree_br::getBDDfromBddIndex(int n) {
 	return mgr->bddVar(n);
 }
 
-BDD PathTree_br::getBDDfromBranchInst(BranchInst * b, std::map<BranchInst*,int> &map, int &n) {
+BDD PathTree_br::getBDDfromBranchInst(BranchInst * b, std::map<BranchInst*,int> & map, int &n) {
 	if (!map.count(b)) {
 		n = BddIndex;
 		levels[n] = b;
 		BddIndex++;
 		map[b] = n;
 	} else {
-		n = map[b];	
+		n = map[b];
 	}
 	return mgr->bddVar(n);
 }
 
 BranchInst * PathTree_br::getBranchFromLevel(int const i) {
-	BranchInst * br = levels[i]; 
+	BranchInst * br = levels[i];
 	return br;
 }
 
 const std::string PathTree_br::getStringFromLevel(int const i) {
-	BranchInst * br = levels[i]; 
+	BranchInst * br = levels[i];
 	BasicBlock * bb = br->getParent();
 	if (BddVarStart.count(br) && BddVarStart[br]==i)
 		return SMTpass::getNodeName(bb,true);
@@ -95,14 +95,14 @@ const std::string PathTree_br::getStringFromLevel(int const i) {
 		return SMTpass::getNodeName(bb,false);
 }
 
-void PathTree_br::DumpDotBDD(std::string filename, bool prime) {
+void PathTree_br::DumpDotBDD(const std::string & filename, bool prime) {
 	if (prime)
 		DumpDotBDD(*Bdd_prime,filename);
 	else
 		DumpDotBDD(*Bdd,filename);
 }
 
-void PathTree_br::DumpDotBDD(BDD graph, std::string filename) {
+void PathTree_br::DumpDotBDD(BDD graph, const std::string & filename) {
 	std::ostringstream name;
 	name << filename << ".dot";
 
@@ -111,17 +111,17 @@ void PathTree_br::DumpDotBDD(BDD graph, std::string filename) {
 	std::vector<char *> inames;
 	inames.resize(n);
 
-	for (std::map<BranchInst*,int>::iterator it = BddVar.begin(), et = BddVar.end(); it != et; it++) {
-		BasicBlock * origin = it->first->getParent();
-		BasicBlock * dest = it->first->getSuccessor(0);
-		std::string edge = SMTpass::getEdgeName(origin,dest);
-		inames[it->second] = strdup(edge.c_str());
+	for (auto & entry : BddVar) {
+		BasicBlock * origin = entry.first->getParent();
+		BasicBlock * dest = entry.first->getSuccessor(0);
+		std::string edge = SMTpass::getEdgeName(origin, dest);
+		inames[entry.second] = strdup(edge.c_str());
 	}
-	for (std::map<BranchInst*,int>::iterator it = BddVarStart.begin(), et = BddVarStart.end(); it != et; it++) {
-		BasicBlock * origin = it->first->getParent();
-		BasicBlock * dest = it->first->getSuccessor(0);
-		std::string edge = SMTpass::getEdgeName(origin,dest);
-		inames[it->second] = strdup(edge.c_str());
+	for (auto & entry : BddVarStart) {
+		BasicBlock * origin = entry.first->getParent();
+		BasicBlock * dest = entry.first->getSuccessor(0);
+		std::string edge = SMTpass::getEdgeName(origin, dest);
+		inames[entry.second] = strdup(edge.c_str());
 	}
 
 	char const* onames[] = {"B"};
@@ -145,27 +145,24 @@ SMT_expr PathTree_br::generateSMTformula(SMTpass * smt, bool neg) {
 	std::map<DdNode*,SMT_expr> Bdd_expr;
 	DdNode *node;
 	DdNode *N, *Nv, *Nnv;
-	DdGen *gen;
 	DdNode * true_node = nullptr;
 	std::vector<SMT_expr> formula;
 	std::vector<SMT_expr> factorized;
-	for(gen = Cudd_FirstNode (mgr->getManager(), Bdd->getNode(), &node);
-	!Cudd_IsGenEmpty(gen);
-	(void) Cudd_NextNode(gen, &node)) {
-	
+	DdGen *gen = Cudd_FirstNode(mgr->getManager(), Bdd->getNode(), &node);
+	while (!Cudd_IsGenEmpty(gen)) {
 		// remove the extra 1 from the adress if exists
-	    N = Cudd_Regular(node);
-	
-	    if (Cudd_IsConstant(N)) {
+		N = Cudd_Regular(node);
+
+		if (Cudd_IsConstant(N)) {
 			// Terminal node
 			if (node != background && node != zero) {
 				// this is the 1 node
-				Bdd_expr.insert(std::pair<DdNode*,SMT_expr>(node,smt->man->SMT_mk_true()));	
+				Bdd_expr.insert(std::pair<DdNode*,SMT_expr>(node,smt->man->SMT_mk_true()));
 				// we remember the adress of this node for future simplification of
 				// the formula
 				true_node = N;
 			} else {
-				Bdd_expr.insert(std::pair<DdNode*,SMT_expr>(node,smt->man->SMT_mk_false()));	
+				Bdd_expr.insert(std::pair<DdNode*,SMT_expr>(node,smt->man->SMT_mk_false()));
 			}
 		} else {
 			BranchInst * br = getBranchFromLevel(N->index);
@@ -174,7 +171,7 @@ SMT_expr PathTree_br::generateSMTformula(SMTpass * smt, bool neg) {
 			std::string edge = SMTpass::getEdgeName(origin,dest);
 			SMT_var bbvar = smt->man->SMT_mk_bool_var(edge);
 			SMT_expr bbexpr(smt->man->SMT_mk_expr_from_bool_var(bbvar));
-	
+
 			Nv  = Cudd_T(N);
 			Nnv = Cudd_E(N);
 			bool Nnv_comp = false;
@@ -186,7 +183,7 @@ SMT_expr PathTree_br::generateSMTformula(SMTpass * smt, bool neg) {
 			SMT_expr Nnv_expr(Bdd_expr[Nnv]);
 			if (Nnv_comp)
 				Nnv_expr = smt->man->SMT_mk_not(Nnv_expr);
-		
+
 			if (Nnv == true_node && Nnv_comp) {
 				// we don't need to create an ite formula, because the else condition
 				// is always false
@@ -206,13 +203,14 @@ SMT_expr PathTree_br::generateSMTformula(SMTpass * smt, bool neg) {
 				SMT_var var = smt->man->SMT_mk_bool_var(name.str());
 				SMT_expr vexpr(smt->man->SMT_mk_expr_from_bool_var(var));
 				factorized.push_back(smt->man->SMT_mk_eq(vexpr,Bdd_expr[node]));
-				Bdd_expr[node] = vexpr;	
+				Bdd_expr[node] = vexpr;
 			}
 		}
+		Cudd_NextNode(gen, &node);
 	}
 	Cudd_GenFree(gen);
-	
-	if (Cudd_IsComplement(Bdd->getNode())) 
+
+	if (Cudd_IsComplement(Bdd->getNode()))
 		// sometimes, Bdd is complemented, especially when Bdd = false
 		formula.push_back(smt->man->SMT_mk_not(Bdd_expr[Cudd_Regular(Bdd->getNode())]));
 	else
@@ -224,9 +222,9 @@ SMT_expr PathTree_br::generateSMTformula(SMTpass * smt, bool neg) {
 
 	factorized.push_back(res);
 	return smt->man->SMT_mk_and(factorized);
-} 
+}
 
-BDD PathTree_br::computef(std::list<BasicBlock*> path) {
+BDD PathTree_br::computef(const std::list<BasicBlock*> & path) {
 	std::list<BasicBlock*> workingpath;
 	BasicBlock * current;
 	BranchInst * br;
@@ -248,7 +246,7 @@ BDD PathTree_br::computef(std::list<BasicBlock*> path) {
 		br = getConditionnalBranch(current);
 		if (br != NULL) {
 			BDD block = BDD(getBDDfromBranchInst(br, BddVar, n));
-			
+
 			seen.insert(n);
 			if (!workingpath.empty()) {
 				if (br->getSuccessor(0) == workingpath.front()) {
@@ -268,7 +266,7 @@ BDD PathTree_br::computef(std::list<BasicBlock*> path) {
 	return f;
 }
 
-void PathTree_br::insert(std::list<BasicBlock*> path, bool primed) {
+void PathTree_br::insert(const std::list<BasicBlock*> & path, bool primed) {
 	BDD f = computef(path);
 	if (primed) {
 		*Bdd_prime = *Bdd_prime + f;
@@ -277,7 +275,7 @@ void PathTree_br::insert(std::list<BasicBlock*> path, bool primed) {
 	}
 }
 
-void PathTree_br::remove(std::list<BasicBlock*> path, bool primed) {
+void PathTree_br::remove(const std::list<BasicBlock*> & path, bool primed) {
 	BDD f = computef(path);
 	if (primed) {
 		*Bdd_prime = *Bdd_prime * !f;
@@ -294,7 +292,7 @@ void PathTree_br::clear(bool primed) {
 	}
 }
 
-bool PathTree_br::exist(std::list<BasicBlock*> path, bool primed) {
+bool PathTree_br::exist(const std::list<BasicBlock*> & path, bool primed) {
 	BDD f = computef(path);
 	bool res;
 	if (primed) {

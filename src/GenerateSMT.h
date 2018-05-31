@@ -20,10 +20,10 @@
  * \brief Pass that only computes the SMT-formula and outputs it
  */
 class GenerateSMT : public llvm::ModulePass {
-	
+
 	private:
 		SMTpass * LSMT;
-        llvm::DominatorTree * DT;
+		llvm::DominatorTree * DT;
 
 	public:
 		static char ID;

@@ -9,7 +9,10 @@ function(MAKE_CONFIG_FILE)
     string(REGEX MATCHALL "[Oo][Pp][Tt][Ii][Oo][Nn] *\\([^\n]*" OPTION_LIST ${CMAKELISTS_STR})
     foreach(opt ${OPTION_LIST})
         string(REGEX REPLACE "[Oo][Pp][Tt][Ii][Oo][Nn] *\\( *([^ ]*).*" "\\1" opt ${opt})
-        list(APPEND CMAKE_BUILD_OPTIONS "#cmakedefine ${opt}")
+        list(APPEND CMAKE_BUILD_OPTIONS
+			"#ifndef ${opt}"
+			"#cmakedefine ${opt}"
+			"#endif")
     endforeach()
     string(REPLACE ";" "\n" CMAKE_BUILD_OPTIONS "${CMAKE_BUILD_OPTIONS}")
 

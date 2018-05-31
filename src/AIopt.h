@@ -59,11 +59,11 @@ class AIopt : public llvm::ModulePass, public AIPass {
 				aman = new AbstractManClassic();
 				passID.T = LW_WITH_PF;
 			}
-		
+
 		bool is_SMT_technique() {return true;}
 
 	public:
-		static char ID;	
+		static char ID;
 
 	public:
 
@@ -73,7 +73,7 @@ class AIopt : public llvm::ModulePass, public AIPass {
 			passID.N = _NewNarrow;
 			passID.TH = _Threshold;
 		}
-		
+
 		AIopt (char &_ID): ModulePass(_ID) {
 			init();
 			passID.D = getApronManager();
@@ -89,16 +89,13 @@ class AIopt : public llvm::ModulePass, public AIPass {
 		}
 
 		~AIopt () {
-			for (std::map<llvm::BasicBlock*, PathTree*>::iterator 
-				it = pathtree.begin(),
-				et = pathtree.end(); 
-				it != et; 
-				it++) {
-				if ((*it).second != NULL)
-					delete (*it).second;
+			for (auto & entry : pathtree) {
+				if (entry.second != NULL) {
+					delete entry.second;
 				}
-				delete aman;
 			}
+			delete aman;
+		}
 
 		/**
 		 * \{
@@ -125,7 +122,7 @@ class AIopt : public llvm::ModulePass, public AIPass {
 		 * \param n the starting point
 		 */
 		void computeNode(Node * n);
-		
+
 		/**
 		 * \brief apply narrowing at node n
 		 * \param n the starting point

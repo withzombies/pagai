@@ -49,7 +49,7 @@ class Compare : public llvm::ModulePass {
 
 		std::map<
 			Techniques,
-			std::map<Techniques,CmpResults> 
+			std::map<Techniques,CmpResults>
 			> results;
 
 		std::map<Techniques, llvm::sys::TimeValue *> Time;
@@ -62,8 +62,8 @@ class Compare : public llvm::ModulePass {
 
 
 		void compareTechniques(
-			Node * n, 
-			Techniques t1, 
+			Node * n,
+			Techniques t1,
 			Techniques t2);
 
 		void CompareTechniquesByPair(Node * n);
@@ -81,7 +81,7 @@ class Compare : public llvm::ModulePass {
 	public:
 		static char ID;
 
-		Compare(std::vector<enum Techniques> * T);
+		Compare(std::vector<enum Techniques> & T);
 		Compare();
 
 		const char * getPassName() const;

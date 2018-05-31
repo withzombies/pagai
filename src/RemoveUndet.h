@@ -16,11 +16,11 @@
 #include "end_3rdparty.h"
 
 class RemoveUndet : public llvm::ModulePass {
-	
+
 	private:
 		std::map<const llvm::Type*, llvm::Constant*> undet_functions;
-		
-        llvm::Constant* getNondetFn (llvm::Module * M, llvm::Type *type);
+
+		llvm::Constant* getNondetFn (llvm::Module * M, llvm::Type *type);
 
 	public:
 		static char ID;

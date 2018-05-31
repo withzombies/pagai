@@ -24,14 +24,14 @@ class AIopt_incr : public AIopt {
 			}
 
 	public:
-		static char ID;	
+		static char ID;
 
 	public:
 
 		AIopt_incr(char &_ID, Apron_Manager_Type _man, bool _NewNarrow, bool _Threshold) : AIopt(_ID,_man,_NewNarrow,_Threshold) {
 			init();
 		}
-		
+
 		AIopt_incr() : AIopt(ID) {
 			init();
 		}

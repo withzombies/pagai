@@ -40,17 +40,17 @@ class instrOverflow : public llvm::FunctionPass,
 			bool updateFunction(llvm::Function &F);
 
 			void replaceWithUsualOp(
-					llvm::Instruction * old, 
+					llvm::Instruction * old,
 					unsigned intrinsicID,
-					std::vector<llvm::Value*> * args,
+					const std::vector<llvm::Value*> & args,
 					llvm::CallInst * intrinsicCall
-					);
+			);
 
 			void replaceWithCmp(
-					llvm::Instruction * old, 
+					llvm::Instruction * old,
 					unsigned intrinsicID,
 					llvm::CallInst * intrinsicCall
-					);
+			);
 
 			bool visitExtractValueInst(llvm::ExtractValueInst &inst);
 			bool visitBranchInst(llvm::BranchInst &inst);

@@ -42,14 +42,14 @@ class SMTlib: public SMT_manager {
 
 		int stack_level;
 
-		/** 
+		/**
 		 * pipe from PAGAI to the SMT solver
 		 */
-		int wpipefd[2]; 
+		int wpipefd[2];
 		/**
-		 * pipe from the SMT solver to PAGAI		
+		 * pipe from the SMT solver to PAGAI
 		 */
-		int rpipefd[2]; 
+		int rpipefd[2];
 
 		FILE *input;
 
@@ -118,7 +118,7 @@ class SMTlib: public SMT_manager {
 
 		void SMT_print(SMT_expr a);
 		void SMT_assert(SMT_expr a);
-		int SMT_check(SMT_expr a, std::set<std::string> * true_booleans);
+		int SMT_check(SMT_expr a, std::set<std::string> & true_booleans);
 		bool interrupt();
 };
 #endif

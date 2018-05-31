@@ -16,7 +16,7 @@ using namespace llvm;
 
 bool ExpandEqualities::runOnFunction(Function &F) {
 
-	for (Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {
+	for (Function::iterator i = F.begin(); i != F.end(); ++i) {
 		visit(i);
 	}
 	return 0;
@@ -72,7 +72,7 @@ void ExpandEqualities::visitBranchInst(BranchInst &I) {
 	CmpInst * cond;
 	if (!(cond = dyn_cast<CmpInst>(I.getCondition())))
 		return;
-	
+
 	Value * leftop = cond->getOperand(0);
 	Value * rightop = cond->getOperand(1);
 	bool isFloat = false;
@@ -105,12 +105,12 @@ void ExpandEqualities::visitBranchInst(BranchInst &I) {
 		cmpSGT = Builder.CreateICmpSGT(leftop,rightop);
 	}
 	SplitBlockAndInsertIfThen(
-			cmpSLT, 
+			cmpSLT,
 			cond->getParent()->getTerminator(),
 			false
 			);
 	SplitBlockAndInsertIfThen(
-			cmpSGT, 
+			cmpSGT,
 			cond->getParent()->getTerminator(),
 			false
 			);

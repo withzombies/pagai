@@ -103,7 +103,7 @@ class Abstract {
 		 * \return true iff this <= d
 		 */
 		virtual bool is_leq(Abstract * d);
-		
+
 		/**
 		 * \brief compare two abstract values
 		 * \param A the second abstract value
@@ -146,7 +146,7 @@ class Abstract {
 		virtual void meet_tcons_array(Constraint_array* tcons) = 0;
 
 		/**
-		 * \brief canonicalize the apron representation of the abstract 
+		 * \brief canonicalize the apron representation of the abstract
 		 * value
 		 */
 		virtual void canonicalize() = 0;
@@ -155,34 +155,34 @@ class Abstract {
 		/**
 		 * \brief assign an expression to a set of variables
 		 * \param tvar array of the variables to assign
-		 * \param texpr  array of corresponding expressions 
+		 * \param texpr  array of corresponding expressions
 		 * \param size size of the array
 		 * \param dest see apron doc
 		 */
 		virtual void assign_texpr_array(
-				ap_var_t* tvar, 
-				ap_texpr1_t* texpr, 
-				size_t size, 
+				ap_var_t* tvar,
+				ap_texpr1_t* texpr,
+				size_t size,
 				ap_abstract1_t* dest) = 0;
 
 		/**
 		 * \brief assign an expression to a set of variables
 		 * \param name vector of the variables to assign
-		 * \param expr vector of corresponding expressions 
+		 * \param expr vector of corresponding expressions
 		 * \param dest see apron doc
 		 */
 		void assign_texpr_array(
-			std::vector<ap_var_t> * name,
-			std::vector<Expr*> * expr,
+			std::vector<ap_var_t> & name,
+			std::vector<Expr*> & expr,
 			ap_abstract1_t* dest);
-		
+
 		/**
 		 * \brief the abstract value becomes the join of a set of
 		 * abstract values
 		 * \param env the environment of the vector X_pred
 		 * \param X_pred the set of abstract values to join
 		 */
-		virtual void join_array(Environment * env, std::vector<Abstract*> X_pred) = 0;
+		virtual void join_array(Environment * env, const std::vector<Abstract*> & X_pred) = 0;
 
 		/**
 		 * \brief the abstract value becomes the dpUcm of a set of
@@ -200,7 +200,7 @@ class Abstract {
 		 * \param A the abstract value to meet with
 		 */
 		virtual void meet(Abstract* A) = 0;
-		
+
 		/**
 		 * \brief convert the abstract value to a conjunction of
 		 * tree constraints

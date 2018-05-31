@@ -72,7 +72,7 @@ SMT_var z3_manager::SMT_mk_var(std::string name, SMT_type type){
 		vars.insert(std::pair<std::string,SMT_var>(name,SMT_var(symbol(ctx,Z3_mk_string_symbol(ctx,cstr)))));
 		delete [] cstr;
 		types[vars[name]] = type;
-	} 
+	}
 	return vars[name];
 }
 
@@ -89,11 +89,12 @@ SMT_expr z3_manager::SMT_mk_or (std::vector<SMT_expr> args){
 		return SMT_mk_true();
 	}
 	expr e(ctx);
-	std::vector<SMT_expr>::iterator B = args.begin(), E = args.end();
-	e = *(*B).expr();
-	B++;
-	for (; B != E; ++B) {
-		e = e || *(*B).expr();
+	auto B = args.begin();
+	e = *B->expr();
+	++B;
+	while (B != args.end()) {
+		e = e || *B->expr();
+		++B;
 	}
 	return SMT_expr(e);
 }
@@ -104,11 +105,12 @@ SMT_expr z3_manager::SMT_mk_and (std::vector<SMT_expr> args){
 	}
 	expr e(ctx);
 	e = ctx.bool_val(true);
-	std::vector<SMT_expr>::iterator B = args.begin(), E = args.end();
-	e = *(*B).expr();
+	auto B = args.begin();
+	e = *B->expr();
 	B++;
-	for (; B != E; ++B) {
-		e = e && *(*B).expr();
+	while (B != args.end()) {
+		e = e && *B->expr();
+		++B;
 	}
 	return SMT_expr(e);
 }
@@ -179,9 +181,8 @@ SMT_expr z3_manager::SMT_mk_real (double x) {
 SMT_expr z3_manager::SMT_mk_sum (std::vector<SMT_expr> args){
 	expr e(ctx);
 	e = ctx.int_val(0);
-	std::vector<SMT_expr>::iterator B = args.begin(), E = args.end();
-	for (; B != E; ++B) {
-		e = e + *(*B).expr();
+	for (SMT_expr & arg : args) {
+		e = e + *arg.expr();
 	}
 	return SMT_expr(e);
 }
@@ -189,9 +190,8 @@ SMT_expr z3_manager::SMT_mk_sum (std::vector<SMT_expr> args){
 SMT_expr z3_manager::SMT_mk_sub (std::vector<SMT_expr> args){
 	expr e(ctx);
 	e = ctx.int_val(0);
-	std::vector<SMT_expr>::iterator B = args.begin(), E = args.end();
-	for (; B != E; ++B) {
-		e = e - *(*B).expr();
+	for (SMT_expr & arg : args) {
+		e = e - *arg.expr();
 	}
 	return SMT_expr(e);
 }
@@ -199,9 +199,8 @@ SMT_expr z3_manager::SMT_mk_sub (std::vector<SMT_expr> args){
 SMT_expr z3_manager::SMT_mk_mul (std::vector<SMT_expr> args){
 	expr e(ctx);
 	e = ctx.int_val(1);
-	std::vector<SMT_expr>::iterator B = args.begin(), E = args.end();
-	for (; B != E; ++B) {
-		e = e * *(*B).expr();
+	for (SMT_expr & arg : args) {
+		e = e * (*arg.expr());
 	}
 	return SMT_expr(e);
 }
@@ -300,7 +299,7 @@ void z3_manager::SMT_assert(SMT_expr a){
 	s->add(*a.expr());
 }
 
-int z3_manager::SMT_check(SMT_expr a, std::set<std::string> * true_booleans){
+int z3_manager::SMT_check(SMT_expr a, std::set<std::string> & true_booleans){
 	int ret = 0;
 	SMT_assert(a);
 	//check_result result = s->check(1,a.expr());
@@ -314,20 +313,20 @@ int z3_manager::SMT_check(SMT_expr a, std::set<std::string> * true_booleans){
 		case unsat:
 			DEBUG(
 					*Out << "unsat\n";
-			     );
+				 );
 			ret = 0;
 			break;
 		case unknown:
 			DEBUG(
 					*Out << "unknown\n";
-			     );
+				 );
 			*Out << "UNKNOWN\n";
 			ret = -1;
 			break;
 		case sat:
 			DEBUG(
 					*Out << "sat\n";
-			     );
+				 );
 			ret = 1;
 			model m = s->get_model();
 			//DEBUG_SMT(
@@ -359,7 +358,7 @@ int z3_manager::SMT_check(SMT_expr a, std::set<std::string> * true_booleans){
 							DEBUG_SMT(
 									oss_true << name << " := true\n";
 								 );
-							true_booleans->insert(name);
+							true_booleans.insert(name);
 							break;
 					}
 

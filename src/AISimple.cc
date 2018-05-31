@@ -31,11 +31,8 @@ void AISimple::computeFunc(Function * F) {
 	n = Nodes[b];
 
 	// add all function's arguments into the environment of the first bb
-	for (Function::arg_iterator a = F->arg_begin(), e = F->arg_end(); a != e; ++a) {
-		Argument * arg = a;
-		if (!(arg->use_empty()))
-			n->add_var(arg);
-	}
+	addFunctionArgumentsTo(n, F);
+
 	// first abstract value is top
 	computeEnv(n);
 	Environment env(n,LV);
@@ -63,7 +60,7 @@ void AISimple::computeFunc(Function * F) {
 			copy_Xf_to_Xs(F);
 			return;
 		}
-		
+
 		copy_Xd_to_Xs(F);
 		ascendingIter(n);
 		narrowingIter(n);
@@ -104,9 +101,9 @@ bool AISimple::runOnModule(Module &M) {
 	Function * F = nullptr;
 	*Dbg << "// analysis: " << getPassName() << "\n";
 
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		F = mIt;
-		
+
 		// if the function is only a declaration, do nothing
 		if (F->empty()) continue;
 		if (definedMain() && !isMain(F)) continue;
@@ -153,12 +150,12 @@ void AISimple::computeNode(Node * n) {
 	);
 
 
-	for (succ_iterator s = succ_begin(b), E = succ_end(b); s != E; ++s) {
+	for (succ_iterator s = succ_begin(b); s != succ_end(b); ++s) {
 		path.clear();
 		path.push_back(b);
 		path.push_back(*s);
 		Succ = Nodes[*s];
-		
+
 		asc_iterations[passID][n->bb->getParent()]++;
 
 		// computing the image of the abstract value by the path's tranformation
@@ -189,7 +186,7 @@ void AISimple::computeNode(Node * n) {
 		} else {
 			Xtemp->join_array_dpUcm(&Xtemp_env,aman->NewAbstract(Succ->X_s[passID]));
 		}
-		
+
 		if (!Succ->X_f[passID]->is_bottom()) {
 			Xtemp->meet(Succ->X_f[passID]);
 		}
@@ -238,7 +235,7 @@ void AISimple::narrowNode(Node * n) {
 		n->X_s[passID]->print();
 	);
 
-	for (succ_iterator s = succ_begin(n->bb), E = succ_end(n->bb); s != E; ++s) {
+	for (succ_iterator s = succ_begin(n->bb); s != succ_end(n->bb); ++s) {
 		path.clear();
 		path.push_back(n->bb);
 		path.push_back(*s);

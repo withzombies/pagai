@@ -17,36 +17,34 @@ using namespace llvm;
 Environment::Environment() {
 	env = ap_environment_alloc_empty();
 }
- 
+
 Environment::Environment(const Environment &e) {
 	env = ap_environment_copy(e.env);
 }
 
-void Environment::init(std::set<ap_var_t> * intvars, std::set<ap_var_t> * realvars) {
-	ap_var_t * _intvars = (ap_var_t*)malloc(intvars->size()*sizeof(ap_var_t));
-	ap_var_t * _realvars = (ap_var_t*)malloc(realvars->size()*sizeof(ap_var_t));
+void Environment::init(const std::set<ap_var_t> & intvars, const std::set<ap_var_t> & realvars) {
+	ap_var_t * _intvars = (ap_var_t*)malloc(intvars.size() * sizeof(ap_var_t));
+	ap_var_t * _realvars = (ap_var_t*)malloc(realvars.size() * sizeof(ap_var_t));
 
 	int j = 0;
-	for (std::set<ap_var_t>::iterator i = intvars->begin(),
-			e = intvars->end(); i != e; ++i) {
-		_intvars[j] = *i;
+	for (auto & ap_intvar : intvars) {
+		_intvars[j] = ap_intvar;
 		j++;
 	}
 
 	j = 0;
-	for (std::set<ap_var_t>::iterator i = realvars->begin(),
-			e = realvars->end(); i != e; ++i) {
-		_realvars[j] = *i;
+	for (auto & ap_realvar : realvars) {
+		_realvars[j] = ap_realvar;
 		j++;
 	}
 
-	env = ap_environment_alloc(_intvars,intvars->size(),_realvars,realvars->size());
+	env = ap_environment_alloc(_intvars, intvars.size(), _realvars, realvars.size());
 	free(_intvars);
 	free(_realvars);
 }
 
-Environment::Environment(std::set<ap_var_t> * intvars, std::set<ap_var_t> * realvars) {
-	init(intvars,realvars);
+Environment::Environment(const std::set<ap_var_t> & intvars, const std::set<ap_var_t> & realvars) {
+	init(intvars, realvars);
 }
 
 Environment::Environment(Abstract * A) {
@@ -68,25 +66,22 @@ Environment::Environment(Constraint_array * cons) {
 Environment::Environment(ap_environment_t * e) {
 	env = ap_environment_copy(e);
 }
-		
+
 Environment::Environment(Node * n, Live * LV) {
 	std::set<ap_var_t> Sintvars;
 	std::set<ap_var_t> Srealvars;
 
-	for (std::map<Value*,std::set<ap_var_t> >::iterator i = n->intVar.begin(),
-			e = n->intVar.end(); i != e; ++i) {
-		if (LV->isLiveByLinearityInBlock((*i).first,n->bb,true)
-			|| isa<UndefValue>((*i).first)) {
-			Sintvars.insert((*i).second.begin(), (*i).second.end());
+	for (auto & entry : n->intVar) {
+		if (LV->isLiveByLinearityInBlock(entry.first, n->bb, true) || isa<UndefValue>(entry.first)) {
+			Sintvars.insert(entry.second.begin(), entry.second.end());
 		}
 	}
-	for (std::map<Value*,std::set<ap_var_t> >::iterator i = n->realVar.begin(),
-			e = n->realVar.end(); i != e; ++i) {
-		if (LV->isLiveByLinearityInBlock((*i).first,n->bb,true)
-			|| isa<UndefValue>((*i).first))
-			Srealvars.insert((*i).second.begin(), (*i).second.end());
+	for (auto & entry : n->realVar) {
+		if (LV->isLiveByLinearityInBlock(entry.first, n->bb, true) || isa<UndefValue>(entry.first)) {
+			Srealvars.insert(entry.second.begin(), entry.second.end());
+		}
 	}
-	init(&Sintvars,&Srealvars);
+	init(Sintvars, Srealvars);
 }
 
 Environment::~Environment() {
@@ -99,7 +94,7 @@ Environment & Environment::operator= (const Environment &e) {
 	env = ee;
 	return *this;
 }
-		
+
 bool Environment::operator == (const Environment &e) {
 	return ap_environment_is_eq(env, e.env);
 }
@@ -122,42 +117,42 @@ ap_environment_t * Environment::getEnv() {
 	return env;
 }
 
-void Environment::get_vars(std::set<ap_var_t> * intdims, std::set<ap_var_t> * realdims) {
+void Environment::get_vars(std::set<ap_var_t> & intdims, std::set<ap_var_t> & realdims) {
 	ap_var_t var;
 	for (size_t i = 0; i < env->intdim; i++) {
-		var = ap_environment_var_of_dim(env,i);
-		intdims->insert(var);
+		var = ap_environment_var_of_dim(env, i);
+		intdims.insert(var);
 	}
 	for (size_t i = env->intdim; i < env->intdim + env->realdim; i++) {
 		var = ap_environment_var_of_dim(env,i);
-		realdims->insert(var);
+		realdims.insert(var);
 	}
 }
 
-void Environment::get_vars_live_in(BasicBlock * b, Live * LV, std::set<ap_var_t> * intdims, std::set<ap_var_t> * realdims) {
+void Environment::get_vars_live_in(BasicBlock * b, Live * LV, std::set<ap_var_t> & intdims, std::set<ap_var_t> & realdims) {
 	ap_var_t var;
 	Value* val;
 	for (size_t i = 0; i < env->intdim; i++) {
-		var = ap_environment_var_of_dim(env,i);
+		var = ap_environment_var_of_dim(env, i);
 		// we consider undef values as never live
 		if (Expr::is_undef_ap_var(var)) continue;
-		val = (Value*)var;
-		if (LV->isLiveByLinearityInBlock(val,b,true)) {
-			intdims->insert(var);
+		val = (Value*) var;
+		if (LV->isLiveByLinearityInBlock(val, b, true)) {
+			intdims.insert(var);
 		}
 	}
 	for (size_t i = env->intdim; i < env->intdim + env->realdim; i++) {
-		var = ap_environment_var_of_dim(env,i);
+		var = ap_environment_var_of_dim(env, i);
 		if (Expr::is_undef_ap_var(var)) continue;
-		val = (Value*)var;
-		if (LV->isLiveByLinearityInBlock(val,b,true)) {
-			realdims->insert(var);
+		val = (Value*) var;
+		if (LV->isLiveByLinearityInBlock(val, b, true)) {
+			realdims.insert(var);
 		}
 	}
 }
 
 ap_environment_t * Environment::common_environment(
-		ap_environment_t * env1, 
+		ap_environment_t * env1,
 		ap_environment_t * env2) {
 
 	ap_dimchange_t * dimchange1 = NULL;
@@ -188,19 +183,21 @@ void Environment::common_environment(ap_texpr1_t * exp1, ap_texpr1_t * exp2) {
 Environment Environment::common_environment(Expr* exp1, Expr* exp2) {
 	ap_environment_t * env1 = exp1->getExpr()->env;
 	ap_environment_t * env2 = exp2->getExpr()->env;
-	if (ap_environment_is_eq(env1,env2))
-			return Environment(env1);
-	{
-		ap_environment_t * common = common_environment(env1,env2);
-		Environment res(common);
-		ap_environment_free(common);
-		return res;
+	if (ap_environment_is_eq(env1,env2)) {
+		return Environment(env1);
 	}
+
+	ap_environment_t * common = common_environment(env1,env2);
+	Environment res(common);
+	ap_environment_free(common);
+	return res;
 }
 
 Environment Environment::common_environment(Environment* env1, Environment* env2) {
-	if (ap_environment_is_eq(env1->getEnv(),env2->env))
+	if (ap_environment_is_eq(env1->getEnv(),env2->env)) {
 		return Environment(env1->getEnv());
+	}
+
 	ap_environment_t * common = common_environment(env1->env,env2->env);
 	Environment res(common);
 	ap_environment_free(common);
@@ -209,18 +206,18 @@ Environment Environment::common_environment(Environment* env1, Environment* env2
 
 Environment Environment::intersection(Environment * env1, Environment * env2) {
 	ap_environment_t * lcenv = common_environment(env1->env,env2->env);
-	ap_environment_t * intersect = ap_environment_copy(lcenv);	
-	ap_environment_t * tmp = NULL;	
+	ap_environment_t * intersect = ap_environment_copy(lcenv);
+	ap_environment_t * tmp = NULL;
 
 	for (size_t i = 0; i < lcenv->intdim + lcenv->realdim; i++) {
-		ap_var_t var = ap_environment_var_of_dim(lcenv,(ap_dim_t)i);
-		if (!ap_environment_mem_var(env1->env,var) || !ap_environment_mem_var(env2->env,var)) {
+		ap_var_t var = ap_environment_var_of_dim(lcenv, (ap_dim_t) i);
+		if (!ap_environment_mem_var(env1->env, var) || !ap_environment_mem_var(env2->env, var)) {
 			//size_t size = intersect->intdim + intersect->realdim;
-			tmp = ap_environment_remove(intersect,&var,1);
+			tmp = ap_environment_remove(intersect, &var, 1);
 			ap_environment_free(intersect);
 			intersect = tmp;
-		}	
-	}	
+		}
+	}
 	Environment res(intersect);
 	ap_environment_free(intersect);
 	ap_environment_free(lcenv);
@@ -229,7 +226,7 @@ Environment Environment::intersection(Environment * env1, Environment * env2) {
 
 void Environment::display(llvm::raw_ostream &stream) const {
 	stream << "Environment : count=" << (unsigned long)env->count << "\n";
-	for (size_t i=0; i<env->intdim+env->realdim; i++) {
+	for (size_t i = 0; i < env->intdim + env->realdim; i++) {
 		char* c = ap_var_operations->to_string(env->var_of_dim[i]);
 		stream << i << ": " << c << (i<env->intdim ? " (int)" : " (real)") << "\n";
 		free(c);
@@ -237,10 +234,10 @@ void Environment::display(llvm::raw_ostream &stream) const {
 }
 
 void Environment::to_MDNode(LLVMContext * C, std::vector<METADATA_TYPE*> * met) {
-	for (size_t i=0; i<env->intdim+env->realdim; i++) {
+	for (size_t i = 0; i < env->intdim + env->realdim; i++) {
 		ap_var_t var = env->var_of_dim[i];
 		MDString * dim = MDString::get(*C, ap_var_to_string(var));
-		MDNode* N = MDNode::get(*C,dim);
+		MDNode* N = MDNode::get(*C, dim);
 		met->push_back(N);
 	}
 }

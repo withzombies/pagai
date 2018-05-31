@@ -24,10 +24,10 @@
  */
 template<Techniques T>
 class CompareDomain : public llvm::ModulePass {
-	
-	private:	
+
+	private:
 		SMTpass * LSMT;
-	
+
 		std::map<params, llvm::sys::TimeValue *> Time;
 		std::map<params, llvm::sys::TimeValue *> Time_SMT;
 		void ComputeTime(params P, llvm::Function * F);
@@ -54,7 +54,7 @@ class CompareDomain : public llvm::ModulePass {
 		{}
 
 		~CompareDomain() {}
-		
+
 		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
 		const char * getPassName() const;
@@ -64,7 +64,7 @@ class CompareDomain : public llvm::ModulePass {
 
 template<Techniques T>
 char CompareDomain<T>::ID = 0;
-		
+
 template<Techniques T>
 const char * CompareDomain<T>::getPassName() const {
 	return "CompareDomain";
@@ -109,23 +109,23 @@ template<Techniques T>
 void CompareDomain<T>::ComputeTime(params P, llvm::Function * F) {
 
 	if (Total_time[P].count(F) == 0) {
-        llvm::sys::TimeValue * time = new llvm::sys::TimeValue(0,0);
+		llvm::sys::TimeValue * time = new llvm::sys::TimeValue(0,0);
 		Total_time[P][F] = time;
 	}
-	
+
 	if (Time.count(P)) {
 		assert(Time[P] != NULL);
 		assert(Total_time[P][F] != NULL);
 		*Time[P] = *Time[P]+*Total_time[P][F];
 	} else {
-        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
+		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Time[P] = zero;
 		assert(Total_time[P][F] != NULL);
 		*Time[P] = *Total_time[P][F];
 	}
 
 	if (Total_time_SMT[P].count(F) == 0) {
-        llvm::sys::TimeValue * time_SMT = new llvm::sys::TimeValue(0,0);
+		llvm::sys::TimeValue * time_SMT = new llvm::sys::TimeValue(0,0);
 		Total_time_SMT[P][F] = time_SMT;
 	}
 
@@ -135,7 +135,7 @@ void CompareDomain<T>::ComputeTime(params P, llvm::Function * F) {
 		*Time_SMT[P] = *Time_SMT[P]+*Total_time_SMT[P][F];
 	} else {
 		assert(Total_time_SMT[P][F] != NULL);
-        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
+		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Time_SMT[P] = zero;
 		*Time_SMT[P] = *Total_time_SMT[P][F];
 	}
@@ -144,18 +144,18 @@ void CompareDomain<T>::ComputeTime(params P, llvm::Function * F) {
 template<Techniques T>
 void CompareDomain<T>::printTime(params P) {
 	if (!Time.count(P)) {
-        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
+		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Time[P] = zero;
 	}
 	if (!Time_SMT.count(P)) {
-        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
+		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Time_SMT[P] = zero;
 	}
-	*Out 
-		<< Time[P]->seconds() 
-		<< " " << Time[P]->microseconds() 
-		<< " " << Time_SMT[P]->seconds() 
-		<< " " << Time_SMT[P]->microseconds() 
+	*Out
+		<< Time[P]->seconds()
+		<< " " << Time[P]->microseconds()
+		<< " " << Time_SMT[P]->seconds()
+		<< " " << Time_SMT[P]->microseconds()
 		<< " " << ApronManagerToString(P.D)
 		<<  "\n";
 }
@@ -165,10 +165,10 @@ void CompareDomain<T>::CountNumberOfWarnings(params P, llvm::Function * F) {
 	llvm::BasicBlock * b;
 	Node * n;
 	Pr * FPr = Pr::getInstance(F);
-	for (llvm::Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
+	for (llvm::Function::iterator i = F->begin(); i != F->end(); ++i) {
 		b = i;
 		n = Nodes[b];
-		if (FPr->getAssert()->count(b) || FPr->getUndefinedBehaviour()->count(b)) {
+		if (FPr->getAssert().count(b) || FPr->getUndefinedBehaviour().count(b)) {
 			if (!n->X_s[P]->is_bottom()) {
 				if (Warnings.count(P))
 					Warnings[P]++;
@@ -213,25 +213,24 @@ bool CompareDomain<T>::runOnModule(llvm::Module &M) {
 	P1.TH = useThreshold(0);
 	P2.TH = useThreshold(1);
 
-	for (llvm::Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (llvm::Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		LSMT->reset_SMTcontext();
 		F = mIt;
-		
+
 		// if the function is only a declaration, do nothing
 		if (F->begin() == F->end()) continue;
 
 		if (ignored(F)) continue;
-		
+
 		ComputeTime(P1,F);
 		ComputeTime(P2,F);
 		CountNumberOfWarnings(P1,F);
 		CountNumberOfWarnings(P2,F);
 
-		for (llvm::Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
+		for (llvm::Function::iterator i = F->begin(); i != F->end(); ++i) {
 			b = i;
 			n = Nodes[b];
-			Pr * FPr = Pr::getInstance(F);
-			if (FPr->getPw()->count(b)) {
+			if (Pr::getInstance(F)->getPw().count(b)) {
 				DEBUG(
 				*Out << "Comparing the two abstracts :\n";
 				n->X_s[P1]->print();
@@ -258,7 +257,7 @@ bool CompareDomain<T>::runOnModule(llvm::Module &M) {
 	}
 
 	changeColor(llvm::raw_ostream::MAGENTA);
-	*Out << ApronManagerToString(getApronManager(0)) << " - " 
+	*Out << ApronManagerToString(getApronManager(0)) << " - "
 		<< ApronManagerToString(getApronManager(1)) << "\n";
 	resetColor();
 	*Out << "\n";
@@ -288,7 +287,7 @@ bool CompareDomain<T>::runOnModule(llvm::Module &M) {
 
 	*Out << "\n\nMATRIX:\n";
 	*Out << eq << " " << lt << " " << gt << " " << un << " ";
-	*Out << ApronManagerToString(getApronManager(0)) << " // " 
+	*Out << ApronManagerToString(getApronManager(0)) << " // "
 		<< ApronManagerToString(getApronManager(1)) << "\n";
 	*Out << "MATRIX_END\n";
 	return true;

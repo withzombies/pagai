@@ -50,23 +50,23 @@ string       \"(\\.|[^"])*\"
 
 "("					{driver.log << "(";return(token::LEFTPAR);}
 ")"					{driver.log << ")";return(token::RIGHTPAR);}
- /* ")\n"	      yylloc->lines (yyleng); return(token::RIGHTPAR); */		
-"/"					{driver.log << "/";return(token::DIVIDE);}		
-"div"				{driver.log << "div";return(token::DIVIDE);}		
-"*"					{driver.log << "*";return(token::MULTIPLY);}		
+ /* ")\n"	      yylloc->lines (yyleng); return(token::RIGHTPAR); */
+"/"					{driver.log << "/";return(token::DIVIDE);}
+"div"				{driver.log << "div";return(token::DIVIDE);}
+"*"					{driver.log << "*";return(token::MULTIPLY);}
 "+"					{driver.log << "+";return(token::ADD);}
 "unknown"			{driver.log << "unknown";return(token::UNKNOWN);}
-"unsat"				{driver.log << "unsat";return(token::UNSAT);}			
+"unsat"				{driver.log << "unsat";return(token::UNSAT);}
 "sat"				{driver.log << "sat";return(token::SAT);}
 "error"             {driver.log << "error";return(token::ERROR);}
 "unsupported"       {driver.log << "unsupported";return(token::UNSUPPORTED);}
 "success"           {driver.log << "success";return(token::SUCCESS);}
-"true"				{driver.log << "true";return(token::TRUE);}		
-"false"				{driver.log << "false";return(token::FALSE);}			
-"model"				{driver.log << "model";return(token::MODEL);}			
+"true"				{driver.log << "true";return(token::TRUE);}
+"false"				{driver.log << "false";return(token::FALSE);}
+"model"				{driver.log << "model";return(token::MODEL);}
 "Int"				{driver.log << "Int";return(token::TYPE);}
-"Real"				{driver.log << "Real";return(token::TYPE);}			
-"Bool"				{driver.log << "Bool";return(token::BOOLTYPE);}			
+"Real"				{driver.log << "Real";return(token::TYPE);}
+"Bool"				{driver.log << "Bool";return(token::BOOLTYPE);}
 "define-fun"		{driver.log << "define-fun";return(token::DEFINEFUN);}
 {real}				{driver.log << "real";return(token::REALVALUE);}
 {integer}			{driver.log << "integer";return(token::INTVALUE);}

@@ -17,16 +17,18 @@
 #include "llvm/IR/Function.h"
 #include "end_3rdparty.h"
 
-class NameAllValues : public llvm::FunctionPass, 
-	public llvm::InstVisitor<NameAllValues, void> {
+class NameAllValues : public llvm::FunctionPass,
+	public llvm::InstVisitor<NameAllValues, void>
+{
 	// make sure we do not expand twice the same branch inst
 	std::set<llvm::Value*> seen;
- public:
-  static char ID;
-  NameAllValues() : llvm::FunctionPass(ID) {}
 
-  bool runOnFunction(llvm::Function &F);
-	
+	public:
+		static char ID;
+		NameAllValues() : llvm::FunctionPass(ID) {}
+
+		bool runOnFunction(llvm::Function &F);
+
 };
 
 #endif

@@ -26,7 +26,7 @@ void IdentifyLoops::getAnalysisUsage(AnalysisUsage &AU) const {
 bool IdentifyLoops::runOnFunction(Function &F) {
 	LoopInfo * LI = &getAnalysis<LoopInfo>();
 
-	for (Function::iterator it = F.begin(), et = F.end(); it != et; it++) {
+	for (Function::iterator it = F.begin(); it != F.end(); ++it) {
 		BasicBlock * b = it;
 		if (LI->isLoopHeader(b)) {
 			Loop_headers.insert(b);

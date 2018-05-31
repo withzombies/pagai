@@ -36,13 +36,13 @@ using namespace llvm;
 ap_var_operations_t var_op_manager;
 
 const int ap_texpr_op_precedence[] =
-{ 1, 1, 2, 2, 2,  /* binary */
-	3, 4, 4         /* unary */
+{ 1, 1, 2, 2, 2,	/* binary */
+	3, 4, 4			/* unary */
 };
 
 const char* ap_texpr_op_name[] =
-{ "+", "-", "*", "/", "%", /* binary */
-	"-", "cast", "sqrt",     /* unary */
+{ "+", "-", "*", "/", "%",	/* binary */
+	"-", "cast", "sqrt",	/* unary */
 };
 
 const char* ap_texpr_rtype_name[] =
@@ -60,10 +60,10 @@ char* ap_var_to_string(ap_var_t var) {
 		name = "undef";
 	} else {
 		Value * val = dyn_cast<Value>((Value*)var);
-	
+
 		if (useSourceName()) {
-			const Value * val1=val;	
-			Info IN = recoverName::getMDInfos(val1);	
+			const Value * val1=val;
+			Info IN = recoverName::getMDInfos(val1);
 			if(!IN.empty()) {
 				name=IN.getName();
 			} else {
@@ -98,7 +98,7 @@ int ap_var_hash(ap_var_t v) {
 	return 0;
 }
 
-// no copy, no free ! 
+// no copy, no free !
 ap_var_t ap_var_copy(ap_var_t var) { return var; }
 void ap_var_free(ap_var_t var) { (void) var; }
 
@@ -128,26 +128,26 @@ ap_manager_t * create_manager(Apron_Manager_Type man) {
 		case OPT_OCT:
 			return opt_oct_manager_alloc(); // ETHZ optimized octagons
 #endif
-		case PK: 
+		case PK:
 			return pk_manager_alloc(true); // NewPolka strict polyhedra
-		case PKEQ: 
+		case PKEQ:
 			return pkeq_manager_alloc(); // NewPolka linear equalities
 #ifdef PPL_ENABLED
-		case PPL_POLY: 
+		case PPL_POLY:
 			return ap_ppl_poly_manager_alloc(true); // PPL strict polyhedra
-		case PPL_POLY_BAGNARA: 
+		case PPL_POLY_BAGNARA:
 			ap_man = ap_ppl_poly_manager_alloc(true); // PPL strict polyhedra
 			ap_funopt_t funopt;
 			ap_funopt_init(&funopt);
 			funopt.algorithm = 1;
 			ap_manager_set_funopt(ap_man,AP_FUNID_WIDENING,&funopt);
 			return ap_man;
-		case PPL_GRID: 
+		case PPL_GRID:
 			return ap_ppl_grid_manager_alloc(); // PPL grids
-		case PKGRID: 
+		case PKGRID:
 			// Polka strict polyhedra + PPL grids
 			return ap_pkgrid_manager_alloc(	pk_manager_alloc(true),
-					ap_ppl_grid_manager_alloc()); 
+					ap_ppl_grid_manager_alloc());
 #endif
 	}
 	return NULL;
@@ -262,7 +262,7 @@ simpl check_texpr0(ap_texpr0_t * a) {
 	if ( a->discr == AP_TEXPR_CST) {
 		return check_coeff(&a->val.cst);
 	} else if (a->discr == AP_TEXPR_NODE) {
-		return check_texpr0_node(a->val.node);	
+		return check_texpr0_node(a->val.node);
 	}
 	return POSITIVE;
 }
@@ -338,15 +338,15 @@ void texpr0_node_print(llvm::raw_ostream *stream, ap_texpr0_node_t * a, char ** 
 	}
 
 	/* operator & rounding mode */
-	if (a->exprB 
+	if (a->exprB
 		&& check_texpr0(a->exprB) != NEGATIVE
 		&& check_texpr0(a->exprB) != MINUSONE
 	   ){
 	*stream << ap_texpr_op_name[a->op];
 	if (!ap_texpr0_node_exact(a))
-		*stream 
-			<< "_" 
-			<< ap_texpr_rtype_name[a->type] 
+		*stream
+			<< "_"
+			<< ap_texpr_rtype_name[a->type]
 			<< ","
 			<<  ap_texpr_rdir_name[a->dir];
 	}
@@ -369,8 +369,11 @@ void texpr0_display(llvm::raw_ostream  * stream, ap_texpr0_t* a, char ** name_of
 			coeff_print(stream, &a->val.cst);
 			break;
 		case AP_TEXPR_DIM:
-			if (name_of_dim) *stream << name_of_dim[a->val.dim];
-			else             *stream << (unsigned long)a->val.dim;
+			if (name_of_dim) {
+				*stream << name_of_dim[a->val.dim];
+			} else {
+				*stream << (unsigned long) a->val.dim;
+			}
 			break;
 		case AP_TEXPR_NODE:
 			texpr0_node_print(stream, a->val.node, name_of_dim);
@@ -415,17 +418,17 @@ llvm::raw_ostream& operator<<( llvm::raw_ostream &stream, ap_scalar_t & cons) {
 			case AP_SCALAR_MPFR:
 				{
 					double d = mpfr_get_d(cons.val.mpfr,GMP_RNDU);
-					if (mpfr_cmp_d(cons.val.mpfr,d)) 
+					if (mpfr_cmp_d(cons.val.mpfr,d))
 						//mpfr_out_str(stream,10,ap_scalar_print_prec,a->val.mpfr,GMP_RNDU);
 						stream << "mpfr";
-					else 
+					else
 						//fprintf(stream,"%.*g",ap_scalar_print_prec,d + 0.0);
 						stream << d + 0.0;
 				}
 				break;
-			default: 
+			default:
 				break;
 		}
-	} 
+	}
 	return stream;
 }

@@ -55,7 +55,7 @@ SMT_var yices::SMT_mk_bool_var(std::string val) {
 	res.i = yices_get_var_decl_from_name(ctx,cstr);
 	if (res.i == NULL) {
 		res.i = yices_mk_bool_var_decl(ctx,cstr);
-	} 
+	}
 	delete [] cstr;
 	return res;
 }
@@ -67,7 +67,7 @@ SMT_var yices::SMT_mk_var(std::string name,SMT_type type) {
 	res.i = yices_get_var_decl_from_name(ctx,cstr);
 	if (res.i == NULL) {
 		res.i = yices_mk_var_decl(ctx,cstr,type.i);
-	} 
+	}
 	delete [] cstr;
 	return res;
 }
@@ -86,10 +86,9 @@ SMT_expr yices::SMT_mk_expr_from_var(SMT_var var) {
 
 SMT_expr yices::SMT_mk_or (std::vector<SMT_expr> args) {
 	std::vector<yices_expr> arguments;
-	std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
-	for (; b != e; ++b) {
-		assert((*b).i != 0);
-		arguments.push_back((yices_expr)(*b).i);
+	for (SMT_expr & arg : args) {
+		assert(arg.i != 0);
+		arguments.push_back((yices_expr) arg.i);
 	}
 	switch (arguments.size()) {
 		case 0:
@@ -100,17 +99,16 @@ SMT_expr yices::SMT_mk_or (std::vector<SMT_expr> args) {
 			break;
 		default:
 			SMT_expr res;
-			res.i = yices_mk_or(ctx,&arguments[0],arguments.size());
+			res.i = yices_mk_or(ctx, &arguments[0], arguments.size());
 			return res;
 	}
 }
 
 SMT_expr yices::SMT_mk_and (std::vector<SMT_expr> args) {
 	std::vector<yices_expr> arguments;
-	std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
-	for (; b != e; ++b) {
-		assert((*b).i != 0);
-		arguments.push_back((yices_expr)(*b).i);
+	for (SMT_expr & arg : args) {
+		assert(arg.i != 0);
+		arguments.push_back((yices_expr) arg.i);
 	}
 	switch (arguments.size()) {
 		case 0:
@@ -121,7 +119,7 @@ SMT_expr yices::SMT_mk_and (std::vector<SMT_expr> args) {
 			break;
 		default:
 			SMT_expr res;
-			res.i = yices_mk_and(ctx,&arguments[0],arguments.size());
+			res.i = yices_mk_and(ctx, &arguments[0], arguments.size());
 			return res;
 	}
 }
@@ -155,7 +153,7 @@ SMT_expr yices::SMT_mk_num (int n) {
 	res.i = yices_mk_num(ctx,n);
 	return res;
 }
-		
+
 SMT_expr yices::SMT_mk_num_mpq (mpq_t mpq) {
 	SMT_expr res;
 	res.i = yices_mk_num_from_mpq(ctx,mpq);
@@ -177,10 +175,9 @@ SMT_expr yices::SMT_mk_real (double x) {
 
 SMT_expr yices::SMT_mk_sum (std::vector<SMT_expr> args) {
 	std::vector<yices_expr> arguments;
-	std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
-	for (; b != e; ++b) {
-		assert((*b).i != 0);
-		arguments.push_back((yices_expr)(*b).i);
+	for (SMT_expr & arg : args) {
+		assert(arg.i != 0);
+		arguments.push_back((yices_expr) arg.i);
 	}
 	switch (arguments.size()) {
 		case 0:
@@ -198,10 +195,9 @@ SMT_expr yices::SMT_mk_sum (std::vector<SMT_expr> args) {
 
 SMT_expr yices::SMT_mk_sub (std::vector<SMT_expr> args) {
 	std::vector<yices_expr> arguments;
-	std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
-	for (; b != e; ++b) {
-		assert((*b).i != 0);
-		arguments.push_back((yices_expr)(*b).i);
+	for (SMT_expr & arg : args) {
+		assert(arg.i != 0);
+		arguments.push_back((yices_expr) arg.i);
 	}
 	switch (arguments.size()) {
 		case 0:
@@ -219,10 +215,9 @@ SMT_expr yices::SMT_mk_sub (std::vector<SMT_expr> args) {
 
 SMT_expr yices::SMT_mk_mul (std::vector<SMT_expr> args) {
 	std::vector<yices_expr> arguments;
-	std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
-	for (; b != e; ++b) {
-		assert((*b).i != 0);
-		arguments.push_back((yices_expr)(*b).i);
+	for (SMT_expr & arg : args) {
+		assert(arg.i != 0);
+		arguments.push_back((yices_expr) arg.i);
 	}
 	switch (arguments.size()) {
 		case 0:
@@ -289,7 +284,7 @@ SMT_expr yices::SMT_mk_lt (SMT_expr a1, SMT_expr a2) {
 	SMT_expr res;
 	res.i = yices_mk_lt(ctx,(yices_expr)a1.i,(yices_expr)a2.i);
 	return res;
-} 
+}
 
 SMT_expr yices::SMT_mk_le (SMT_expr a1, SMT_expr a2) {
 	SMT_expr res;
@@ -310,26 +305,26 @@ SMT_expr yices::SMT_mk_ge (SMT_expr a1, SMT_expr a2) {
 }
 
 SMT_expr yices::SMT_mk_int2real(SMT_expr a) {
-  (void) a;
-  return SMT_mk_real0();
+	(void) a;
+	return SMT_mk_real0();
 }
 
 SMT_expr yices::SMT_mk_real2int(SMT_expr a) {
-  (void) a;
-  return SMT_mk_int0();
+	(void) a;
+	return SMT_mk_int0();
 }
 
 SMT_expr yices::SMT_mk_is_int(SMT_expr a) {
-  (void) a;
-  return SMT_mk_true();
+	(void) a;
+	return SMT_mk_true();
 }
 
 SMT_expr yices::SMT_mk_int0() {
-  return int0;
+	return int0;
 }
 
 SMT_expr yices::SMT_mk_real0() {
-  return real0;
+	return real0;
 }
 
 void yices::SMT_print(SMT_expr a) {
@@ -363,7 +358,7 @@ void yices::SMT_assert(SMT_expr a){
 	yices_assert(ctx,(yices_expr)a.i);
 }
 
-int yices::SMT_check(SMT_expr a, std::set<std::string> * true_booleans) {
+int yices::SMT_check(SMT_expr a, std::set<std::string> & true_booleans) {
 	//yices_pp_expr ((yices_expr)a);
 	yices_set_arith_only(1);
 	yices_assert(ctx,(yices_expr)a.i);
@@ -378,8 +373,8 @@ int yices::SMT_check(SMT_expr a, std::set<std::string> * true_booleans) {
 		*Out << "sat\n";
 		);
 		yices_var_decl_iterator it = yices_create_var_decl_iterator(ctx);
-		yices_model m              = yices_get_model(ctx);
-		
+		yices_model m = yices_get_model(ctx);
+
 		DEBUG(
 		//Save position of current standard output
 		fpos_t pos;
@@ -408,19 +403,19 @@ int yices::SMT_check(SMT_expr a, std::set<std::string> * true_booleans) {
 		}
 		);
 		while (yices_iterator_has_next(it)) {
-			yices_var_decl d         = yices_iterator_next(it);
+			yices_var_decl d = yices_iterator_next(it);
 			//*Out <<  yices_get_var_decl_name(d) << " = ";
 			std::string name (yices_get_var_decl_name(d));
 			switch(yices_get_value(m, d)) {
-				case l_true: 
-					true_booleans->insert(name);
-					//*Out << "true\n"; 
+				case l_true:
+					true_booleans.insert(name);
+					//*Out << "true\n";
 					break;
-				case l_false: 
-					//*Out << "false\n"; 
+				case l_false:
+					//*Out << "false\n";
 					break;
-				case l_undef: 
-					//*Out << "unknown\n"; 
+				case l_undef:
+					//*Out << "unknown\n";
 					break;
 			}
 		}

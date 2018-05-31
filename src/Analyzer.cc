@@ -79,7 +79,7 @@ bool quiet_mode() {return vm.count("quiet");}
 bool log_smt_into_file() {return vm.count("log-smt");}
 bool optimizeBC() {return vm.count("optimize");}
 bool InstCombining() {return vm.count("instcombining");}
-std::vector<enum Techniques> * getComparedTechniques() {return &TechniquesToCompare;}
+std::vector<enum Techniques> & getComparedTechniques() {return TechniquesToCompare;}
 
 std::string TechniquesToString(Techniques t) {
 	switch (t) {
@@ -106,7 +106,7 @@ std::string TechniquesToString(Techniques t) {
 
 
 bool setApronManager(std::string d, int i) {
-	
+
 	if (!d.compare("box")) {
 		ap_manager[i] = BOX;
 	} else if (!d.compare("oct")) {
@@ -116,8 +116,8 @@ bool setApronManager(std::string d, int i) {
 	} else if (!d.compare("pkeq")) {
 		ap_manager[i] = PKEQ;
 #ifdef OPT_OCT_ENABLED
-        } else if (!d.compare("opt_oct")) {
-	        ap_manager[i] = OPT_OCT;
+	} else if (!d.compare("opt_oct")) {
+		ap_manager[i] = OPT_OCT;
 #endif
 #ifdef PPL_ENABLED
 	} else if (!d.compare("ppl_poly_bagnara")) {
@@ -147,8 +147,8 @@ std::string ApronManagerToString(Apron_Manager_Type D) {
 		case PKEQ:
 			return "PKEQ";
 #ifdef OPT_OCT_ENABLED
-	        case OPT_OCT:
-		        return "OPT_OCT";
+		case OPT_OCT:
+			return "OPT_OCT";
 #endif
 #ifdef PPL_ENABLED
 		case PPL_POLY:
@@ -243,7 +243,7 @@ bool setTimeout(std::string d) {
 	}
 	try {
 		double timeout_double = boost::lexical_cast< double >( d );
-        TIMEOUT_LIMIT = llvm::sys::TimeValue(timeout_double);
+		TIMEOUT_LIMIT = llvm::sys::TimeValue(timeout_double);
 	} catch( const boost::bad_lexical_cast & ) {
 		//unable to convert
 		error = true;
@@ -313,50 +313,50 @@ std::string technique_help() {
 }
 
 void check_help_or_version(const po::options_description & desc) {
-    if (vm.count("help")) {
-        std::cout << desc << "\n";
-        std::exit(0);
-    } else if (vm.count("version")) {
-        std::cout << "PAGAI version " << PAGAI_VERSION << "\n\n";
+	if (vm.count("help")) {
+		std::cout << desc << "\n";
+		std::exit(0);
+	} else if (vm.count("version")) {
+		std::cout << "PAGAI version " << PAGAI_VERSION << "\n\n";
 #ifdef ENABLE_DEBUGGING
-        std::cout << "- Debugging enabled\n";
+		std::cout << "- Debugging enabled\n";
 #endif
 #ifdef ENABLE_PROFILING
-        std::cout << "- Profiling enabled\n";
+		std::cout << "- Profiling enabled\n";
 #endif
 #ifdef PRINT_DEBUG
-        std::cout << "- Debug traces are printed\n";
+		std::cout << "- Debug traces are printed\n";
 #endif
 #ifdef PRINT_DEBUG_SMT
-        std::cout << "- SMT debug traces are printed\n";
+		std::cout << "- SMT debug traces are printed\n";
 #endif
 #if defined(ENABLE_YICES) && defined(YICES_VERSION)
-        std::cout << "- Yices is enabled (version " << YICES_VERSION << ")\n";
+		std::cout << "- Yices is enabled (version " << YICES_VERSION << ")\n";
 #endif
 #if defined(ENABLE_Z3) && defined(Z3_VERSION)
-        std::cout << "- Z3 is enabled (version " << Z3_VERSION << ")\n";
+		std::cout << "- Z3 is enabled (version " << Z3_VERSION << ")\n";
 #endif
 #ifdef APRON_VERSION
-        std::cout << "- Apron version " << APRON_VERSION
+		std::cout << "- Apron version " << APRON_VERSION
 #   if defined(ENABLE_PPL) && defined(PPL_VERSION)
-            << " (with PPL version " << PPL_VERSION << ")"
+			<< " (with PPL version " << PPL_VERSION << ")"
 #   endif
-            << "\n";
+			<< "\n";
 #endif
 #ifdef LLVM_VERSION
-        std::cout << "- LLVM version " << LLVM_VERSION << "\n";
+		std::cout << "- LLVM version " << LLVM_VERSION << "\n";
 #endif
 #ifdef CUDD_VERSION
-        std::cout << "- CUDD version " << CUDD_VERSION << "\n";
+		std::cout << "- CUDD version " << CUDD_VERSION << "\n";
 #endif
-        std::exit(0);
-    }
+		std::exit(0);
+	}
 }
 
 int main(int argc, char* argv[]) {
 
-    execute run;
-    bool bad_use = false;
+	execute run;
+	bool bad_use = false;
 
 #ifdef HAS_Z3
 	Solver = API_Z3;
@@ -385,88 +385,88 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> compare_list;
 
 
-    po::options_description desc("Options");
-    desc.add_options()
-      ("input,i", po::value<std::string>()->required(), "input")
-      ("help,h", "Print help messages")
-      ("version,v", "Print version")
-      ("include-path,I", po::value< std::vector<std::string> >(&include_paths), "include path (same as -I for clang)")
-      ("solver,s", po::value<std::string>()->default_value("z3_api"), solver_help().c_str())
-      ("domain,d", po::value<std::string>()->default_value("pk"), domain_help().c_str())
-      ("technique,t", po::value<std::string>()->default_value("lw+pf"), technique_help().c_str())
-      ("new-narrowing", "When the decreasing sequence fails (SAS12)")
-      ("main", po::value<std::string>(), "label name of the entry point")
-      ("undefined-check", "check for some undefined behaviors")
-      ("pointers", "pointers")
-      ("optimize", "optimize")
-      ("instcombining", "instcombining")
-      ("loop-unroll", "unroll loops")
-      ("no-loop-rotate", "do not rotate loops")
-      ("no-globals2locals", "do not turn global variables into local variables")
-      ("skipnonlinear", "ignore non linear arithmetic")
-      ("noinline", "do not inline functions")
-      ("output,o", po::value<std::string>()->default_value(""), "C output")
-      ("output-bc,b", po::value<std::string>(&annotatedBCFilename), "LLVM IR output")
-      ("output-bc-v2", po::value<std::string>(&annotatedBCFilename), "LLVM IR output (v2)")
-      ("svcomp", "SV-Comp mode")
-      ("wcet", "wcet mode")
-      ("debug", "debug")
-      ("compare,c", po::value< std::vector<std::string> >(&compare_list), "compare list of techniques")
-      ("comparedomains", "compare abstract domains")
-      ("printformula", "print SMT formula")
-      ("printall", "print all")
-      ("quiet", "quiet mode")
-      ("dump-ll", "dump analyzed ll file")
-      ("force-old-output", "use old output")
-      ("timeout", po::value<std::string>(), "timeout")
-      ("log-smt", "write all the SMT requests into a log file")
-      //("annotated", po::value<std::string>(&annotatedFilename), "name of the annotated C file")
-      ("domain2", po::value<std::string>(), "not for use")
-      ("new-narrowing2", "not for use")
-      ;
+	po::options_description desc("Options");
+	desc.add_options()
+	  ("input,i", po::value<std::string>()->required(), "input")
+	  ("help,h", "Print help messages")
+	  ("version,v", "Print version")
+	  ("include-path,I", po::value< std::vector<std::string> >(&include_paths), "include path (same as -I for clang)")
+	  ("solver,s", po::value<std::string>()->default_value("z3_api"), solver_help().c_str())
+	  ("domain,d", po::value<std::string>()->default_value("pk"), domain_help().c_str())
+	  ("technique,t", po::value<std::string>()->default_value("lw+pf"), technique_help().c_str())
+	  ("new-narrowing", "When the decreasing sequence fails (SAS12)")
+	  ("main", po::value<std::string>(), "label name of the entry point")
+	  ("undefined-check", "check for some undefined behaviors")
+	  ("pointers", "pointers")
+	  ("optimize", "optimize")
+	  ("instcombining", "instcombining")
+	  ("loop-unroll", "unroll loops")
+	  ("no-loop-rotate", "do not rotate loops")
+	  ("no-globals2locals", "do not turn global variables into local variables")
+	  ("skipnonlinear", "ignore non linear arithmetic")
+	  ("noinline", "do not inline functions")
+	  ("output,o", po::value<std::string>()->default_value(""), "C output")
+	  ("output-bc,b", po::value<std::string>(&annotatedBCFilename), "LLVM IR output")
+	  ("output-bc-v2", po::value<std::string>(&annotatedBCFilename), "LLVM IR output (v2)")
+	  ("svcomp", "SV-Comp mode")
+	  ("wcet", "wcet mode")
+	  ("debug", "debug")
+	  ("compare,c", po::value< std::vector<std::string> >(&compare_list), "compare list of techniques")
+	  ("comparedomains", "compare abstract domains")
+	  ("printformula", "print SMT formula")
+	  ("printall", "print all")
+	  ("quiet", "quiet mode")
+	  ("dump-ll", "dump analyzed ll file")
+	  ("force-old-output", "use old output")
+	  ("timeout", po::value<std::string>(), "timeout")
+	  ("log-smt", "write all the SMT requests into a log file")
+	  //("annotated", po::value<std::string>(&annotatedFilename), "name of the annotated C file")
+	  ("domain2", po::value<std::string>(), "not for use")
+	  ("new-narrowing2", "not for use")
+	  ;
 
-    po::positional_options_description positionalOptions;
-    positionalOptions.add("input", 1);
+	po::positional_options_description positionalOptions;
+	positionalOptions.add("input", 1);
 
-    try {
-        po::store(po::command_line_parser(argc, argv).options(desc).positional(positionalOptions).run(), vm);
-        po::notify(vm);
-    } catch (std::exception& e) {
-        check_help_or_version(desc);
+	try {
+		po::store(po::command_line_parser(argc, argv).options(desc).positional(positionalOptions).run(), vm);
+		po::notify(vm);
+	} catch (std::exception& e) {
+		check_help_or_version(desc);
 
-	    std::cout << "ERROR\n" << e.what() << "\n" << desc << "\n";
-	    return 1;
-    }
+		std::cout << "ERROR\n" << e.what() << "\n" << desc << "\n";
+		return 1;
+	}
 
-    check_help_or_version(desc);
+	check_help_or_version(desc);
 
-    setSolver(vm["solver"].as<std::string>());
-    setTechnique(vm["technique"].as<std::string>());
-    setApronManager(vm["domain"].as<std::string>(),0);
-    if (vm.count("timeout")) setTimeout(vm["timeout"].as<std::string>());
-    if (vm.count("main")) setMain(vm["main"].as<std::string>());
-    if (vm.count("domain2")) setApronManager(vm["domain2"].as<std::string>(),1);
+	setSolver(vm["solver"].as<std::string>());
+	setTechnique(vm["technique"].as<std::string>());
+	setApronManager(vm["domain"].as<std::string>(),0);
+	if (vm.count("timeout")) setTimeout(vm["timeout"].as<std::string>());
+	if (vm.count("main")) setMain(vm["main"].as<std::string>());
+	if (vm.count("domain2")) setApronManager(vm["domain2"].as<std::string>(),1);
 
-    if (vm.count("svcomp")) {
-	setMain("main");
-	oflcheck = false;
-	technique = PATH_FOCUSING;
-    }
+	if (vm.count("svcomp")) {
+		setMain("main");
+		oflcheck = false;
+		technique = PATH_FOCUSING;
+	}
 
-    if (vm.count("wcet")) {
-	// settings for computing WCET with counters
-	printAll = true;
-        oflcheck = false;
-	technique = PATH_FOCUSING;
-    }
+	if (vm.count("wcet")) {
+		// settings for computing WCET with counters
+		printAll = true;
+		oflcheck = false;
+		technique = PATH_FOCUSING;
+	}
 
-    for (std::vector<std::string>::iterator it = compare_list.begin(), et = compare_list.end(); it != et; it++) {
-	enum Techniques technique = TechniqueFromString(bad_use,*it);
-	TechniquesToCompare.push_back(technique);
-    }
+	for (const std::string & tech_str : compare_list) {
+		enum Techniques technique = TechniqueFromString(bad_use, tech_str);
+		TechniquesToCompare.push_back(technique);
+	}
 
-    run.exec(vm["input"].as<std::string>(),vm["output"].as<std::string>(), include_paths);
-	
+	run.exec(vm["input"].as<std::string>(),vm["output"].as<std::string>(), include_paths);
+
 	return 0;
 }
 

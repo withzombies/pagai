@@ -16,13 +16,13 @@ using namespace llvm;
 
 bool NameAllValues::runOnFunction(Function &F) {
 
-	for (Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {
+	for (Function::iterator i = F.begin(); i != F.end(); ++i) {
 		BasicBlock * b = i;
 		if (!b->hasName()) {
 			Twine name("basicblock");
 			b->setName(name);
 		}
-		for (BasicBlock::iterator ib = b->begin(), eb = b->end(); ib != eb; ++ib) {
+		for (BasicBlock::iterator ib = b->begin(); ib != b->end(); ++ib) {
 			Instruction * I = ib;
 			// this is not mandatory, but easier to read
 			if (!I->hasName() && !(I->getType()->isVoidTy())) {

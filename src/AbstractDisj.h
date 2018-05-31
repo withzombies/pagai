@@ -18,7 +18,7 @@
 class Node;
 class Sigma;
 
-/** 
+/**
  * \class AbstractDisj
  * \brief Abstract Domain used for computing disjunctive invariants
  */
@@ -36,7 +36,7 @@ class AbstractDisj: public Abstract {
 		 * \brief set of disjuncts
 		 */
 		std::vector<Abstract*> disj;
-		
+
 		/**
 		 * \brief clears the abstract value
 		 */
@@ -58,7 +58,7 @@ class AbstractDisj: public Abstract {
 		 * \return the index of the new disjunct
 		 */
 		int AddDisjunct(Environment * env);
-		
+
 		/**
 		 * \brief get the disjunct of index 'index'
 		 * \return the corresponding disjunct
@@ -71,14 +71,14 @@ class AbstractDisj: public Abstract {
 		 */
 		void setDisjunct(int index, Abstract * A);
 
-		/** 
+		/**
 		 * \brief verifies that the AbstractDisj has at least N disjunct
 		 *
 		 * if not, it creates disjuncts so that the AbstractDisj has N
 		 * disjuncts
 		 */
 		void SetNDisjunct(size_t N);
-		
+
 		/**
 		 * \brief get the index of the last disjunct
 		 *
@@ -166,7 +166,7 @@ class AbstractDisj: public Abstract {
 		 * \return true if the value is top, else return false
 		 */
 		bool is_top();
-		
+
 
 		/**
 		 * \brief apply the widening operator, according to its
@@ -182,7 +182,7 @@ class AbstractDisj: public Abstract {
 		 * \param index  index of the disjunct
 		 */
 		void widening(Abstract * X, int index);
-		
+
 		/**
 		 * \brief apply the widening operator with threshold, according to its
 		 * definition in the domain.
@@ -216,7 +216,7 @@ class AbstractDisj: public Abstract {
 		void meet_tcons_array(Constraint_array* tcons, int index);
 
 		/**
-		 * \brief canonicalize the apron representation of the abstract 
+		 * \brief canonicalize the apron representation of the abstract
 		 * value
 		 */
 		void canonicalize();
@@ -224,38 +224,38 @@ class AbstractDisj: public Abstract {
 		/**
 		 * \brief assign an expression to a set of variables
 		 * \param tvar array of the variables to assign
-		 * \param texpr  array of corresponding expressions 
+		 * \param texpr  array of corresponding expressions
 		 * \param size size of the array
 		 * \param dest see apron doc
 		 */
 		void assign_texpr_array(
-				ap_var_t* tvar, 
-				ap_texpr1_t* texpr, 
-				size_t size, 
+				ap_var_t* tvar,
+				ap_texpr1_t* texpr,
+				size_t size,
 				ap_abstract1_t* dest);
 
 		/**
 		 * \brief assign an expression to a set of variables
 		 * \param tvar array of the variables to assign
-		 * \param texpr  array of corresponding expressions 
+		 * \param texpr  array of corresponding expressions
 		 * \param size size of the array
 		 * \param dest see apron doc
 		 * \param index  index of the disjunct
 		 */
 		void assign_texpr_array(
-				ap_var_t* tvar, 
-				ap_texpr1_t* texpr, 
-				size_t size, 
+				ap_var_t* tvar,
+				ap_texpr1_t* texpr,
+				size_t size,
 				ap_abstract1_t* dest,
 				int index);
-		
+
 		/**
 		 * \brief the abstract value becomes the join of a set of
 		 * abstract values
 		 * \param env the environment of the vector X_pred
 		 * \param X_pred the set of abstract values to join
 		 */
-		void join_array(Environment * env, std::vector<Abstract*> X_pred);
+		void join_array(Environment * env, const std::vector<Abstract*> & X_pred);
 
 		/**
 		 * \brief the disjunct becomes the join of a set of
@@ -264,7 +264,7 @@ class AbstractDisj: public Abstract {
 		 * \param X_pred the set of abstract values to join
 		 * \param index  index of the disjunct
 		 */
-		void join_array(Environment * env, std::vector<Abstract*> X_pred, int index);
+		void join_array(Environment * env, const std::vector<Abstract*> & X_pred, int index);
 
 		/**
 		 * \brief the abstract value becomes the dpUcm of a set of
@@ -288,7 +288,7 @@ class AbstractDisj: public Abstract {
 		 * operation dpUcm
 		 */
 		void join_array_dpUcm(Environment *env, Abstract* n, int index);
-		
+
 		/**
 		 * \brief meet the current abstract value with another one
 		 * \param A the abstract value to meet with

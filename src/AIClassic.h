@@ -16,11 +16,11 @@ class AIClassic : public AISimple {
 
 	public:
 		/** \brief Pass Identifier
-	     * It is crucial for LLVM's pass manager that
+		 * It is crucial for LLVM's pass manager that
 		 * this ID is different (in address) from a class to another,
 		 * hence this cannot be factored in the base class.
 		 */
-		static char ID;	
+		static char ID;
 
 		AIClassic(char &_ID, Apron_Manager_Type _man, bool _NewNarrow, bool _Threshold) : AISimple(_ID,_man,_NewNarrow, _Threshold) {
 			init();
@@ -28,7 +28,7 @@ class AIClassic : public AISimple {
 			passID.N = _NewNarrow;
 			passID.TH = _Threshold;
 		}
-		
+
 		AIClassic (): AISimple(ID) {
 			init();
 			passID.D = getApronManager();

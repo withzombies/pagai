@@ -3,8 +3,8 @@
  * \brief Declares functions related to the Apron interface
  * \author Julien Henry
  */
-#ifndef _APRON_H 
-#define _APRON_H 
+#ifndef _APRON_H
+#define _APRON_H
 
 #include "begin_3rdparty.h"
 #include "llvm/Analysis/CFG.h"
@@ -15,7 +15,7 @@
 #include "Node.h"
 
 /**
- * \brief initialize the apron library. 
+ * \brief initialize the apron library.
  *
  * This function has to be called at the very beginning of the pass
  */
@@ -37,7 +37,7 @@ llvm::raw_ostream& operator<<( llvm::raw_ostream &stream, ap_scalar_t & cons);
 
 void texpr0_display(llvm::raw_ostream * stream, ap_texpr0_t* a, char ** name_of_dim);
 
-typedef enum _simpl {ZERO,ONE,MINUSONE,NEGATIVE,POSITIVE,DEFAULT} simpl; 
+typedef enum _simpl {ZERO,ONE,MINUSONE,NEGATIVE,POSITIVE,DEFAULT} simpl;
 simpl minus(simpl s);
 simpl check_scalar(ap_scalar_t * a);
 simpl check_coeff(ap_coeff_t * a);

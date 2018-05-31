@@ -34,7 +34,7 @@ class AbstractClassic: public Abstract {
 
 		/**
 		 * \brief creates a TOP abstract value in the environment env
-		 * \param _man apron manager 
+		 * \param _man apron manager
 		 * \param env the environment of the abstract value
 		 */
 		AbstractClassic(ap_manager_t* _man, Environment * env);
@@ -100,7 +100,7 @@ class AbstractClassic: public Abstract {
 		void meet_tcons_array(Constraint_array* tcons);
 
 		/**
-		 * \brief canonicalize the apron representation of the abstract 
+		 * \brief canonicalize the apron representation of the abstract
 		 * value
 		 */
 		void canonicalize();
@@ -108,23 +108,23 @@ class AbstractClassic: public Abstract {
 		/**
 		 * \brief assign an expression to a set of variables
 		 * \param tvar array of the variables to assign
-		 * \param texpr  array of corresponding expressions 
+		 * \param texpr  array of corresponding expressions
 		 * \param size size of the array
 		 * \param dest see apron doc
 		 */
 		void assign_texpr_array(
-				ap_var_t* tvar, 
-				ap_texpr1_t* texpr, 
-				size_t size, 
+				ap_var_t* tvar,
+				ap_texpr1_t* texpr,
+				size_t size,
 				ap_abstract1_t* dest);
-		
+
 		/**
 		 * \brief the abstract value becomes the join of a set of
 		 * abstract values
 		 * \param env the environment of the vector X_pred
 		 * \param X_pred the set of abstract values to join
 		 */
-		void join_array(Environment * env, std::vector<Abstract*> X_pred);
+		void join_array(Environment * env, const std::vector<Abstract*> & X_pred);
 
 		/**
 		 * \brief the abstract value becomes the dpUcm of a set of
@@ -142,7 +142,7 @@ class AbstractClassic: public Abstract {
 		 * \param A the abstract value to meet with
 		 */
 		void meet(Abstract* A);
-		
+
 		/**
 		 * \brief convert the abstract value to a conjunction of
 		 * tree constraints
@@ -167,7 +167,6 @@ class AbstractClassic: public Abstract {
 		 */
 		void display(llvm::raw_ostream &stream, std::string * left = NULL) const;
 
-		
 		void to_MDNode(llvm::Instruction * Inst, std::vector<METADATA_TYPE*> * met);
 
 		void insert_as_LLVM_invariant(llvm::Instruction * Inst);

@@ -295,20 +295,20 @@ Value * texpr0_node_to_LLVM(ap_texpr0_node_t * a, ap_environment_t * env, IRBuil
 	/* right argument */
 	ap_texpr0_t* arg = a->exprB ? a->exprB : a->exprA;
 	Value * rightop = texpr0_to_LLVM(arg,env,Builder);
-	
+
 	/* operator */
 	switch (a->op) {
 		case AP_TEXPR_ADD:
 			return Builder->CreateAdd(leftop,rightop);
 		case AP_TEXPR_SUB:
 			return Builder->CreateSub(leftop,rightop);
-		case AP_TEXPR_MUL: 
+		case AP_TEXPR_MUL:
 			return Builder->CreateMul(leftop,rightop);
 		case AP_TEXPR_DIV:
 			return Builder->CreateSDiv(leftop,rightop);
 		case AP_TEXPR_MOD:
 			return Builder->CreateSRem(leftop,rightop);
-		case AP_TEXPR_NEG:   
+		case AP_TEXPR_NEG:
 			/* Unary operator */
 			return Builder->CreateNeg(rightop);
 		case AP_TEXPR_CAST:

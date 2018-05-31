@@ -26,27 +26,26 @@ class Info
 	std::string name;
 	int lineNo;
 	std::string type;
-	
-	bool islocal; 
-	bool isarg; 
-	bool isret; 
+
+	bool islocal;
+	bool isarg;
+	bool isret;
 	bool isglobal;
 
 	public:
-	
-	
+
 	Info() {
-		lineNo=-1;
+		lineNo = -1;
 	}
 
-	Info(std::string _name,int _lineNo,std::string _type, 
+	Info(std::string _name,int _lineNo,std::string _type,
 			bool _islocal = true, bool _isarg = false, bool _isret = false, bool _isglobal = false) {
-		name=_name;
-		lineNo=_lineNo;
-		type=_type;
-		islocal = _islocal; 
-		isarg = _isarg; 
-		isret = _isret; 
+		name = _name;
+		lineNo = _lineNo;
+		type = _type;
+		islocal = _islocal;
+		isarg = _isarg;
+		isret = _isret;
 		isglobal = _isglobal;
 	}
 
@@ -57,21 +56,20 @@ class Info
 		name = I.name;
 		lineNo = I.lineNo;
 		type = I.type;
-		islocal = I.islocal; 
-		isarg = I.isarg; 
-		isret = I.isret; 
+		islocal = I.islocal;
+		isarg = I.isarg;
+		isret = I.isret;
 		isglobal = I.isglobal;
 		return *this;
 	}
 
 	void display() const {
-		*Out<<"(type="<<type<<" name="<<name<<" line="<<lineNo << " [";
+		*Out << "(type=" << type << " name=" << name << " line=" << lineNo << " [";
 		if (islocal) *Out << "local";
 		if (isarg) *Out << "arg";
 		if (isret) *Out << "ret";
 		if (isglobal) *Out << "global";
-		*Out<<"])";
-
+		*Out << "])";
 	}
 
 	std::string getName() const {return name;}
@@ -82,8 +80,8 @@ class Info
 
 	bool empty() {return name.empty();}
 
-	bool IsLocal() {return islocal;} 
-	bool IsArg() {return isarg;} 
+	bool IsLocal() {return islocal;}
+	bool IsArg() {return isarg;}
 	bool IsRet() {return isret;}
 	bool IsGlobal() {return isglobal;}
 
@@ -106,7 +104,7 @@ class Info
 	}
 
 	bool operator < (const Info& i) const {
-		return Compare(i)<0;   
+		return Compare(i)<0;
 	}
 };
 

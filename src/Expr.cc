@@ -31,14 +31,14 @@ void Expr::set_expr(Value * val, Expr * exp) {
 }
 
 void Expr::clear_exprs() {
-	std::map<Value*, ap_texpr1_t*>::iterator it = Exprs.begin(), et = Exprs.end();
-	for (; it != et; it++)
-		ap_texpr1_free((*it).second);
+	for (auto & entry : Exprs) {
+		ap_texpr1_free(entry.second);
+	}
 	Exprs.clear();
 
-	std::map<ap_var_t, ap_texpr1_t*>::iterator itt = Exprs_var.begin(), ett = Exprs_var.end();
-	for (; itt != ett; itt++)
-		ap_texpr1_free((*itt).second);
+	for (auto & entry : Exprs_var) {
+		ap_texpr1_free(entry.second);
+	}
 	Exprs_var.clear();
 }
 
@@ -122,7 +122,7 @@ ap_texpr1_t * Expr::create_ap_expr(Constant * val) {
 		// it is supposed we use signed int
 		int64_t i = Int->getSExtValue();
 		res = ap_texpr1_cst_scalar_int(emptyenv,i);
-	} 
+	}
 	if (isa<ConstantFP>(val)) {
 		ConstantFP * FP = dyn_cast<ConstantFP>(val);
 		double x;
@@ -131,7 +131,7 @@ ap_texpr1_t * Expr::create_ap_expr(Constant * val) {
 		} else if (FP->getType()->isDoubleTy()) {
 			x = FP->getValueAPF().convertToDouble();
 		}
-		if (FP->getValueAPF().isNaN() 
+		if (FP->getValueAPF().isNaN()
 				|| FP->getValueAPF().isInfinity()
 				|| std::isnan(x)
 				|| std::isinf(x)) {
@@ -167,14 +167,14 @@ bool Expr::is_undef_ap_var(ap_var_t var) {
 ap_texpr1_t * Expr::create_ap_expr(UndefValue * undef) {
 	ap_texpr_rtype_t ap_type;
 	if (get_ap_type(undef, ap_type)) return NULL;
-	// EACH TIME we encounter an undefined value, we have to assign it an 
+	// EACH TIME we encounter an undefined value, we have to assign it an
 	// expression. However, in LLVM, there is only one UndefValue object and everyone
 	// points to it. As a consequence, we cannot use the address of the UndefValue
-	// to uniquely identify the undef value among the other undef uses in the code. 
-	// The trick is to use a counter, incremented each time we see an Undefvalue, 
-	// and use a fake address (UNDEF_ADDRESS + counter) which is unique to represent the 
+	// to uniquely identify the undef value among the other undef uses in the code.
+	// The trick is to use a counter, incremented each time we see an Undefvalue,
+	// and use a fake address (UNDEF_ADDRESS + counter) which is unique to represent the
 	// particular use of undef.
-	// TODO: this should be fixed: if we are unlucky, after some time the computed 
+	// TODO: this should be fixed: if we are unlucky, after some time the computed
 	// address might equal the real address of another variable...
 	undef_ai_counter++;
 	ap_var_t v = (ap_var_t)(UNDEF_ADDRESS + undef_ai_counter);
@@ -192,7 +192,7 @@ ap_texpr1_t * Expr::create_ap_expr(ap_var_t var) {
 		if (get_ap_type((Value*)var, ap_type)) return NULL;
 	}
 
-	if (ap_type == AP_RTYPE_INT) { 
+	if (ap_type == AP_RTYPE_INT) {
 		env = ap_environment_alloc(&var,1,NULL,0);
 	} else {
 		env = ap_environment_alloc(NULL,0,&var,1);
@@ -272,7 +272,7 @@ int Expr::get_ap_type(Value * val,ap_texpr_rtype_t &ap_type) {
 					// actually, this is a boolean variable
 					return 2;
 				}
-			} else { 
+			} else {
 				// pointers are considered unknown type
 				ap_type = AP_RTYPE_REAL;
 				return 1;
@@ -524,28 +524,28 @@ ap_texpr1_t * Expr::visitBinaryOperator (BinaryOperator &I){
 	ap_texpr_op_t op;
 	switch(I.getOpcode()) {
 		// Standard binary operators...
-		case Instruction::Add : 
-		case Instruction::FAdd: 
+		case Instruction::Add :
+		case Instruction::FAdd:
 			op = AP_TEXPR_ADD;
 			break;
-		case Instruction::Sub : 
-		case Instruction::FSub: 
+		case Instruction::Sub :
+		case Instruction::FSub:
 			op = AP_TEXPR_SUB;
 			break;
-		case Instruction::Mul : 
-		case Instruction::FMul: 
+		case Instruction::Mul :
+		case Instruction::FMul:
 			if (skipNonLinear()) return visitInstAndAddVar(I);
 			op = AP_TEXPR_MUL;
 			break;
-		case Instruction::UDiv: 
-		case Instruction::SDiv: 
-		case Instruction::FDiv: 
+		case Instruction::UDiv:
+		case Instruction::SDiv:
+		case Instruction::FDiv:
 			if (skipNonLinear()) return visitInstAndAddVar(I);
 			op = AP_TEXPR_DIV;
 			break;
-		case Instruction::URem: 
-		case Instruction::SRem: 
-		case Instruction::FRem: 
+		case Instruction::URem:
+		case Instruction::SRem:
+		case Instruction::FRem:
 			if (skipNonLinear()) return visitInstAndAddVar(I);
 			op = AP_TEXPR_MOD;
 			break;
@@ -582,14 +582,14 @@ ap_texpr1_t * Expr::visitCastInst (CastInst &I){
 
 ap_texpr1_t * Expr::visitInstAndAddVar(Instruction &I) {
 	ap_environment_t* env = NULL;
-	ap_var_t var = (Value *) &I; 
+	ap_var_t var = (Value *) &I;
 	ap_texpr_rtype_t ap_type;
 
 	if (get_ap_type((Value*)&I, ap_type)) {
 		return NULL;
 	}
 
-	if (ap_type == AP_RTYPE_INT) { 
+	if (ap_type == AP_RTYPE_INT) {
 		env = ap_environment_alloc(&var,1,NULL,0);
 	} else {
 		env = ap_environment_alloc(NULL,0,&var,1);

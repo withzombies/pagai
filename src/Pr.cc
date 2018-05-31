@@ -35,26 +35,26 @@ Pr * Pr::getInstance(Function * F) {
 }
 
 void Pr::releaseMemory() {
-	std::map<Function*,Pr*>::iterator it = PR_instances.begin(), et = PR_instances.end();
-	for (;it != et; it++)
-		delete (*it).second;
+	for (auto entry : PR_instances) {
+		delete entry.second;
+	}
 	PR_instances.clear();
 }
 
-std::set<BasicBlock*>* Pr::getPr() {
-	return &Pr_set;
+std::set<BasicBlock*> & Pr::getPr() {
+	return Pr_set;
 }
 
-std::set<BasicBlock*>* Pr::getPw() {
-	return &Pw_set;
+std::set<BasicBlock*> & Pr::getPw() {
+	return Pw_set;
 }
 
-std::set<BasicBlock*>* Pr::getAssert() {
-	return &Assert_set;
+std::set<BasicBlock*> & Pr::getAssert() {
+	return Assert_set;
 }
 
-std::set<BasicBlock*>* Pr::getUndefinedBehaviour() {
-	return &UndefBehaviour_set;
+std::set<BasicBlock*> & Pr::getUndefinedBehaviour() {
+	return UndefBehaviour_set;
 }
 
 bool Pr::inPr(BasicBlock * b) {
@@ -72,104 +72,105 @@ bool Pr::inUndefBehaviour(BasicBlock * b) {
 	return UndefBehaviour_set.count(b);
 }
 
-bool Pr::check_acyclic(std::set<BasicBlock*>* FPr) {
+bool Pr::check_acyclic(const std::set<BasicBlock*> & FPr) {
 	std::set<BasicBlock*> start;
-	start.insert(FPr->begin(),FPr->end());
+	start.insert(FPr.begin(), FPr.end());
 	start.insert(&F->front());
 
-	for (std::set<BasicBlock*>::iterator it = start.begin(), et = start.end(); it != et; it++) {
-		Node * n = Nodes[*it];
-		for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
+	for (BasicBlock * bb : start) {
+		Node * n = Nodes[bb];
+		for (Function::iterator i = F->begin(); i != F->end(); ++i) {
 			index[Nodes[i]] = 0;
 			isInStack[Nodes[i]] = false;
 		}
 		std::stack<Node*> S;
 		int N = 1;
-		if (!check_acyclic_rec(n,N,&S,FPr)) return false;
+		if (!check_acyclic_rec(n, N, S, FPr)) return false;
 	}
 	return true;
 }
 
-bool Pr::check_acyclic_rec(Node * n, int & N,std::stack<Node*> * S,std::set<BasicBlock*>* FPr) {
+bool Pr::check_acyclic_rec(Node * n, int & N, std::stack<Node*> & S, const std::set<BasicBlock*> & FPr) {
 	Node * nsucc;
-	index[n]=N;
-	lowlink[n]=N;
+	index[n] = N;
+	lowlink[n] = N;
 	N++;
-	S->push(n);
-	isInStack[n]=true;
-	for (succ_iterator s = succ_begin(n->bb), E = succ_end(n->bb); s != E; ++s) {
+	S.push(n);
+	isInStack[n] = true;
+	for (succ_iterator s = succ_begin(n->bb); s != succ_end(n->bb); ++s) {
 		BasicBlock * succ = *s;
 		nsucc = Nodes[succ];
-		if (FPr->count(nsucc->bb))
+		if (FPr.count(nsucc->bb)) {
 			continue;
+		}
 		switch (index[nsucc]) {
 			case 0:
-				if (!check_acyclic_rec(nsucc,N,S,FPr)) return false;
-				lowlink[n] = std::min(lowlink[n],lowlink[nsucc]);
+				if (!check_acyclic_rec(nsucc, N, S, FPr)) return false;
+				lowlink[n] = std::min(lowlink[n], lowlink[nsucc]);
 				break;
 			default:
 				if (isInStack[nsucc]) {
-					lowlink[n] = std::min(lowlink[n],index[nsucc]);
+					lowlink[n] = std::min(lowlink[n], index[nsucc]);
 					return false;
 				}
 		}
 	}
 	if (lowlink == index) {
 		do {
-			nsucc = S->top();
-			S->pop();
+			nsucc = S.top();
+			S.pop();
 			isInStack[nsucc]=false;
 		} while (nsucc != n);
 	}
 	return true;
 }
 
-bool Pr::computeLoopHeaders(std::set<BasicBlock*>* FPr) {
-	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
+bool Pr::computeLoopHeaders(std::set<BasicBlock*> & FPr) {
+	for (Function::iterator i = F->begin(); i != F->end(); ++i) {
 		index[Nodes[i]] = 0;
 	}
 #if 1
-	for (std::set<BasicBlock*>::iterator it = Loop_headers.begin(), et = Loop_headers.end(); it != et; it++) {
-		BasicBlock * b = *it;
-		if (b->getParent() == F) {
-			FPr->insert(b);
+	for (BasicBlock * bb : Loop_headers) {
+		if (bb->getParent() == F) {
+			FPr.insert(bb);
 		}
 	}
 #else
 	std::set<Node*> S;
 	std::set<Node*> Seen;
 	Node * n = Nodes[&F->front()];
-	computeLoopHeaders_rec(n,&Seen,&S,FPr);
+	computeLoopHeaders_rec(n, Seen, S, FPr);
 #endif
 	return true;
 }
 
-bool Pr::computeLoopHeaders_rec(Node * n,std::set<Node*> * Seen, std::set<Node*> * S,std::set<BasicBlock*>* FPr) {
+bool Pr::computeLoopHeaders_rec(Node * n, std::set<Node*> & Seen, std::set<Node*> & S, std::set<BasicBlock*> & FPr) {
 	Node * nsucc;
-	Seen->insert(n);
+	Seen.insert(n);
 
-	if (S->count(n)) {
-		FPr->insert(n->bb);
+	if (S.count(n)) {
+		FPr.insert(n->bb);
 		return true;
 	}
-		
+
 	std::set<Node*> Set;
-	Set.insert(S->begin(),S->end());
+	Set.insert(S.begin(), S.end());
 	Set.insert(n);
 
-	for (succ_iterator s = succ_begin(n->bb), E = succ_end(n->bb); s != E; ++s) {
+	for (succ_iterator s = succ_begin(n->bb); s != succ_end(n->bb); ++s) {
 		BasicBlock * succ = *s;
 		nsucc = Nodes[succ];
-		if (FPr->count(nsucc->bb))
+		if (FPr.count(nsucc->bb)) {
 			continue;
-		if (Seen->count(nsucc)) {
+		}
+		if (Seen.count(nsucc)) {
 			if (Set.count(nsucc)) {
-				FPr->insert(nsucc->bb);
+				FPr.insert(nsucc->bb);
 			}
 			continue;
 		}
-		computeLoopHeaders_rec(nsucc,Seen,&Set,FPr);
-	}	
+		computeLoopHeaders_rec(nsucc, Seen, Set, FPr);
+	}
 	return true;
 }
 
@@ -179,7 +180,7 @@ void Pr::computePr() {
 	Node * n;
 	BasicBlock * b;
 
-	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
+	for (Function::iterator i = F->begin(); i != F->end(); ++i) {
 		if (Nodes.count(i) == 0) {
 			n = new Node(i);
 			Nodes[i] = n;
@@ -192,15 +193,15 @@ void Pr::computePr() {
 		front->computeSCC();
 	}
 
-	computeLoopHeaders(&Pr_set);
+	computeLoopHeaders(Pr_set);
 
 	//minimize_Pr(F);
-	
+
 	//if (!check_acyclic(&Pr_set)) {
 	//	*Out << "ERROR : GRAPH IS NOT ACYCLIC !\n";
 	//	assert(false);
 	//}
-	
+
 	Pw_set.insert(Pr_set.begin(),Pr_set.end());
 	Pr_set.insert(F->begin());
 
@@ -210,11 +211,11 @@ void Pr::computePr() {
 	const std::string assert_fail_overflow ("__assert_fail_overflow");
 	const std::string gnat_rcheck ("__gnat_rcheck_");
 
-	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
+	for (Function::iterator i = F->begin(); i != F->end(); ++i) {
 		b = i;
-		for (BasicBlock::iterator it = b->begin(), et = b->end(); it != et; ++it) {
+		for (BasicBlock::iterator it = b->begin(); it != b->end(); ++it) {
 			if (isa<ReturnInst>(*it) || isa<UnreachableInst>(*it)) {
-				Pr_set.insert(b); 
+				Pr_set.insert(b);
 			} else if (CallInst * c = dyn_cast<CallInst>((Instruction*)it)) {
 				Function * cF = c->getCalledFunction();
 				std::string fname;
@@ -248,31 +249,29 @@ void Pr::computePr() {
 	}
 
 	DEBUG(
-		std::set<BasicBlock*>* Pr = getPr();
+		std::set<BasicBlock*> & Pr = getPr();
 		*Out << "FINAL Pr SET:\n";
-		for (std::set<BasicBlock*>::iterator it = Pr->begin(), et = Pr->end(); it != et; it++) {
-			*Out << **it << "\n";
+		for (BasicBlock * bb : getPr()) {
+			*Out << *bb << "\n";
 		}
 	);
 }
 
 void Pr::minimize_Pr() {
-	std::set<BasicBlock*>* FPr = getPr();
+	std::set<BasicBlock*> & FPr = getPr();
 
-	for (std::set<BasicBlock*>::iterator it = FPr->begin(), et = FPr->end(); it != et; it++) {
-		BasicBlock * b = *it;
+	for (BasicBlock * bb : FPr) {
 		std::set<BasicBlock*> Pr;
-		Pr.insert(FPr->begin(),FPr->end());
-		Pr.erase(b);
-		if (check_acyclic(&Pr)) {
-			Pr_set.erase(b);
+		Pr.insert(FPr.begin(), FPr.end());
+		Pr.erase(bb);
+		if (check_acyclic(Pr)) {
+			Pr_set.erase(bb);
 			minimize_Pr();
 			return;
 		} else {
-			FPr->insert(b);
+			FPr.insert(bb);
 		}
 	}
-
 }
 
 std::set<BasicBlock*> Pr::getPrPredecessors(BasicBlock * b) {

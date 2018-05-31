@@ -27,7 +27,6 @@ std::map<BasicBlock *,Node *> Nodes;
 
 int i = 0;
 
-
 Node::Node(BasicBlock * _bb) {
 	index = 0;
 	lowlink = 0;
@@ -39,29 +38,17 @@ Node::Node(BasicBlock * _bb) {
 
 Node::~Node() {
 	// deleting all the abstract values attached to this node
-	for (std::map<params,Abstract*>::iterator it = X_s.begin(), 
-			et = X_s.end();
-			it != et;
-			it++) {
-		delete (*it).second;
+	for (auto & entry : X_s) {
+		delete entry.second;
 	}
-	for (std::map<params,Abstract*>::iterator it = X_d.begin(),
-			et = X_d.end();
-			it != et;
-			it++) {
-		delete (*it).second;
+	for (auto & entry : X_d) {
+		delete entry.second;
 	}
-	for (std::map<params,Abstract*>::iterator it = X_i.begin(),
-			et = X_i.end();
-			it != et;
-			it++) {
-		delete (*it).second;
+	for (auto & entry : X_i) {
+		delete entry.second;
 	}
-	for (std::map<params,Abstract*>::iterator it = X_f.begin(),
-			et = X_f.end();
-			it != et;
-			it++) {
-		delete (*it).second;
+	for (auto & entry : X_f) {
+		delete entry.second;
 	}
 	delete env;
 }
@@ -89,7 +76,7 @@ void Node::computeSCC_rec(int & n,std::stack<Node*> * S) {
 	n++;
 	S->push(this);
 	isInStack=true;
-	for (succ_iterator s = succ_begin(bb), E = succ_end(bb); s != E; ++s) {
+	for (succ_iterator s = succ_begin(bb); s != succ_end(bb); ++s) {
 		BasicBlock * succ = *s;
 		nsucc = Nodes[succ];
 		switch (nsucc->index) {
@@ -115,7 +102,7 @@ void Node::computeSCC_rec(int & n,std::stack<Node*> * S) {
 
 void Node::add_var(Value * val) {
 	assert(val != NULL);
-	ap_var_t var = val; 
+	ap_var_t var = val;
 	ap_texpr_rtype_t type;
 
 	if (Expr::get_ap_type(val,type)) {

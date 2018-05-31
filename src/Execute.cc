@@ -77,8 +77,8 @@ using namespace llvm;
 
 static cl::opt<std::string>
 DefaultDataLayout("default-data-layout",
-          cl::desc("data layout string to use if not specified by module"),
-          cl::value_desc("layout-string"), cl::init(""));
+		  cl::desc("data layout string to use if not specified by module"),
+		  cl::value_desc("layout-string"), cl::init(""));
 
 bool is_Cfile(std::string InputFilename) {
 	if (InputFilename.compare(InputFilename.size()-2,2,".c") == 0)
@@ -135,22 +135,23 @@ std::string parse_conf() {
 	std::ifstream conffile;
 	std::map<std::string,std::string> conf;
 	try {
-		std::string c = GetExecutablePath("pagai") + ".conf" ;
+		std::string c = GetExecutablePath("pagai") + ".conf";
 		conffile.open(c.c_str());
 		std::string key,value;
-		while (conffile >> key >> value){
+		while (conffile >> key >> value) {
 			conf[key] = value;
 		}
-		if (conf.count("ResourceDir"))
+		if (conf.count("ResourceDir")) {
 			return conf["ResourceDir"];
+		}
 
-    	} catch (std::exception& e) {
+	} catch (std::exception& e) {
 		*Dbg << "error while parsing pagai.conf\n";
 	}
 	return "";
 }
 
-void execute::exec(std::string InputFilename, std::string OutputFilename, std::vector<std::string> IncludePaths) {
+void execute::exec(const std::string & InputFilename, const std::string & OutputFilename, const std::vector<std::string> & IncludePaths) {
 
 	raw_fd_ostream *FDOut = NULL;
 
@@ -205,7 +206,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 		args.push_back("-fsanitize=local-bounds");
 		//args.push_back("-fsanitize=local-bounds");
 	}
-	
+
 	// default system paths
 	std::vector<std::string> compiler_search_paths;
 	fill_with_compiler_search_paths(compiler_search_paths);
@@ -238,7 +239,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	llvm::OwningPtr<clang::CompilerInvocation> CI(new clang::CompilerInvocation);
 #endif
 	clang::CompilerInvocation::CreateFromArgs(*CI, &args[0], &args[0] + args.size(), *Diags);
-	
+
 	clang::CompilerInstance Clang;
 	// equivalent to the -gcolumn-info command line option for clang
 	CI->getCodeGenOpts().DebugColumnInfo = 1;
@@ -253,7 +254,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	Clang.getHeaderSearchOpts().UseStandardCXXIncludes=1;
 	Clang.getHeaderSearchOpts().UseBuiltinIncludes=1;
 	//Clang.getHeaderSearchOpts().UseLibcxx=1;
-	
+
 	std::string p = parse_conf();
 	if (p.size() == 0) std::string p = LLVM_PREFIX;
 
@@ -263,8 +264,8 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	else
 		sep = "\\";
 	p += sep + "lib" + sep + "clang" + sep + CLANG_VERSION_STRING;
-    	Clang.getHeaderSearchOpts().ResourceDir = p;
-	
+		Clang.getHeaderSearchOpts().ResourceDir = p;
+
 	*Dbg << "// ResourceDir is " << Clang.getHeaderSearchOpts().ResourceDir << "\n";
 
 	if (!is_Cfile(InputFilename)) {
@@ -278,8 +279,8 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 #endif
 	} else {
 		if (!Clang.ExecuteAction(Act)) {
-		//*Dbg << "Unable to produce LLVM bitcode. Please use Clang with the appropriate options.\n";
-		    return;
+			//*Dbg << "Unable to produce LLVM bitcode. Please use Clang with the appropriate options.\n";
+			return;
 		}
 		// run takeLLVMContext(): otherwise the LLVMContext
 		// is deleted when the Action is deleted,
@@ -312,10 +313,10 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	FunctionPass *LoopInfoPass = new LoopInfo();
 
 	InitialPasses.add(createGCLoweringPass());
-	
+
 	// this pass converts SwitchInst instructions into a sequence of
 	// binary branch instructions, easier to deal with
-	InitialPasses.add(createLowerSwitchPass());	
+	InitialPasses.add(createLowerSwitchPass());
 	InitialPasses.add(createLowerInvokePass());
 	InitialPasses.add(LoopInfoPass);
 	InitialPasses.add(new ExpandAssume());
@@ -325,7 +326,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	if (!WCETSettings()) {
 		InitialPasses.add(new ExpandEqualities());
 	}
-	//Passes.add(createLoopSimplifyPass());	
+	//Passes.add(createLoopSimplifyPass());
 
 	// in case we want to run an Alias analysis pass :
 	//Passes.add(createGlobalsModRefPass());
@@ -337,7 +338,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 	if (inline_functions()) {
 		InitialPasses.add(taginlinepass); // this pass has to be run before the internalizepass, since it builds the list of functions to analyze
 	}
-		
+
 	if (check_overflow()) InitialPasses.add(new instrOverflow());
 
 	InitialPasses.add(new NameAllValues());
@@ -352,7 +353,7 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 		InlinePasses.add(createGlobalOptimizerPass());
 		InlinePasses.run(*M);
 	}
-	
+
 	PassManager OptPasses;
 
 	if (global2local())
@@ -490,9 +491,8 @@ void execute::exec(std::string InputFilename, std::string OutputFilename, std::v
 
 #ifdef TOTO
 	// we properly delete all the created Nodes
-	std::map<BasicBlock*,Node*>::iterator it = Nodes.begin(), et = Nodes.end();
-	for (;it != et; it++) {
-		delete (*it).second;
+	for (auto & entry : Nodes) {
+		delete entry.second;
 	}
 #endif
 

@@ -32,10 +32,10 @@ bool instrOverflow::runOnFunction(Function &F) {
 }
 
 bool instrOverflow::updateFunction(Function &F) {
-	for (Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {
+	for (Function::iterator i = F.begin(); i != F.end(); ++i) {
 		BasicBlock * b = i;
 
-		for (BasicBlock::iterator it = b->begin(), et = b->end(); it != et; ++it) {
+		for (BasicBlock::iterator it = b->begin(); it != b->end(); ++it) {
 			if (visit(*it)) return true;
 		}
 	}
@@ -45,7 +45,7 @@ bool instrOverflow::updateFunction(Function &F) {
 bool instrOverflow::visitExtractValueInst(ExtractValueInst &inst) {
 	Value * val = inst.getAggregateOperand();
 	if (CallInst * call = dyn_cast<CallInst>(val)) {
-		Function * f = call->getCalledFunction();	
+		Function * f = call->getCalledFunction();
 		if (f != NULL && f->isIntrinsic()) {
 			unsigned intrinsicID = f->getIntrinsicID();
 			unsigned indice;
@@ -64,7 +64,7 @@ bool instrOverflow::visitExtractValueInst(ExtractValueInst &inst) {
 							std::vector<Value*> args;
 							args.push_back(call->getArgOperand(0));
 							args.push_back(call->getArgOperand(1));
-							replaceWithUsualOp(&inst,intrinsicID,&args,call);
+							replaceWithUsualOp(&inst, intrinsicID, args, call);
 							return true;
 						}
 					} else {
@@ -100,12 +100,12 @@ bool instrOverflow::visitBranchInst(BranchInst &inst) {
 }
 
 bool instrOverflow::visitCallInst(CallInst &inst) {
-		Function * f = inst.getCalledFunction();	
+		Function * f = inst.getCalledFunction();
 		if (f == NULL) return false;
 		if (f->getName() == "__ubsan_handle_add_overflow" ||
 			f->getName() == "__ubsan_handle_sub_overflow" ||
 			f->getName() == "__ubsan_handle_mul_overflow" ||
-			f->getName() == "__ubsan_handle_divrem_overflow" 
+			f->getName() == "__ubsan_handle_divrem_overflow"
 				) {
 			LLVMContext &C = inst.getContext();
 			FunctionType * ftype = FunctionType::get(Type::getVoidTy(inst.getContext()),true);
@@ -113,7 +113,7 @@ bool instrOverflow::visitCallInst(CallInst &inst) {
 			Constant * assert_fail_func = M->getOrInsertFunction("__assert_fail_overflow",ftype);
 			inst.setCalledFunction(assert_fail_func);
 			inst.setDoesNotReturn();
-			
+
 			Constant * s = ConstantDataArray::getString(C,"overflow");
 			for (unsigned i = 0; i < inst.getNumArgOperands(); i++) {
 				inst.setArgOperand(i,s);
@@ -121,7 +121,7 @@ bool instrOverflow::visitCallInst(CallInst &inst) {
 
 			//CallInst * newcall = CallInst::Create(assert_fail_func);
 			//ReplaceInstWithInst(&inst,newcall);
-			
+
 			// the following is turned off, because it is source of constraints
 			// with huge coefficient in the polyhedra abstract domain
 #if 0
@@ -135,15 +135,14 @@ bool instrOverflow::visitCallInst(CallInst &inst) {
 }
 
 void instrOverflow::replaceWithUsualOp(
-		Instruction * old, 
+		Instruction * old,
 		unsigned intrinsicID,
-		std::vector<Value*> * args,
-		CallInst * intrinsicCall
-		){
-
+		const std::vector<Value*> & args,
+		CallInst * intrinsicCall)
+{
 	Instruction * new_inst = NULL;
-	Value* op1 = (*args)[0];
-	Value* op2 = (*args)[1];
+	Value* op1 = args[0];
+	Value* op2 = args[1];
 	switch (intrinsicID) {
 		case llvm::Intrinsic::sadd_with_overflow:
 		case llvm::Intrinsic::uadd_with_overflow:
@@ -177,13 +176,13 @@ void instrOverflow::replaceWithUsualOp(
 }
 
 void instrOverflow::replaceWithCmp(
-		Instruction * old, 
+		Instruction * old,
 		unsigned intrinsicID,
 		CallInst * intrinsicCall
 		){
 	// the old and the new instructions all share the same dbg info
 	MDNode * dbg = NULL;
-		
+
 	if (old->hasMetadata()) {
 		dbg = old->getMetadata(LLVMContext::MD_dbg);
 	}

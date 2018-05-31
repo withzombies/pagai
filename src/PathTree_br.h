@@ -29,17 +29,17 @@ class PathTree_br : public PathTree {
 
 	private:
 		/**
-		 * \brief manager of the CUDD library 
+		 * \brief manager of the CUDD library
 		 */
 		Cudd * mgr;
-		
+
 		/**
 		 * \{
 		 * \name variables needed by some methods
 		 */
 		DdNode * background;
 		DdNode * zero;
-		/** 
+		/**
 		 * \}
 		 */
 
@@ -54,14 +54,14 @@ class PathTree_br : public PathTree {
 
 		std::map<int, llvm::BranchInst*> levels;
 
-		BDD computef(std::list<llvm::BasicBlock*> path);
+		BDD computef(const std::list<llvm::BasicBlock*> & path);
 
 		/**
 		 * \brief Bdd that stores the various seen paths
 		 */
 		BDD * Bdd;
 
-		/** 
+		/**
 		 * \brief Bdd that stores the paths that need to be added in Bdd
 		 * in the next step
 		 */
@@ -75,7 +75,7 @@ class PathTree_br : public PathTree {
 		BDD getBDDfromBddIndex(int n);
 		/**
 		 * \brief returns the BDD node associated to a specific
-		 * BasicBlock. 
+		 * BasicBlock.
 		 *
 		 * When considering the source BasicBlock, the map should be
 		 * BddVarStart, else it should be BddVar
@@ -83,23 +83,23 @@ class PathTree_br : public PathTree {
 		BDD getBDDfromBranchInst(llvm::BranchInst * b, std::map<llvm::BranchInst*, int> &map, int &n);
 
 
-        llvm::BranchInst * getConditionnalBranch(llvm::BasicBlock * b, bool start = false);
+		llvm::BranchInst * getConditionnalBranch(llvm::BasicBlock * b, bool start = false);
 
 		/**
 		 * \brief returns the name of the basicBlock associated
 		 * to the level i of the Bdd.
 		 */
 		const std::string getStringFromLevel(int i);
-		
-        llvm::BranchInst * getBranchFromLevel(int const i);
 
-		void createBDDVars(llvm::BasicBlock * Start, std::set<llvm::BasicBlock*> * Pr, std::map<llvm::BranchInst*, int> &map, std::set<llvm::BasicBlock*> * seen, bool start = false);
+		llvm::BranchInst * getBranchFromLevel(int const i);
+
+		void createBDDVars(llvm::BasicBlock * Start, const std::set<llvm::BasicBlock*> & Pr, std::map<llvm::BranchInst*, int> & map, std::set<llvm::BasicBlock*> & seen, bool start = false);
 
 		/**
-		 * \brief dump the BDD "graph" in a .dot file. 
+		 * \brief dump the BDD "graph" in a .dot file.
 		 * \param filename Name of the .dot file
 		 */
-		void DumpDotBDD(BDD graph, std::string filename);
+		void DumpDotBDD(BDD graph, const std::string & filename);
 
 	public:
 		PathTree_br(llvm::BasicBlock * Start);
@@ -109,36 +109,36 @@ class PathTree_br : public PathTree {
 		/**
 		 * \brief insert a path in the Bdd
 		 */
-		void insert(std::list<llvm::BasicBlock*> path, bool primed = false);
+		void insert(const std::list<llvm::BasicBlock*> & path, bool primed = false);
 
 		/**
 		 * \brief remove a path from the Bdd
 		 */
-		void remove(std::list<llvm::BasicBlock*> path, bool primed = false);
+		void remove(const std::list<llvm::BasicBlock*> & path, bool primed = false);
 
-		/** 
+		/**
 		 * \brief clear the Bdd. The result will be an empty Bdd
 		 */
 		void clear(bool primed = false);
 
-		/** 
+		/**
 		 * \brief check if the Bdd contains the path given as argument
 		 */
-		bool exist(std::list<llvm::BasicBlock*> path, bool primed = false);
+		bool exist(const std::list<llvm::BasicBlock*> & path, bool primed = false);
 
-		/** 
+		/**
 		 * \brief merge the two Bdds into Bdd. Bdd_prime is cleared
 		 */
 		void mergeBDD();
 
 		bool isZero(bool primed = false);
 
-		/** 
+		/**
 		 * \brief dump the graph
 		 */
-		void DumpDotBDD(std::string filename, bool prime);
+		void DumpDotBDD(const std::string & filename, bool prime);
 
-		/** 
+		/**
 		 * \brief generate the SMTpass formula associated to the Bdd
 		 */
 		SMT_expr generateSMTformula(

@@ -185,9 +185,9 @@ class SMT_var {
 		}
 
 		bool operator < (const SMT_var& v) const {
-			return Compare(v)<0;   
+			return Compare(v)<0;
 		}
-}; 
+};
 
 /**
  * \class SMT_manager
@@ -251,7 +251,7 @@ class SMT_manager {
 
 		virtual void SMT_print(SMT_expr a) = 0;
 		virtual void SMT_assert(SMT_expr a) = 0;
-		virtual int SMT_check(SMT_expr a, std::set<std::string> * true_booleans) = 0;
+		virtual int SMT_check(SMT_expr a, std::set<std::string> & true_booleans) = 0;
 
 		virtual bool interrupt();
 };

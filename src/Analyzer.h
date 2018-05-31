@@ -8,15 +8,15 @@
  *
  * \section intro_sec Usage
  *
- * PAGAI is a prototype of static analyser, working on top of the LLVM compiler infrastructure. 
- * It implements various state-of-the-art analysis techniques by abstract interpretation 
- * and decision procedures, and computes numerical invariants over a program expressed 
- * as an LLVM bitcode file. The tool is open source, and downloadable here : 
+ * PAGAI is a prototype of static analyser, working on top of the LLVM compiler infrastructure.
+ * It implements various state-of-the-art analysis techniques by abstract interpretation
+ * and decision procedures, and computes numerical invariants over a program expressed
+ * as an LLVM bitcode file. The tool is open source, and downloadable here :
  * http://forge.imag.fr/projects/pagai/
  *
  * For a list of all available options :
  * \code
- * pagai -h or pagai --help \n 
+ * pagai -h or pagai --help \n
  * \endcode
  */
 
@@ -38,7 +38,7 @@ enum Apron_Manager_Type {
 	OCT,
 	PK,
 #ifdef OPT_OCT_ENABLED
-        OPT_OCT,
+	OPT_OCT,
 #endif
 #ifdef PPL_ENABLED
 	PPL_POLY,
@@ -65,8 +65,8 @@ enum SMTSolver {
 	Z3,
 	Z3_QFNRA,
 	SMTINTERPOL,
-	CVC3, 
-	CVC4, 
+	CVC3,
+	CVC4,
 	API_Z3,
 	API_YICES
 };
@@ -86,7 +86,7 @@ SMTSolver getSMTSolver();
 Techniques getTechnique();
 
 bool compareTechniques();
-std::vector<enum Techniques> * getComparedTechniques();
+std::vector<enum Techniques> & getComparedTechniques();
 
 bool compareDomain();
 bool compareNarrowing();

@@ -18,7 +18,7 @@
 #endif
 #include "end_3rdparty.h"
 
-class ExpandEqualities : public llvm::FunctionPass, 
+class ExpandEqualities : public llvm::FunctionPass,
 	public llvm::InstVisitor<ExpandEqualities, void> {
 	// make sure we do not expand twice the same branch inst
 	std::set<llvm::Value*> seen;
@@ -35,7 +35,7 @@ class ExpandEqualities : public llvm::FunctionPass,
 		llvm::Instruction *SplitBefore,
 		bool Unreachable,
 		llvm::MDNode *BranchWeights = NULL);
-	
+
 };
 
 #endif

@@ -20,7 +20,7 @@ bool TagInline::runOnModule(Module &M) {
 	if (Main_function != NULL) {
 		ToAnalyze.push_back("main");
 	}
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		Function * F = mIt;
 		// if the function is only a declaration, skip
 		if (F->begin() == F->end()) continue;
@@ -40,7 +40,7 @@ bool TagInline::runOnModule(Module &M) {
 	}
 	return 0;
 }
-		
+
 ArrayRef<const char *> TagInline::GetFunctionsToAnalyze() {
 	return ArrayRef<const char *>(ToAnalyze);
 }

@@ -27,7 +27,7 @@ class Environment {
 	private:
 		ap_environment_t * env;
 
-		void init(std::set<ap_var_t> * intvars, std::set<ap_var_t> * realvars);
+		void init(const std::set<ap_var_t> & intvars, const std::set<ap_var_t> & realvars);
 
 	public:
 		/**
@@ -35,8 +35,8 @@ class Environment {
 		 * \name Constructors
 		 */
 		Environment();
-		Environment(const Environment &e);
-		Environment(std::set<ap_var_t> * intvars, std::set<ap_var_t> * realvars);
+		Environment(const Environment & e);
+		Environment(const std::set<ap_var_t> & intvars, const std::set<ap_var_t> & realvars);
 		Environment(Abstract * A);
 		Environment(ap_tcons1_array_t * cons);
 		Environment(Constraint * cons);
@@ -53,7 +53,7 @@ class Environment {
 		 * \brief Overloaded copy assignment operator
 		 */
 		Environment & operator= (const Environment &e);
-	
+
 		/**
 		 * \brief Overloaded equality test
 		 */
@@ -72,15 +72,15 @@ class Environment {
 		 * insert into intdims the int dimensions of the environment
 		 * insert into realdims the real dimensions of the environment
 		 */
-		void get_vars(std::set<ap_var_t> * intdims, std::set<ap_var_t> * realdims);
+		void get_vars(std::set<ap_var_t> & intdims, std::set<ap_var_t> & realdims);
 
 		/**
 		 * \brief same as get_vars, but gets only variables that are live in b
 		 */
 		void get_vars_live_in(
 				llvm::BasicBlock * b, Live * LV,
-				std::set<ap_var_t> * intdims, 
-				std::set<ap_var_t> * realdims);
+				std::set<ap_var_t> & intdims,
+				std::set<ap_var_t> & realdims);
 
 		/**
 		 * \brief modifies exp1 and exp2, so that they have the same env
@@ -107,7 +107,7 @@ class Environment {
 		 */
 		void display(llvm::raw_ostream &stream) const;
 
-		
+
 		void to_MDNode(llvm::LLVMContext * C, std::vector<METADATA_TYPE*> * met);
 
 	private:
@@ -119,4 +119,5 @@ class Environment {
 };
 
 llvm::raw_ostream& operator<<( llvm::raw_ostream &stream, const Environment& env);
+
 #endif

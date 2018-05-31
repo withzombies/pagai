@@ -12,10 +12,11 @@ using namespace llvm;
 
 bool AnalysisPass::asserts_proved(Function * F) {
 	Pr * FPr = Pr::getInstance(F);
-	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
-		BasicBlock * b = i;
-		if (FPr->getAssert()->count(b) && !Nodes[b]->X_s[passID]->is_bottom())
+	for (Function::iterator it = F->begin(); it != F->end(); ++it) {
+		BasicBlock * b = it;
+		if (FPr->getAssert().count(b) && !Nodes[b]->X_s[passID]->is_bottom()) {
 			return false;
+		}
 	}
 	return true;
 }
@@ -28,7 +29,7 @@ void AnalysisPass::generateAnnotatedFiles(Module * M, bool outputfile) {
 		else
 			*Out << "RESULT: TRUE\n";
 		DEBUG(
-		for (Module::iterator mIt = M->begin() ; mIt != M->end() ; ++mIt) {
+		for (Module::iterator mIt = M->begin(); mIt != M->end(); ++mIt) {
 			Function * F = mIt;
 			if (F->size() > 0)
 			printResult_oldoutput(F);
@@ -36,14 +37,15 @@ void AnalysisPass::generateAnnotatedFiles(Module * M, bool outputfile) {
 		);
 		return;
 	}
-	if (!useSourceName()) 
+	if (!useSourceName())
 		return;
 	std::map<std::string,std::multimap<std::pair<int,int>,BasicBlock*> > files;
 
-	for (Module::iterator mIt = M->begin() ; mIt != M->end() ; ++mIt) {
+	for (Module::iterator mIt = M->begin(); mIt != M->end(); ++mIt) {
 		Function * F = mIt;
-		if (!F->isDeclaration() && ! ignored(F))
-			computeResultsPositions(F,&files);
+		if (!F->isDeclaration() && ! ignored(F)) {
+			computeResultsPositions(F, files);
+		}
 	}
 
 	llvm::raw_ostream *Output;
@@ -73,11 +75,9 @@ void AnalysisPass::generateAnnotatedFiles(Module * M, bool outputfile) {
 		Output = Out;
 	}
 
-	std::map<std::string,std::multimap<std::pair<int,int>,BasicBlock*> >::iterator it = files.begin(), et = files.end();
-	for(; it != et; it++) {
-		std::string filename = it->first;
-		std::multimap<std::pair<int,int>,BasicBlock*> positions = it->second;
-		generateAnnotatedCode(Output,filename,&positions);
+	for (auto & entry : files) {
+		std::string filename = entry.first;
+		generateAnnotatedCode(Output, filename, &entry.second);
 	}
 	if (outputfile) {
 		delete Output;
@@ -85,8 +85,8 @@ void AnalysisPass::generateAnnotatedFiles(Module * M, bool outputfile) {
 }
 
 void AnalysisPass::generateAnnotatedCode(
-		llvm::raw_ostream * oss, 
-		std::string filename, 
+		llvm::raw_ostream * oss,
+		std::string filename,
 		std::multimap<std::pair<int,int>,BasicBlock*> * positions) {
 
 	// we open the source file in read mode
@@ -107,9 +107,9 @@ void AnalysisPass::generateAnnotatedCode(
 		{
 			lineNo++;
 			columnNo = 1;
-			std::string::iterator it = line.begin(); 
+			std::string::iterator it = line.begin();
 			while (it < line.end()) {
-				
+
 				if (lineNo == Iit->first.first && columnNo == Iit->first.second) {
 					// here, we can print an invariant !
 					BasicBlock * b = Iit->second;
@@ -130,7 +130,7 @@ void AnalysisPass::generateAnnotatedCode(
 		}
 	}
 }
-		
+
 void AnalysisPass::printResult(Function * F) {
 	if (SVComp()) {
 		assert_fail_found = assert_fail_found || !asserts_proved(F);
@@ -146,16 +146,17 @@ void AnalysisPass::printResult_oldoutput(Function * F) {
 	Node * n;
 	Pr * FPr = Pr::getInstance(F);
 	if (ignored(F)) return;
-	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
-		b = i;
+	for (Function::iterator it = F->begin(); it != F->end(); ++it) {
+		b = it;
 		n = Nodes[b];
 		if ((!printAllInvariants() && FPr->inPr(b) && !ignored(F)) ||
-		(printAllInvariants() && n->X_s.count(passID) && n->X_s[passID] != NULL && !ignored(F))) {
+				(printAllInvariants() && n->X_s.count(passID) && n->X_s[passID] != NULL && !ignored(F))) {
+
 			changeColor(raw_ostream::MAGENTA);
 			Instruction * Inst = b->getFirstNonPHI();
 			//Instruction * Inst = &b->front();
 			std::vector<METADATA_TYPE*> arr;
-			
+
 			if (generateMetadata()) {
 				n->X_s[passID]->to_MDNode(Inst,&arr);
 				LLVMContext& C = Inst->getContext();

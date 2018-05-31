@@ -22,7 +22,7 @@ class AbstractMan {
 	public:
 		/**
 		 * \brief creates an object of type Abstract
-		 * \param man apron manager 
+		 * \param man apron manager
 		 * \param env environment of the created abstract value
 		 */
 		virtual Abstract * NewAbstract(ap_manager_t * man, Environment * env) = 0;
@@ -45,7 +45,7 @@ class AbstractManClassic : public AbstractMan {
 	public:
 		/**
 		 * \brief creates an object of type AbstractClassic
-		 * \param man apron manager 
+		 * \param man apron manager
 		 * \param env environment of the created abstract value
 		 */
 		Abstract * NewAbstract(ap_manager_t * man, Environment * env);
@@ -65,7 +65,7 @@ class AbstractManGopan : public AbstractMan {
 	public:
 		/**
 		 * \brief creates an object of type AbstractGopan
-		 * \param man apron manager 
+		 * \param man apron manager
 		 * \param env environment of the created abstract value
 		 */
 		Abstract * NewAbstract(ap_manager_t * man, Environment * env);
@@ -85,7 +85,7 @@ class AbstractManDisj : public AbstractMan {
 	public:
 		/**
 		 * \brief creates an object of type AbstractDisj
-		 * \param man apron manager 
+		 * \param man apron manager
 		 * \param env environment of the created abstract value
 		 */
 		Abstract * NewAbstract(ap_manager_t * man, Environment * env);

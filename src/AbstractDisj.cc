@@ -67,9 +67,8 @@ AbstractDisj::AbstractDisj(Abstract* A) {
 	man = A->man;
 	disj.clear();
 	if (AbstractDisj * A_dis = dynamic_cast<AbstractDisj*>(A)) {
-		std::vector<Abstract*>::iterator it = A_dis->disj.begin(), et = A_dis->disj.end();
-		for (; it != et; it++) {
-			disj.push_back(man_disj->NewAbstract(*it));
+		for (Abstract * d : A_dis->disj) {
+			disj.push_back(man_disj->NewAbstract(d));
 		}
 		main = disj[0]->main;
 	} else {
@@ -81,9 +80,8 @@ AbstractDisj::AbstractDisj(Abstract* A) {
 }
 
 void AbstractDisj::clear_all() {
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++) {
-		delete *it;
+	for (Abstract * d : disj) {
+		delete d;
 	}
 	disj.clear();
 	main = NULL;
@@ -102,20 +100,19 @@ void AbstractDisj::set_top(Environment * env, int index) {
 	SetNDisjunct(index);
 	int i = 0;
 	// every disjunct is at bottom except the one of index 'index'
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++, i++) {
-		if (i == index)
-			(*it)->set_top(env);
-		else
-			(*it)->set_bottom(env);
+	for (Abstract * d : disj) {
+		if (i == index) {
+			d->set_top(env);
+		} else {
+			d->set_bottom(env);
+		}
 	}
 	main = disj[0]->main;
 }
 
 void AbstractDisj::set_bottom(Environment * env) {
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++) {
-		(*it)->set_bottom(env);
+	for (Abstract * d : disj) {
+		d->set_bottom(env);
 	}
 	main = disj[0]->main;
 }
@@ -128,9 +125,8 @@ void AbstractDisj::set_bottom(Environment * env, int index) {
 
 
 void AbstractDisj::change_environment(Environment * env) {
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++) {
-		(*it)->change_environment(env);
+	for (Abstract * d : disj) {
+		d->change_environment(env);
 	}
 	main = disj[0]->main;
 }
@@ -153,17 +149,15 @@ bool AbstractDisj::is_eq_index (Abstract *d, int index) {
 }
 
 bool AbstractDisj::is_bottom() {
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++) {
-		if (!(*it)->is_bottom()) return false;
+	for (Abstract * d : disj) {
+		if (! d->is_bottom()) return false;
 	}
 	return true;
 }
 
 bool AbstractDisj::is_top() {
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++) {
-		if ((*it)->is_top()) return true;
+	for (Abstract * d : disj) {
+		if (d->is_top()) return true;
 	}
 	return false;
 }
@@ -197,10 +191,8 @@ void AbstractDisj::widening_threshold(Abstract * X, Constraint_array* cons, int 
 }
 
 void AbstractDisj::meet_tcons_array(Constraint_array* tcons) {
-
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++) {
-		(*it)->meet_tcons_array(tcons);
+	for (Abstract * d : disj) {
+		d->meet_tcons_array(tcons);
 	}
 	main = disj[0]->main;
 }
@@ -212,29 +204,27 @@ void AbstractDisj::meet_tcons_array(Constraint_array* tcons, int index) {
 }
 
 void AbstractDisj::canonicalize() {
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++) {
-		(*it)->canonicalize();
+	for (Abstract * d : disj) {
+		d->canonicalize();
 	}
 }
 
 void AbstractDisj::assign_texpr_array(
-		ap_var_t* tvar, 
-		ap_texpr1_t* texpr, 
-		size_t size, 
+		ap_var_t* tvar,
+		ap_texpr1_t* texpr,
+		size_t size,
 		ap_abstract1_t* dest
 		) {
-	std::vector<Abstract*>::iterator it = disj.begin(), et = disj.end();
-	for (; it != et; it++) {
-		(*it)->assign_texpr_array(tvar,texpr,size,dest);
+	for (Abstract * d : disj) {
+		d->assign_texpr_array(tvar, texpr, size, dest);
 	}
 	main = disj[0]->main;
 }
 
 void AbstractDisj::assign_texpr_array(
-		ap_var_t* tvar, 
-		ap_texpr1_t* texpr, 
-		size_t size, 
+		ap_var_t* tvar,
+		ap_texpr1_t* texpr,
+		size_t size,
 		ap_abstract1_t* dest,
 		int index
 		) {
@@ -244,14 +234,14 @@ void AbstractDisj::assign_texpr_array(
 }
 
 //NOT IMPLEMENTED
-void AbstractDisj::join_array(Environment * env, std::vector<Abstract*> X_pred) {
+void AbstractDisj::join_array(Environment * env, const std::vector<Abstract*> & X_pred) {
 	(void) env;
 	(void) X_pred;
 }
 
-void AbstractDisj::join_array(Environment * env, std::vector<Abstract*> X_pred, int index) {
+void AbstractDisj::join_array(Environment * env, const std::vector<Abstract*> & X_pred, int index) {
 	SetNDisjunct(index);
-	disj[index]->join_array(env,X_pred);
+	disj[index]->join_array(env, X_pred);
 	main = disj[0]->main;
 }
 
@@ -263,7 +253,7 @@ void AbstractDisj::join_array_dpUcm(Environment *env, Abstract* n) {
 
 void AbstractDisj::join_array_dpUcm(Environment *env, Abstract* n, int index) {
 	SetNDisjunct(index);
-	disj[index]->join_array_dpUcm(env,n);
+	disj[index]->join_array_dpUcm(env, n);
 	main = disj[0]->main;
 }
 
@@ -297,15 +287,15 @@ void AbstractDisj::print() {
 }
 
 void AbstractDisj::display(llvm::raw_ostream &stream, std::string * left) const {
-	int k = 0;
-	std::vector<Abstract*>::const_iterator it = disj.begin(), et = disj.end();
-	if (disj.size() == 1)
-			disj[0]->display(stream,left);
-	else {
-		for (; it != et; it++, k++) {
+	if (disj.size() == 1) {
+		disj[0]->display(stream, left);
+	} else {
+		int count = 0;
+		for (const Abstract * d : disj) {
 			if (left != NULL) stream << *left;
-			stream << "Disjunct " << k << "\n";
-			(*it)->display(stream,left);
+			stream << "Disjunct " << count << "\n";
+			d->display(stream, left);
+			++count;
 		}
 	}
 }

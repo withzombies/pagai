@@ -83,7 +83,7 @@ void SMTlib::SMTlib_init() {
 				if (execvp("smtinterpol",smtinterpol_argv)) {
 					perror("exec smtinterpol");
 					exit(1);
-				}		
+				}
 				break;
 			case Z3:
 			case Z3_QFNRA:
@@ -272,12 +272,12 @@ SMT_expr SMTlib::SMT_mk_or (std::vector<SMT_expr> args){
 			break;
 		default:
 			std::string or_smt;
-			or_smt = "(or "; 
+			or_smt = "(or ";
 
-			std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
-			for (; b != e; ++b) {
-				or_smt += (*b).SMTlib() + " ";
+			for (SMT_expr & arg : args) {
+				or_smt += arg.SMTlib() + " ";
 			}
+
 			or_smt += ")";
 			return SMT_expr(or_smt);
 	}
@@ -293,11 +293,10 @@ SMT_expr SMTlib::SMT_mk_and (std::vector<SMT_expr> args){
 			break;
 		default:
 			std::string or_smt;
-			or_smt = "(and \n"; 
+			or_smt = "(and \n";
 
-			std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
-			for (; b != e; ++b) {
-				or_smt += " " + (*b).SMTlib() + "\n";
+			for (SMT_expr & arg : args) {
+				or_smt += " " + arg.SMTlib() + "\n";
 			}
 			or_smt += ")";
 			return SMT_expr(or_smt);
@@ -325,9 +324,9 @@ SMT_expr SMTlib::SMT_mk_not (SMT_expr a){
 
 SMT_expr SMTlib::SMT_mk_num (int n){
 	std::ostringstream oss;
-        //std::cerr << "const " << n << std::endl;
-        if (n == INT_MIN)
-                oss << "(- 2147483648)";
+	//std::cerr << "const " << n << std::endl;
+	if (n == INT_MIN)
+		oss << "(- 2147483648)";
 	else if (n < 0)
 		oss << "(- " << -n << ")";
 	else
@@ -432,14 +431,13 @@ SMT_expr SMTlib::SMT_mk_real (double x) {
 	char * r = mpf_get_str(NULL,&expptr,10,n_digits,f);
 	mpf_clear(f);
 	std::string num(r);
-	
+
 	if (is_zero)
 		oss << "0.0";
 	else {
-		if (is_neg) oss << "(- "; 
+		if (is_neg) oss << "(- ";
 		oss << num_to_string(num,expptr);
-		if (is_neg) oss << ")"; 
-		
+		if (is_neg) oss << ")";
 	}
 	return SMT_expr(oss.str());
 }
@@ -452,11 +450,10 @@ SMT_expr SMTlib::SMT_mk_sum (std::vector<SMT_expr> args){
 		case 1:
 			return SMT_expr(args[0].SMTlib());
 		default:
-			std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
 			std::string r;
-			r = "(+ "; 
-			for (; b != e; ++b) {
-				r += (*b).SMTlib() + " ";
+			r = "(+ ";
+			for (SMT_expr & arg : args) {
+				r += arg.SMTlib() + " ";
 			}
 			r += ")";
 			return SMT_expr(r);
@@ -471,11 +468,10 @@ SMT_expr SMTlib::SMT_mk_sub (std::vector<SMT_expr> args){
 		case 1:
 			return SMT_expr(args[0].SMTlib());
 		default:
-			std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
 			std::string r;
-			r = "(- "; 
-			for (; b != e; ++b) {
-				r += (*b).SMTlib() + " ";
+			r = "(- ";
+			for (SMT_expr & arg : args) {
+				r += arg.SMTlib() + " ";
 			}
 			r += ")";
 			return SMT_expr(r);
@@ -490,11 +486,10 @@ SMT_expr SMTlib::SMT_mk_mul (std::vector<SMT_expr> args){
 		case 1:
 			return SMT_expr(args[0].SMTlib());
 		default:
-			std::vector<SMT_expr>::iterator b = args.begin(), e = args.end();
 			std::string r;
-			r = "(* "; 
-			for (; b != e; ++b) {
-				r += (*b).SMTlib() + " ";
+			r = "(* ";
+			for (SMT_expr & arg : args) {
+				r += arg.SMTlib() + " ";
 			}
 			r += ")";
 			return SMT_expr(r);
@@ -577,10 +572,9 @@ SMT_expr SMTlib::SMT_mk_divides (SMT_expr a1, SMT_expr a2) {
 #endif
 
 void SMTlib::SMT_print(SMT_expr a){
-	std::map<std::string,struct definedvars>::iterator it = vars.begin(), et = vars.end();
-	for (; it != et; it++) {
-		if ((*it).second.stack_level <= stack_level) {
-			*Out << (*it).second.declaration;
+	for (auto & entry : vars) {
+		if (entry.second.stack_level <= stack_level) {
+			*Out << entry.second.declaration;
 		}
 	}
 	*Out << "(assert\n";
@@ -597,7 +591,7 @@ void SMTlib::SMT_assert(SMT_expr a){
 	pwrite(assert_stmt);
 }
 
-int SMTlib::SMT_check(SMT_expr a, std::set<std::string> * true_booleans){
+int SMTlib::SMT_check(SMT_expr a, std::set<std::string> & true_booleans){
 	int ret;
 	std::string check_stmt;
 	check_stmt = "(assert " + a.SMTlib() + ")\n";
@@ -616,8 +610,8 @@ int SMTlib::SMT_check(SMT_expr a, std::set<std::string> * true_booleans){
 		// SAT
 		pwrite("(get-model)\n");
 		pread();
-		true_booleans->clear();
-		true_booleans->insert(model.begin(),model.end());
+		true_booleans.clear();
+		true_booleans.insert(model.begin(), model.end());
 	}
 	if (ret == 0) {
 		// UNSAT
@@ -636,11 +630,10 @@ void SMTlib::pop_context() {
 	pwrite("(pop 1)\n");
 	stack_level--;
 
-	std::map<std::string,struct definedvars> tmpvars;
-	std::map<std::string,struct definedvars>::iterator it = vars.begin(), et = vars.end();
-	for (; it != et; it++) {
-		if ((*it).second.stack_level <= stack_level) {
-			tmpvars.insert(*it);
+	std::map<std::string, struct definedvars> tmpvars;
+	for (auto & entry : vars) {
+		if (entry.second.stack_level <= stack_level) {
+			tmpvars.insert(entry);
 		}
 	}
 	vars.clear();
@@ -648,6 +641,6 @@ void SMTlib::pop_context() {
 }
 
 bool SMTlib::interrupt() {
-  kill(solver_pid, SIGINT);
-  return true;
+	kill(solver_pid, SIGINT);
+	return true;
 }

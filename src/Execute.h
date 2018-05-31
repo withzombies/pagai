@@ -14,8 +14,10 @@
  * \brief class that creates and runs the llvm passes
  */
 class execute {
-public :
-	void exec(std::string InputFilename, std::string OutputFilename, std::vector<std::string> IncludePaths);
+
+	public:
+		void exec(const std::string & InputFilename, const std::string & OutputFilename, const std::vector<std::string> & IncludePaths);
+
 };
 
 #endif

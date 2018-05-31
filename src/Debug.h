@@ -26,7 +26,7 @@
 #   define DEBUG_SMT(X) do { } while (0)
 #endif
 
-#ifdef HAS_Z3 
+#ifdef HAS_Z3
 #   define Z3(X)  X
 #else
 #   define Z3(X)
@@ -52,7 +52,7 @@ extern std::map<params,std::map<llvm::Function*, llvm::sys::TimeValue*> > Total_
  */
 extern std::map<params,std::map<llvm::Function*,int> > asc_iterations;
 
-/** 
+/**
  * \brief count the number of descending iterations
  */
 extern std::map<params,std::map<llvm::Function*,int> > desc_iterations;

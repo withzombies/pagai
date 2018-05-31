@@ -26,10 +26,10 @@
  */
 template<Techniques T>
 class CompareNarrowing : public llvm::ModulePass {
-	
-	private:	
+
+	private:
 		SMTpass * LSMT;
-	
+
 		std::map<params, llvm::sys::TimeValue *> Time;
 		std::map<params, llvm::sys::TimeValue *> Eq_Time;
 		std::map<params, int> total_asc;
@@ -50,29 +50,29 @@ class CompareNarrowing : public llvm::ModulePass {
 		{}
 
 		~CompareNarrowing() {}
-		
+
 		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
 
 		void AddTime(params P, llvm::Function * F);
 		void AddEqTime(params P, llvm::Function * F);
-		
+
 		void printTime(params P);
 		void printEqTime(params P);
 
 		void ComputeIterations(params P, llvm::Function * F);
-	
+
 		void CountNumberOfWarnings(params P, llvm::Function * F);
-		
+
 		void printIterations(params P);
 
 		bool runOnModule(llvm::Module &M);
-	
+
 		const char * getPassName() const;
 };
 
 template<Techniques T>
 char CompareNarrowing<T>::ID = 0;
-		
+
 template<Techniques T>
 const char * CompareNarrowing<T>::getPassName() const {
 	return "CompareNarrowing";
@@ -119,7 +119,7 @@ void CompareNarrowing<T>::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
 
 template<Techniques T>
 void CompareNarrowing<T>::ComputeIterations(params P, llvm::Function * F) {
-	
+
 	if (total_asc.count(P)) {
 		total_asc[P] = total_asc[P] + asc_iterations[P][F];
 		total_desc[P] = total_desc[P] + desc_iterations[P][F];
@@ -137,7 +137,7 @@ void CompareNarrowing<T>::CountNumberOfWarnings(params P, llvm::Function * F) {
 	for (llvm::Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
 		b = i;
 		n = Nodes[b];
-		if (FPr->getAssert()->count(b) || FPr->getUndefinedBehaviour()->count(b)) {
+		if (FPr->getAssert().count(b) || FPr->getUndefinedBehaviour().count(b)) {
 			if (!n->X_s[P]->is_bottom()) {
 				if (Warnings.count(P))
 					Warnings[P]++;
@@ -164,11 +164,11 @@ void CompareNarrowing<T>::printIterations(params P) {
 
 template<Techniques T>
 void CompareNarrowing<T>::AddEqTime(params P, llvm::Function * F) {
-	
+
 	if (Eq_Time.count(P)) {
 		*Eq_Time[P] = *Eq_Time[P]+*Total_time[P][F];
 	} else {
-        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
+		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Eq_Time[P] = zero;
 		*Eq_Time[P] = *Total_time[P][F];
 	}
@@ -176,11 +176,11 @@ void CompareNarrowing<T>::AddEqTime(params P, llvm::Function * F) {
 
 template<Techniques T>
 void CompareNarrowing<T>::AddTime(params P, llvm::Function * F) {
-	
+
 	if (Time.count(P)) {
 		*Time[P] = *Time[P]+*Total_time[P][F];
 	} else {
-        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
+		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Time[P] = zero;
 		*Time[P] = *Total_time[P][F];
 	}
@@ -189,30 +189,30 @@ void CompareNarrowing<T>::AddTime(params P, llvm::Function * F) {
 template<Techniques T>
 void CompareNarrowing<T>::printEqTime(params P) {
 	if (!Eq_Time.count(P)) {
-        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
+		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Eq_Time[P] = zero;
 	}
 	std::string tname;
 	if (P.N == true) tname = "NEWNARROWING";
 	else tname = "CLASSIC";
-	*Out 
-		<< Eq_Time[P]->seconds() 
-		<< " " << Eq_Time[P]->microseconds() 
+	*Out
+		<< Eq_Time[P]->seconds()
+		<< " " << Eq_Time[P]->microseconds()
 		<< " // " << tname << "\n";
 }
 
 template<Techniques T>
 void CompareNarrowing<T>::printTime(params P) {
 	if (!Time.count(P)) {
-        llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
+		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
 		Time[P] = zero;
 	}
 	std::string tname;
 	if (P.N == true) tname = "NEWNARROWING";
 	else tname = "CLASSIC";
-	*Out 
-		<< Time[P]->seconds() 
-		<< " " << Time[P]->microseconds() 
+	*Out
+		<< Time[P]->seconds()
+		<< " " << Time[P]->microseconds()
 		<< " // " << tname << "\n";
 }
 
@@ -253,12 +253,12 @@ bool CompareNarrowing<T>::runOnModule(llvm::Module &M) {
 	for (llvm::Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
 		LSMT->reset_SMTcontext();
 		F = mIt;
-		
+
 		// if the function is only a declaration, do nothing
 		if (F->begin() == F->end()) continue;
 
 		if (ignored(F)) continue;
-		
+
 		AddTime(P1,F);
 		AddTime(P2,F);
 		ComputeIterations(P1,F);
@@ -271,7 +271,7 @@ bool CompareNarrowing<T>::runOnModule(llvm::Module &M) {
 			b = i;
 			n = Nodes[b];
 			Pr * FPr = Pr::getInstance(F);
-			if (FPr->getPw()->count(b)) {
+			if (FPr->getPw().count(b)) {
 
 				DEBUG(
 				*Out << "Comparing the two abstracts :\n";
@@ -317,14 +317,14 @@ bool CompareNarrowing<T>::runOnModule(llvm::Module &M) {
 	}
 
 	changeColor(llvm::raw_ostream::MAGENTA);
-	*Out << ApronManagerToString(getApronManager(0)) << " ABSTRACT DOMAIN\n\n\n" 
+	*Out << ApronManagerToString(getApronManager(0)) << " ABSTRACT DOMAIN\n\n\n"
 		<< "IMPROVED NARROWING -- CLASSIC" << "\n";
 	resetColor();
 	*Out << "\nTIME:\n";
 	printTime(P1);
 	printTime(P2);
 	*Out << "TIME_END\n";
-	
+
 	*Out << "\nTIME_EQ:\n";
 	printEqTime(P1);
 	printEqTime(P2);
@@ -335,9 +335,9 @@ bool CompareNarrowing<T>::runOnModule(llvm::Module &M) {
 	*Out << "FUNCTIONS_END\n";
 
 	*Out << "\nFUNCTIONS_SEEDS:\n";
-	*Out 
-		<< F_equal 
-		<< " " << F_distinct 
+	*Out
+		<< F_equal
+		<< " " << F_distinct
 		<< " " << F_withseeds
 		<< " " << F_noseeds
 		<<  " " << F_equal+F_distinct << "\n";

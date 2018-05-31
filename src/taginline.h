@@ -18,7 +18,7 @@
 
 class TagInline : public llvm::ModulePass {
 
-	private:	
+	private:
 		static std::vector<const char *> ToAnalyze;
 
 	public:
@@ -28,7 +28,7 @@ class TagInline : public llvm::ModulePass {
 		bool runOnModule(llvm::Module &M);
 
 		static llvm::ArrayRef<const char *> GetFunctionsToAnalyze();
-	
+
 		const char * getPassName() const;
 
 		void getAnalysisUsage(llvm::AnalysisUsage &AU) const;

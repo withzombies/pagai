@@ -47,23 +47,23 @@ class compare_Info
 class recoverName {
 	private :
 		static void pass1(llvm::Function *F);
-		
+
 		static Info resolveMetDescriptor(llvm::MDNode* md);
 
 		static void update_line_column(llvm::Instruction * I, unsigned & line, unsigned & column);
-		static void print_set(std::set<Info, compare_Info> * s);
+		static void print_set(const std::set<Info, compare_Info> & s);
 
-		static std::set<Info, compare_Info> getPossibleMappings(const llvm::Value * V, std::set<const llvm::Value *> * seen);
-		
+		static std::set<Info, compare_Info> getPossibleMappings(const llvm::Value * V, std::set<const llvm::Value *> & seen);
+
 		static void fill_info_set(
-				llvm::BasicBlock * b, 
-				std::set<Info> * infos, 
+				llvm::BasicBlock * b,
+				std::set<Info> & infos,
 				llvm::Value * val,
-				std::set<llvm::BasicBlock*> * seen
+				std::set<llvm::BasicBlock*> & seen
 				);
 
 	public:
-		static std::set<Info> getMDInfos_rec(llvm::Value* v,std::set<llvm::Value*> & seen);
+		static std::set<Info> getMDInfos_rec(llvm::Value* v, std::set<llvm::Value*> & seen);
 		static Info getMDInfos(const llvm::Value* V);
 		static int process(llvm::Function* F);
 		static int getBasicBlockLineNo(llvm::BasicBlock* BB);

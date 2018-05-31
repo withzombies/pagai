@@ -16,7 +16,7 @@ int Abstract::compare(Abstract * d) {
 //if enabled, we may have errors because the two abstracts may not have the same
 //environment
 #if 1
-	if (dynamic_cast<AbstractClassic*>(d) 
+	if (dynamic_cast<AbstractClassic*>(d)
 		&& dynamic_cast<AbstractClassic*>(this)) {
 		if (ap_abstract1_is_eq(man,main,d->main))
 			return 0;
@@ -55,7 +55,7 @@ int Abstract::compare(Abstract * d) {
 	}
 
 	LSMT->pop_context();
-	
+
 	if (!f && !g) {
 		// eq
 		return 0;
@@ -95,7 +95,7 @@ bool Abstract::CanJoinPrecisely(AbstractMan * aman, Abstract * A) {
 	SMT_expr A_smt = LSMT->AbstractToSmt(NULL,this);
 	SMT_expr B_smt = LSMT->AbstractToSmt(NULL,A);
 	SMT_expr J_smt = LSMT->AbstractToSmt(NULL,J);
-	
+
 	std::vector<SMT_expr> cunj;
 	cunj.push_back(J_smt);
 	cunj.push_back(LSMT->man->SMT_mk_not(A_smt));
@@ -112,12 +112,12 @@ bool Abstract::CanJoinPrecisely(AbstractMan * aman, Abstract * A) {
 bool Abstract::is_leq(Abstract * d) {
 	// in the case we compare two AbstractGopan, we have to slightly change the
 	// comparison
-	if (dynamic_cast<AbstractGopan*>(d) 
+	if (dynamic_cast<AbstractGopan*>(d)
 		&& dynamic_cast<AbstractGopan*>(this)) {
 		if (ap_abstract1_is_eq(man,main,d->main)) {
-			if (ap_abstract1_is_leq(man,pilot,d->pilot) || d->pilot == NULL) 
-				return true; 
-			else 
+			if (ap_abstract1_is_leq(man,pilot,d->pilot) || d->pilot == NULL)
+				return true;
+			else
 				return false;
 		}
 		return ap_abstract1_is_leq(man,main,d->main);
@@ -130,29 +130,28 @@ bool Abstract::is_eq(Abstract * d) {
 }
 
 void Abstract::assign_texpr_array(
-		std::vector<ap_var_t> * name,
-		std::vector<Expr*> * expr,
+		std::vector<ap_var_t> & name,
+		std::vector<Expr*> & expr,
 		ap_abstract1_t* dest) {
-		
+
 	std::vector<ap_texpr1_t> texpr;
-	std::vector<Expr*>::iterator it = expr->begin(), et = expr->end();
-	for (; it != et; it++) {
-		//ap_texpr1_t * exp = ap_texpr1_copy((*it).getExpr());
-		ap_texpr1_t * exp = (*it)->getExpr();
+
+	for (Expr * e : expr) {
+		ap_texpr1_t * exp = e->getExpr();
 		texpr.push_back(*exp);
 	}
-	assign_texpr_array(&(*name)[0],&texpr[0],name->size(),dest);
+	assign_texpr_array(&name[0], &texpr[0], name.size(), dest);
 
 	// FREE expr
-	for (it = expr->begin(), et = expr->end(); it != et; it++) {
-		delete *it;
+	for (Expr * e : expr) {
+		delete e;
 	}
-	name->clear();
-	expr->clear();
+	name.clear();
+	expr.clear();
 }
 
 
 llvm::raw_ostream& operator<<( llvm::raw_ostream &stream, Abstract const& A) {
 	A.display(stream);
-    return stream;
+	return stream;
 }

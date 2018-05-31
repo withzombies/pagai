@@ -60,7 +60,7 @@ class AIGuided : public llvm::ModulePass, public AIPass {
 			}
 
 	public:
-		static char ID;	
+		static char ID;
 
 		AIGuided(char &_ID, Apron_Manager_Type _man, bool _NewNarrow, bool _Threshold) : ModulePass(_ID), AIPass(_man,_NewNarrow, _Threshold) {
 			init();
@@ -68,7 +68,7 @@ class AIGuided : public llvm::ModulePass, public AIPass {
 			passID.N = _NewNarrow;
 			passID.TH = _Threshold;
 		}
-		
+
 		AIGuided() : ModulePass(ID) {
 			init();
 			passID.D = getApronManager();
@@ -77,15 +77,12 @@ class AIGuided : public llvm::ModulePass, public AIPass {
 		}
 
 		~AIGuided () {
-			for (std::map<llvm::BasicBlock*, std::set<llvm::BasicBlock*>*>::iterator 
-				it = pathtree.begin(),
-				et = pathtree.end(); 
-				it != et; 
-				it++) {
-				if ((*it).second != NULL)
-					delete (*it).second;
+			for (auto & entry : pathtree) {
+				if (entry.second != NULL) {
+					delete entry.second;
 				}
 			}
+		}
 
 		const char *getPassName() const;
 
@@ -103,7 +100,7 @@ class AIGuided : public llvm::ModulePass, public AIPass {
 		 * \param n the starting point
 		 */
 		void computeNode(Node * n);
-		
+
 		/**
 		 * \brief apply narrowing at node n
 		 * \param n the starting point

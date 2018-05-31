@@ -16,15 +16,18 @@
 #include "end_3rdparty.h"
 
 class GlobalToLocal : public llvm::ModulePass {
- public:
-  static char ID;
-  GlobalToLocal() : llvm::ModulePass(ID) {}
 
-  bool runOnModule(llvm::Module &M);
-	
-  bool hasOnlyOneFunction(llvm::Module &M);
+	public:
+		static char ID;
+  
+		GlobalToLocal() : llvm::ModulePass(ID) {}
 
-  bool replaceAllUsesInFunction(llvm::Function * F, llvm::Value * oldvalue, llvm::Value * newvalue);
+		bool runOnModule(llvm::Module &M);
+
+		bool hasOnlyOneFunction(llvm::Module &M);
+
+		bool replaceAllUsesInFunction(llvm::Function * F, llvm::Value * oldvalue, llvm::Value * newvalue);
+
 };
 
 #endif

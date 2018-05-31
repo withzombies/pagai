@@ -43,7 +43,7 @@ bool AIGuided::runOnModule(Module &M) {
 
 	*Dbg << "// analysis: G\n";
 
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		F = mIt;
 
 		// if the function is only a declaration, do nothing
@@ -53,27 +53,25 @@ bool AIGuided::runOnModule(Module &M) {
 		sys::TimeValue * time = new sys::TimeValue(0,0);
 		*time = sys::TimeValue::now();
 		Total_time[passID][F] = time;
-		
+
 		initFunction(F);
 
 
 		// we create the new pathtree
-		for (Function::iterator it = F->begin(), et = F->end(); it != et; ++it) {
+		for (Function::iterator it = F->begin(); it != F->end(); ++it) {
 			BasicBlock * b = it;
 			pathtree[b] = new std::set<BasicBlock*>();
 		}
 
 		computeFunction(F);
 		*Total_time[passID][F] = sys::TimeValue::now()-*Total_time[passID][F];
-		
+
 		TerminateFunction(F);
 		printResult(F);
 
 		// we delete the pathtree
-		for (std::map<BasicBlock*,std::set<BasicBlock*>*>::iterator it = pathtree.begin(), et = pathtree.end();
-			it != et;
-			it++) {
-			delete (*it).second;
+		for (auto & entry : pathtree) {
+			delete entry.second;
 		}
 		pathtree.clear();
 	}
@@ -97,21 +95,19 @@ void AIGuided::computeFunction(Function * F) {
 	// get the information about live variables from the LiveValues pass
 	LV = &(getAnalysis<Live>(*F));
 
-	// add all function's arguments into the environment of the first bb
-	for (Function::arg_iterator a = F->arg_begin(), e = F->arg_end(); a != e; ++a) {
-		Argument * arg = a;
-		if (!(arg->use_empty()))
-			n->add_var(arg);
-	}
+	addFunctionArgumentsTo(n, F);
+
 	// first abstract value is top
 	computeEnv(n);
 	Environment env(n,LV);
 	n->X_s[passID]->set_top(&env);
 	n->X_d[passID]->set_top(&env);
-	while (!A_prime.empty()) 
-			A_prime.pop();
-	while (!A.empty()) 
-			A.pop();
+	while (!A_prime.empty()) {
+		A_prime.pop();
+	}
+	while (!A.empty()) {
+		A.pop();
+	}
 
 	//A' <- initial state
 	A_prime.push(n);
@@ -119,7 +115,7 @@ void AIGuided::computeFunction(Function * F) {
 	// Abstract Interpretation algorithm
 	START();
 	while (!A_prime.empty()) {
-		
+
 		// compute the new paths starting in a point in A'
 		is_computed.clear();
 		while (!A_prime.empty()) {
@@ -134,9 +130,9 @@ void AIGuided::computeFunction(Function * F) {
 
 		// we set X_d abstract values to bottom for narrowing
 		Pr * FPr = Pr::getInstance(F);
-		for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
-			b = i;
-			if (FPr->getPr()->count(i) && Nodes[b] != n) {
+		for (Function::iterator it = F->begin(); it != F->end(); ++it) {
+			b = it;
+			if (FPr->getPr().count(it) && Nodes[b] != n) {
 				Nodes[b]->X_d[passID]->set_bottom(&env);
 			}
 		}
@@ -198,15 +194,15 @@ void AIGuided::computeNewPaths(Node * n) {
 		return;
 	}
 
-	for (succ_iterator s = succ_begin(b), E = succ_end(b); s != E; ++s) {
+	for (succ_iterator s = succ_begin(b); s != succ_end(b); ++s) {
 		path.clear();
 		path.push_back(b);
 		path.push_back(*s);
 
 		if (pathtree[b]->count(*s)) continue;
-		
+
 		Succ = Nodes[*s];
-		
+
 		asc_iterations[passID][n->bb->getParent()]++;
 
 		// computing the image of the abstract value by the path's tranformation
@@ -226,7 +222,7 @@ void AIGuided::computeNewPaths(Node * n) {
 		bool succ_bottom = (Succ->X_s[passID]->is_bottom());
 
 		Xtemp->join_array_dpUcm(&Xtemp_env,aman->NewAbstract(Succ->X_s[passID]));
-		
+
 		if ( !Xtemp->is_leq(Succ->X_s[passID])) {
 			delete Succ->X_s[passID];
 			if (succ_bottom) {
@@ -260,12 +256,12 @@ void AIGuided::computeNode(Node * n) {
 	if (is_computed.count(n) && is_computed[n]) {
 		return;
 	}
-	
+
 	is_computed[n] = true;
 	if (n->X_s[passID]->is_bottom()) {
 		return;
 	}
-	
+
 	DEBUG (
 		changeColor(raw_ostream::GREEN);
 		*Dbg << "#######################################################\n";
@@ -274,16 +270,15 @@ void AIGuided::computeNode(Node * n) {
 		*Dbg << *b << "\n";
 	);
 
-	
-	for (succ_iterator s = succ_begin(b), E = succ_end(b); s != E; ++s) {
+	for (succ_iterator s = succ_begin(b); s != succ_end(b); ++s) {
 		path.clear();
 		path.push_back(b);
 		path.push_back(*s);
-		
+
 		if (!pathtree[b]->count(*s)) continue;
 
 		Succ = Nodes[*s];
-		
+
 		asc_iterations[passID][n->bb->getParent()]++;
 
 		// computing the image of the abstract value by the path's tranformation
@@ -314,7 +309,7 @@ void AIGuided::computeNode(Node * n) {
 		} else {
 			Xtemp->join_array_dpUcm(&Xtemp_env,aman->NewAbstract(Succ->X_s[passID]));
 		}
-		
+
 		if (!Succ->X_f[passID]->is_bottom()) {
 			Xtemp->meet(Succ->X_f[passID]);
 		}
@@ -364,7 +359,7 @@ void AIGuided::narrowNode(Node * n) {
 		n->X_s[passID]->print();
 	);
 
-	for (succ_iterator s = succ_begin(n->bb), E = succ_end(n->bb); s != E; ++s) {
+	for (succ_iterator s = succ_begin(n->bb); s != succ_end(n->bb); ++s) {
 		path.clear();
 		path.push_back(n->bb);
 		path.push_back(*s);

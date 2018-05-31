@@ -30,16 +30,15 @@ const char * Compare::getPassName() const {
 
 Compare::Compare() : ModulePass(ID) {}
 
-Compare::Compare(std::vector<enum Techniques> * T) : ModulePass(ID) {
-	std::vector<enum Techniques>::iterator it = T->begin(), et = T->end();
-	for (; it!=et; it++) {
-		ComparedTechniques.push_back(*it);
+Compare::Compare(std::vector<enum Techniques> & T) : ModulePass(ID) {
+	for (auto tech : T) {
+		ComparedTechniques.push_back(tech);
 	}
 }
 
 void Compare::getAnalysisUsage(AnalysisUsage &AU) const {
-	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
-		switch (ComparedTechniques[i]) {
+	for (auto tech : ComparedTechniques) {
+		switch (tech) {
 			case SIMPLE:
 				AU.addRequired<ModulePassWrapper<AIClassic, 0> >();
 				break;
@@ -136,7 +135,7 @@ void Compare::compareTechniques(Node * n, Techniques t1, Techniques t2) {
 	P1.TH = useThreshold();
 	P2.TH = useThreshold();
 
-	switch (compareAbstract(LSMT,n->X_s[P1],n->X_s[P2])) {
+	switch (compareAbstract(LSMT, n->X_s[P1], n->X_s[P2])) {
 		case 0:
 			results[t1][t2].eq++;
 			results[t2][t1].eq++;
@@ -166,23 +165,23 @@ void Compare::ComputeTime(Techniques t, Function * F) {
 	P.TH = useThreshold();
 
 	if (Total_time[P].count(F) == 0) {
-		sys::TimeValue * time = new sys::TimeValue(0,0);
+		sys::TimeValue * time = new sys::TimeValue(0, 0);
 		Total_time[P][F] = time;
 	}
-	
+
 	if (Time.count(t)) {
 		assert(Time[t] != NULL);
 		assert(Total_time[P][F] != NULL);
-		*Time[t] = *Time[t]+*Total_time[P][F];
+		*Time[t] = *Time[t] + *Total_time[P][F];
 	} else {
-		sys::TimeValue * zero = new sys::TimeValue((double)0);
+		sys::TimeValue * zero = new sys::TimeValue((double) 0);
 		Time[t] = zero;
 		assert(Total_time[P][F] != NULL);
 		*Time[t] = *Total_time[P][F];
 	}
 
 	if (Total_time_SMT[P].count(F) == 0) {
-		sys::TimeValue * time_SMT = new sys::TimeValue(0,0);
+		sys::TimeValue * time_SMT = new sys::TimeValue(0, 0);
 		Total_time_SMT[P][F] = time_SMT;
 	}
 
@@ -192,7 +191,7 @@ void Compare::ComputeTime(Techniques t, Function * F) {
 		*Time_SMT[t] = *Time_SMT[t]+*Total_time_SMT[P][F];
 	} else {
 		assert(Total_time_SMT[P][F] != NULL);
-		sys::TimeValue * zero = new sys::TimeValue((double)0);
+		sys::TimeValue * zero = new sys::TimeValue((double) 0);
 		Time_SMT[t] = zero;
 		*Time_SMT[t] = *Total_time_SMT[P][F];
 	}
@@ -200,19 +199,19 @@ void Compare::ComputeTime(Techniques t, Function * F) {
 
 void Compare::printTime(Techniques t) {
 	if (!Time.count(t)) {
-		sys::TimeValue * zero = new sys::TimeValue((double)0);
+		sys::TimeValue * zero = new sys::TimeValue((double) 0);
 		Time[t] = zero;
 	}
 	if (!Time_SMT.count(t)) {
-		sys::TimeValue * zero = new sys::TimeValue((double)0);
+		sys::TimeValue * zero = new sys::TimeValue((double) 0);
 		Time_SMT[t] = zero;
 	}
-	*Dbg 
-		<< Time[t]->seconds() 
-		<< " " << Time[t]->microseconds() 
-		<< " " << Time_SMT[t]->seconds() 
-		<< " " << Time_SMT[t]->microseconds() 
-		<< "  \t// " << TechniquesToString(t) 
+	*Dbg
+		<< Time[t]->seconds()
+		<< " " << Time[t]->microseconds()
+		<< " " << Time_SMT[t]->seconds()
+		<< " " << Time_SMT[t]->microseconds()
+		<< "  \t// " << TechniquesToString(t)
 		<<  "\n";
 }
 
@@ -222,9 +221,9 @@ void Compare::printWarnings(Techniques t) {
 		Warnings[t] = 0;
 	}
 
-	*Dbg 
-		<< Warnings[t] 
-		<< "  \t// " << TechniquesToString(t) 
+	*Dbg
+		<< Warnings[t]
+		<< "  \t// " << TechniquesToString(t)
 		<< "\n";
 }
 
@@ -234,9 +233,9 @@ void Compare::printSafeProperties(Techniques t) {
 		Safe_properties[t] = 0;
 	}
 
-	*Dbg 
-		<< Safe_properties[t] 
-		<< "  \t// " << TechniquesToString(t) 
+	*Dbg
+		<< Safe_properties[t]
+		<< "  \t// " << TechniquesToString(t)
 		<< "\n";
 }
 
@@ -247,9 +246,9 @@ void Compare::printNumberSkipped(Techniques t) {
 	P.N = useNewNarrowing();
 	P.TH = useThreshold();
 
-	*Dbg 
-		<< ignoreFunction[P].size() 
-		<< "  \t// " << TechniquesToString(t) 
+	*Dbg
+		<< ignoreFunction[P].size()
+		<< "  \t// " << TechniquesToString(t)
 		<< "\n";
 }
 
@@ -268,26 +267,26 @@ void Compare::printResults(Techniques t1, Techniques t2) {
 void Compare::printAllResults() {
 
 	*Dbg << "\nSKIPPED:\n";
-	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
-		printNumberSkipped(ComparedTechniques[i]);
+	for (auto tech : ComparedTechniques) {
+		printNumberSkipped(tech);
 	}
 	*Dbg << "SKIPPED_END\n";
 
 	*Dbg << "\nTIME:\n";
-	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
-		printTime(ComparedTechniques[i]);
+	for (auto tech : ComparedTechniques) {
+		printTime(tech);
 	}
 	*Dbg << "TIME_END\n";
 
 	*Dbg << "\nWARNINGS:\n";
-	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
-		printWarnings(ComparedTechniques[i]);
+	for (auto tech : ComparedTechniques) {
+		printWarnings(tech);
 	}
 	*Dbg << "WARNINGS_END\n";
 
 	*Dbg << "\nSAFE_PROPERTIES:\n";
-	for (size_t i = 0; i < ComparedTechniques.size(); i++) {
-		printSafeProperties(ComparedTechniques[i]);
+	for (auto tech : ComparedTechniques) {
+		printSafeProperties(tech);
 	}
 	*Dbg << "SAFE_PROPERTIES_END\n";
 
@@ -301,7 +300,7 @@ void Compare::printAllResults() {
 					<< results[ComparedTechniques[i]][ComparedTechniques[j]].lt << " "
 					<< results[ComparedTechniques[i]][ComparedTechniques[j]].gt << " "
 					<< results[ComparedTechniques[i]][ComparedTechniques[j]].un << " "
-					<< "  \t// "<< TechniquesToString(ComparedTechniques[i]) << " / " << TechniquesToString(ComparedTechniques[j]) 
+					<< "  \t// "<< TechniquesToString(ComparedTechniques[i]) << " / " << TechniquesToString(ComparedTechniques[j])
 					<< "\n";
 		}
 	}
@@ -334,10 +333,10 @@ void Compare::CountNumberOfWarnings(Techniques t, Function * F) {
 	P.TH = useThreshold();
 	P.T = t;
 	Pr * FPr = Pr::getInstance(F);
-	for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
-		b = i;
+	for (Function::iterator it = F->begin(); it != F->end(); ++it) {
+		b = it;
 		n = Nodes[b];
-		if (FPr->getAssert()->count(b) || FPr->getUndefinedBehaviour()->count(b)) {
+		if (FPr->getAssert().count(b) || FPr->getUndefinedBehaviour().count(b)) {
 			if (!n->X_s[P]->is_bottom()) {
 				if (Warnings.count(t))
 					Warnings[t]++;
@@ -367,10 +366,10 @@ bool Compare::runOnModule(Module &M) {
 			<< "------------------------------------------\n";
 	resetColor();
 
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		//LSMT->reset_SMTcontext();
 		F = mIt;
-		
+
 		// if the function is only a declaration, do nothing
 		if (F->begin() == F->end()) continue;
 		Function_number++;
@@ -378,19 +377,16 @@ bool Compare::runOnModule(Module &M) {
 		if (ignored(F)) continue;
 
 		// we now count the computing time and the number of warnings
-		for (size_t i = 0; i < ComparedTechniques.size(); i++) {
-			ComputeTime(ComparedTechniques[i], F);
-			CountNumberOfWarnings(ComparedTechniques[i], F);
+		for (auto tech : ComparedTechniques) {
+			ComputeTime(tech, F);
+			CountNumberOfWarnings(tech, F);
 		}
 
 		Pr * FPr = Pr::getInstance(F);
-		for (Function::iterator i = F->begin(), e = F->end(); i != e; ++i) {
-			b = i;
+		for (Function::iterator it = F->begin(); it != F->end(); ++it) {
+			b = it;
 			n = Nodes[b];
-			if (FPr->getPw()->count(b) 
-					|| FPr->getUndefinedBehaviour()->count(b)
-					|| FPr->getAssert()->count(b)
-					) {
+			if (FPr->getPw().count(b) || FPr->getUndefinedBehaviour().count(b) || FPr->getAssert().count(b)) {
 				CompareTechniquesByPair(n);
 			}
 		}

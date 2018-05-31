@@ -32,36 +32,36 @@ class PathTree {
 		/**
 		 * \brief insert a path in the Bdd
 		 */
-		virtual void insert(std::list<llvm::BasicBlock*> path, bool primed = false) = 0;
+		virtual void insert(const std::list<llvm::BasicBlock*> & path, bool primed = false) = 0;
 
 		/**
 		 * \brief remove a path from the Bdd
 		 */
-		virtual void remove(std::list<llvm::BasicBlock*> path, bool primed = false) = 0;
+		virtual void remove(const std::list<llvm::BasicBlock*> & path, bool primed = false) = 0;
 
-		/** 
+		/**
 		 * \brief clear the Bdd. The result will be an empty Bdd
 		 */
 		virtual void clear(bool primed = false) = 0;
 
-		/** 
+		/**
 		 * \brief check if the Bdd contains the path given as argument
 		 */
-		virtual bool exist(std::list<llvm::BasicBlock*> path, bool primed = false) = 0;
+		virtual bool exist(const std::list<llvm::BasicBlock*> & path, bool primed = false) = 0;
 
-		/** 
+		/**
 		 * \brief merge the two Bdds into Bdd. Bdd_prime is cleared
 		 */
 		virtual void mergeBDD() = 0;
 
 		virtual bool isZero(bool primed = false) = 0;
 
-		/** 
+		/**
 		 * \brief dump the graph
 		 */
-		virtual void DumpDotBDD(std::string filename, bool prime) = 0;
+		virtual void DumpDotBDD(const std::string & filename, bool prime) = 0;
 
-		/** 
+		/**
 		 * \brief generate the SMTpass formula associated to the Bdd
 		 */
 		virtual SMT_expr generateSMTformula(

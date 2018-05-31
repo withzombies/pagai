@@ -34,7 +34,7 @@ class z3_manager: public SMT_manager {
 		//SMT_expr int0, real0;
 
 	public:
-		
+
 		z3_manager();
 
 		virtual ~z3_manager();
@@ -80,14 +80,14 @@ class z3_manager: public SMT_manager {
 		SMT_expr SMT_mk_is_int(SMT_expr a);
 
 		SMT_expr SMT_mk_int0();
-	        SMT_expr SMT_mk_real0();
+		SMT_expr SMT_mk_real0();
 
 		void push_context();
 		void pop_context();
 
 		void SMT_print(SMT_expr a);
 		void SMT_assert(SMT_expr a);
-		int SMT_check(SMT_expr a, std::set<std::string> * true_booleans);
+		int SMT_check(SMT_expr a, std::set<std::string> & true_booleans);
 
 		bool interrupt();
 };

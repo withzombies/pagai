@@ -60,8 +60,7 @@ bool Live::isLiveByLinearityInBlock(Value *V, BasicBlock *BB, bool PHIblock) {
 	if (isLiveThroughBlock(V,BB,PHIblock)) {
 		return true;
 	} else {
-		for (Value::use_iterator I = V->use_begin(), E = V->use_end();
-				I != E; ++I) {
+		for (Value::use_iterator I = V->use_begin(); I != V->use_end(); ++I) {
 #if LLVM_VERSION_ATLEAST(3, 5)
 			User *U = I->getUser();
 #else
@@ -71,11 +70,11 @@ bool Live::isLiveByLinearityInBlock(Value *V, BasicBlock *BB, bool PHIblock) {
 			// it live
 			if (BinaryOperator * binop = dyn_cast<BinaryOperator>(U)) {
 				switch (binop->getOpcode()) {
-					case Instruction::Add : 
-					case Instruction::FAdd: 
-					case Instruction::Sub : 
-					case Instruction::FSub: 
-						if (isLiveByLinearityInBlock(binop,BB,PHIblock)) 
+					case Instruction::Add :
+					case Instruction::FAdd:
+					case Instruction::Sub :
+					case Instruction::FSub:
+						if (isLiveByLinearityInBlock(binop,BB,PHIblock))
 							return true;
 						break;
 					default:
@@ -86,11 +85,11 @@ bool Live::isLiveByLinearityInBlock(Value *V, BasicBlock *BB, bool PHIblock) {
 				// IF WE USE POINTER ARITHMETIC:
 				// if the use serves for computing a address using a getelementptr intstruction
 				// then the result of this getelementptr will be a linear expression involving
-				// the variable. Then, this case is similar to a standard addition, and we 
+				// the variable. Then, this case is similar to a standard addition, and we
 				// have to keep the variable live
 				// (Recall that pointers are considered integers)
 				if (GetElementPtrInst * geteltptr = dyn_cast<GetElementPtrInst>(U)) {
-					if (isLiveByLinearityInBlock(geteltptr,BB,PHIblock)) 
+					if (isLiveByLinearityInBlock(geteltptr,BB,PHIblock))
 						return true;
 				}
 			}
@@ -151,8 +150,7 @@ Live::Memo &Live::compute( Value *V) {
 
 	// Examine each use of the value.
 	std::stack<Block> S;
-	for (Value::use_iterator I = V->use_begin(), E = V->use_end();
-			I != E; ++I) {
+	for (Value::use_iterator I = V->use_begin(); I != V->use_end(); ++I) {
 #if LLVM_VERSION_ATLEAST(3, 5)
 		User *U = I->getUser();
 #else
@@ -198,9 +196,7 @@ Live::Memo &Live::compute( Value *V) {
 			if (!M.LiveThroughPHI.count(BB.b)) {
 				M.LiveThroughPHI.insert(BB.b);
 				if (BB.b != DefB.b || BB.PHIblock != DefB.PHIblock) {
-					for (pred_iterator p = pred_begin(BB.b), e = pred_end(BB.b); 
-							p != e; 
-							++p){
+					for (pred_iterator p = pred_begin(BB.b); p != pred_end(BB.b); ++p){
 						Block Pred(*p,false);
 						S.push(Pred);
 					}

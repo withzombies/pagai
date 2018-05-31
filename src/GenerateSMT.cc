@@ -28,11 +28,9 @@ char GenerateSMT::ID = 0;
 static RegisterPass<GenerateSMT>
 X("GenerateSMT","SMT-lib formula generation pass",false,true);
 
-
 const char * GenerateSMT::getPassName() const {
 	return "SMT-Lib Generation Pass";
 }
-
 
 GenerateSMT::GenerateSMT() : ModulePass(ID) {
 
@@ -54,9 +52,9 @@ void GenerateSMT::getAnalysisUsage(AnalysisUsage &AU) const {
 
 bool GenerateSMT::runOnFunction(Function &F) {
 #if LLVM_VERSION_ATLEAST(3, 5)
-    DT = &(getAnalysis<DominatorTreeWrapperPass>(F).getDomTree());
+	DT = &(getAnalysis<DominatorTreeWrapperPass>(F).getDomTree());
 #else
-    DT = &(getAnalysis<DominatorTree>(F));
+	DT = &(getAnalysis<DominatorTree>(F));
 #endif
 
 	LSMT->getRho(F);
@@ -65,7 +63,7 @@ bool GenerateSMT::runOnFunction(Function &F) {
 
 	*Out << "\n\n-------\n\n";
 
-	for (Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {
+	for (Function::iterator i = F.begin(); i != F.end(); ++i) {
 		BasicBlock * b = i;
 		printBasicBlock(b);
 	}
@@ -76,7 +74,7 @@ void GenerateSMT::printBasicBlock(BasicBlock* b) {
 
 	int N = 0;
 
-	for (BasicBlock::iterator i = b->begin(), e = b->end(); i != e; ++i) {
+	for (BasicBlock::iterator i = b->begin(); i != b->end(); ++i) {
 		N++;
 	}
 	//BasicBlock * dominator = DT->getNode(b)->getIDom()->getBlock();
@@ -100,9 +98,11 @@ bool GenerateSMT::runOnModule(Module &M) {
 	LSMT = SMTpass::getInstance();
 	Function * F;
 
-	for (Module::iterator mIt = M.begin() ; mIt != M.end() ; ++mIt) {
+	for (Module::iterator mIt = M.begin(); mIt != M.end(); ++mIt) {
 		F = mIt;
-		if (F->isDeclaration()) continue;
+		if (F->isDeclaration()) {
+			continue;
+		}
 		runOnFunction(*F);
 	}
 

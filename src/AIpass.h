@@ -48,14 +48,14 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 	friend class llvm::InstVisitor<AIPass>;
 
 	protected:
-		/** 
+		/**
 		 * \brief access to the Live pass
 		 */
 		Live * LV;
-		
+
 		/* in case we want an alias analysis
 		 * AliasAnalysis * AA;
-		 * AliasSetTracker *AST; 
+		 * AliasSetTracker *AST;
 		 */
 
 		/**
@@ -70,7 +70,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		bool threshold_empty;
 
-		/** 
+		/**
 		 * \brief set to true when the analysis fails (timeout, ...)
 		 */
 		bool unknown;
@@ -95,22 +95,22 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 * \brief index in focuspath of the focuspath's basicblock we are working on
 		 */
 		unsigned focusblock;
-		
+
 		/**
-		 * \brief list of all the constraints that need to be satisfied 
+		 * \brief list of all the constraints that need to be satisfied
 		 * along the path
 		 */
 		std::list<std::vector<Constraint*>*> constraints;
 
-		/** 
-		 * \brief set of Phi variables with their associated expression, 
+		/**
+		 * \brief set of Phi variables with their associated expression,
 		 * that are defined in the last basicblock of the path
 		 */
 		phivar PHIvars_prime;
-		
+
 		/**
-		 * \brief set of Phi variables with their associated expression, 
-		 * that are defined in the "middle" of the path 
+		 * \brief set of Phi variables with their associated expression,
+		 * that are defined in the "middle" of the path
 		 * (i.e. not at the last basicblock)
 		 */
 		phivar PHIvars;
@@ -120,7 +120,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		std::priority_queue<Node*,std::vector<Node*>,NodeCompare> A;
 
-		/** 
+		/**
 		 * \brief remembers the Nodes that don't need to be recomputed.
 		 * This is used to remove duplicates in the A list.
 		 */
@@ -162,7 +162,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 
 	public:
 
-		AIPass (Apron_Manager_Type _man, bool use_New_Narrowing, bool _use_Threshold) : 
+		AIPass (Apron_Manager_Type _man, bool use_New_Narrowing, bool _use_Threshold) :
 			LV(NULL),
 			unknown(false),
 			NewNarrowing(use_New_Narrowing),
@@ -172,7 +172,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 				init();
 			}
 
-		AIPass () : 
+		AIPass () :
 			LV(NULL),
 			unknown(false),
 			LSMT(NULL) {
@@ -201,9 +201,14 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		static void printPath(std::list<llvm::BasicBlock*> path);
 	protected:
 
+		/**
+		 * \brief add all function's arguments into the environment of the first bb
+		 */
+		void addFunctionArgumentsTo(Node * n, llvm::Function * F);
+
 		virtual void computeFunction(llvm::Function * F) = 0;
 
-		/** 
+		/**
 		 * \brief compute and update the Abstract value of the Node n
 		 * This function should update the set A of active nodes to
 		 * reflect changes performed on Node n.
@@ -216,7 +221,7 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 * reflect changes performed on Node n.
 		 */
 		virtual void narrowNode(Node * n) = 0;
-		
+
 		/**
 		 * \brief Basic abstract interpretation ascending iterations
 		 * (iterates over the nodes, calling computeNode for each of
@@ -224,26 +229,26 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		virtual void ascendingIter(Node * n, bool dont_reset = false);
 
-		/** 
+		/**
 		 * \brief Narrowing algorithm (iterates over the nodes, calling
 		 * narrowNode() for each of them)
 		 */
 		virtual void narrowingIter(Node * n);
 
 		void loopiter(
-			Node * n, 
+			Node * n,
 			Abstract * &Xtemp,
 			std::list<llvm::BasicBlock*> * path,
 			bool &only_join,
 			PathTree * const U,
 			PathTree * const V);
-	
-		/** 
+
+		/**
 		 * \brief delete all pathtrees inside the map and clear the map
 		 */
 		void ClearPathtreeMap(std::map<llvm::BasicBlock*,PathTree*> & pathtree);
 
-		/** 
+		/**
 		 * \{
 		 * \name copy methods
 		 *
@@ -258,82 +263,82 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 * \}
 		 */
 
-		/** 
+		/**
 		 * \brief computes in Xtemp the polyhedra resulting from
 		 * the transformation through the path
 		 */
-		void computeTransform (	
+		void computeTransform (
 			AbstractMan * aman,
-			std::list<llvm::BasicBlock*> path, 
+			std::list<llvm::BasicBlock*> path,
 			Abstract *Xtemp);
 
-		/** 
+		/**
 		 * \brief compute Seeds for Halbwach's narrowing
 		 * returns true iff one ore more seeds have been found
 		 */
 		bool computeNarrowingSeed(llvm::Function * F);
 
-		/** 
-		 * \brief compute the new environment of Node n, based on 
+		/**
+		 * \brief compute the new environment of Node n, based on
 		 * its intVar and RealVar maps
 		 */
 		void computeEnv(Node * n);
-		
-		/** 
+
+		/**
 		 * \brief creates the constraint arrays resulting from a
 		 * value.
 		 */
-		bool computeCondition(llvm::Value * val, 
+		bool computeCondition(llvm::Value * val,
 				bool result,
 				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
-		/** 
+		/**
 		 * \brief creates the constraint arrays resulting from a
 		 * comparison instruction.
 		 */
-		bool computeCmpCondition(llvm::CmpInst * inst, 
+		bool computeCmpCondition(llvm::CmpInst * inst,
 				bool result,
 				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
-		/** 
+		/**
 		 * \brief creates the constraint arrays resulting from a
 		 * Constant integer
 		 */
-		bool computeConstantCondition(llvm::ConstantInt * inst, 
+		bool computeConstantCondition(llvm::ConstantInt * inst,
 				bool result,
 				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
-		/** 
+		/**
 		 * \brief creates the constraint arrays resulting from a
 		 * boolean PHINode
 		 */
-		bool computePHINodeCondition(llvm::PHINode * inst, 
+		bool computePHINodeCondition(llvm::PHINode * inst,
 				bool result,
 				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
-		/** 
+		/**
 		 * \brief creates the constraint arrays resulting from a
 		 * boolean Binary Operator
 		 */
-		bool computeBinaryOpCondition(llvm::BinaryOperator * inst, 
-				bool result,
-				size_t cons_index,
-				std::vector< std::vector<Constraint*> * > * cons);
-		
-		/** 
-		 * \brief creates the constraint arrays resulting from a
-		 * cast between a boolean and an integer
-		 */
-		bool computeCastCondition(llvm::CastInst * inst, 
+		bool computeBinaryOpCondition(llvm::BinaryOperator * inst,
 				bool result,
 				size_t cons_index,
 				std::vector< std::vector<Constraint*> * > * cons);
 
-		/** 
+		/**
+		 * \brief creates the constraint arrays resulting from a
+		 * cast between a boolean and an integer
+		 */
+		bool computeCastCondition(llvm::CastInst * inst,
+				bool result,
+				size_t cons_index,
+				std::vector< std::vector<Constraint*> * > * cons);
+
+		/**
 		 * \brief Insert all the dimensions of the environment into the node
 		 * variables of n
 		 */
@@ -345,43 +350,43 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 		 */
 		void initFunction(llvm::Function * F);
 
-		/** 
+		/**
 		 * \brief free internal data after the analysis of a
 		 * function
 		 * Has to be called after the analysis of each function
 		 */
 		void TerminateFunction(llvm::Function * F);
-		
-		/** 
+
+		/**
 		 * \brief print a basicBlock on standard output
 		 */
 		static void printBasicBlock(llvm::BasicBlock * b);
 
-		/** 
+		/**
 		 * \brief process the sequence of positions where an invariant has to be
 		 * displayed
 		 */
 		void computeResultsPositions(
 			llvm::Function * F,
-			std::map<std::string, std::multimap<std::pair<int, int>, llvm::BasicBlock*> > * files 
+			std::map<std::string, std::multimap<std::pair<int, int>, llvm::BasicBlock*> > & files
 		);
 
-		/** 
+		/**
 		 * \brief inserts pagai invariants into the LLVM Module
 		 */
 		void InstrumentLLVMBitcode(llvm::Function * F);
 
-		/** 
+		/**
 		 * \brief print an invariant on oss, with an optional padding
 		 */
 		void printInvariant(llvm::BasicBlock * b, std::string left, llvm::raw_ostream * oss);
 
-		/** 
+		/**
 		 * \brief computes the set of predecessors for a BasicBlock
 		 */
 		virtual std::set<llvm::BasicBlock*> getPredecessors(llvm::BasicBlock * b) const = 0;
 
-		/** 
+		/**
 		 * \brief computes the set of Successors for a BasicBlock
 		 */
 		virtual std::set<llvm::BasicBlock*> getSuccessors(llvm::BasicBlock * b) const = 0;
@@ -442,10 +447,10 @@ class AIPass : public AnalysisPass, private llvm::InstVisitor<AIPass> {
 
 
 		void visitInstruction(llvm::Instruction &I) {
-            llvm::ferrs() << I;
+			llvm::ferrs() << I;
 			assert(0 && "Instruction not interpretable yet!");
 		}
-		/** 
+		/**
 		 * \}
 		 */
 };

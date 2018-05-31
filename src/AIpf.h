@@ -18,16 +18,15 @@
 #include "AIpass.h"
 
 /**
- * \class AIpf 
+ * \class AIpf
  * \brief Abstract Interpretation with Path Focusing algorithm (using SMT-solving)
  */
 class AIpf : public llvm::ModulePass, public AIPass {
 
 	public:
-		static char ID;	
+		static char ID;
 
 	protected:
-		
 		std::map<llvm::BasicBlock*, PathTree*> U;
 		std::map<llvm::BasicBlock*, PathTree*> V;
 
@@ -36,11 +35,10 @@ class AIpf : public llvm::ModulePass, public AIPass {
 				aman = new AbstractManClassic();
 				passID.T = PATH_FOCUSING;
 			}
-		
+
 		bool is_SMT_technique() {return true;}
 
 	public:
-
 		AIpf(char &_ID, Apron_Manager_Type _man, bool _NewNarrow, bool _Threshold) : ModulePass(_ID), AIPass(_man,_NewNarrow, _Threshold) {
 			init();
 			passID.D = _man;
@@ -83,7 +81,7 @@ class AIpf : public llvm::ModulePass, public AIPass {
 		 * \param n the starting point
 		 */
 		void computeNode(Node * n);
-		
+
 		/**
 		 * \brief apply narrowing at node n
 		 * \param n the starting point

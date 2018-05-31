@@ -99,14 +99,14 @@ void AbstractGopan::widening(Abstract * X) {
 			Xpilot_widening = ap_abstract1_widening(man,X->pilot,&dpUcm);
 		}
 		ap_abstract1_clear(man,&dpUcm);
-	}	
-	
+	}
+
 	if (pilot != main) {
 		ap_abstract1_clear(man,pilot);
 		delete pilot;
 	}
 	ap_abstract1_clear(man,main);
-	
+
 	*main = Xmain_widening;
 	if (ap_abstract1_is_eq(man,&Xmain_widening,&Xpilot_widening)) {
 		pilot = main;
@@ -156,9 +156,9 @@ void AbstractGopan::canonicalize() {
 }
 
 void AbstractGopan::assign_texpr_array(
-		ap_var_t* tvar, 
-		ap_texpr1_t* texpr, 
-		size_t size, 
+		ap_var_t* tvar,
+		ap_texpr1_t* texpr,
+		size_t size,
 		ap_abstract1_t* dest
 		) {
 	if (pilot != main)
@@ -175,7 +175,7 @@ void AbstractGopan::assign_texpr_array(
 			dest);
 }
 
-void AbstractGopan::join_array(Environment * env, std::vector<Abstract*> X_pred) {
+void AbstractGopan::join_array(Environment * env, const std::vector<Abstract*> & X_pred) {
 	size_t size = X_pred.size();
 
 	std::vector<ap_abstract1_t> Xmain;
@@ -183,33 +183,33 @@ void AbstractGopan::join_array(Environment * env, std::vector<Abstract*> X_pred)
 
 	std::vector<ap_abstract1_t> Xpilot;
 	Xpilot.resize(size);
-	
-	for (unsigned i=0; i < size; i++) {
-		Xmain[i] = ap_abstract1_change_environment(man,false,X_pred[i]->main,env->getEnv(),false);
-		Xpilot[i] = ap_abstract1_change_environment(man,false,X_pred[i]->pilot,env->getEnv(),false);
+
+	for (unsigned i = 0; i < size; i++) {
+		Xmain[i] = ap_abstract1_change_environment(man, false, X_pred[i]->main, env->getEnv(), false);
+		Xpilot[i] = ap_abstract1_change_environment(man, false, X_pred[i]->pilot, env->getEnv(), false);
 		delete X_pred[i];
 	}
-	
+
 	ap_abstract1_clear(man,main);
 	if (pilot != main) {
 		ap_abstract1_clear(man,pilot);
 		delete pilot;
 	}
 	if (size > 1) {
-		*main = ap_abstract1_join_array(man,&Xmain[0],size);	
-		pilot = new ap_abstract1_t(ap_abstract1_join_array(man,&Xpilot[0],size));	
-		for (unsigned i=0; i < size; i++) {
-			ap_abstract1_clear(man,&Xmain[i]);
-			ap_abstract1_clear(man,&Xpilot[i]);
+		*main = ap_abstract1_join_array(man, &Xmain[0], size);
+		pilot = new ap_abstract1_t(ap_abstract1_join_array(man, &Xpilot[0], size));
+		for (unsigned i = 0; i < size; i++) {
+			ap_abstract1_clear(man, &Xmain[i]);
+			ap_abstract1_clear(man, &Xpilot[i]);
 		}
 	} else {
 		*main = Xmain[0];
 		pilot = new ap_abstract1_t(Xpilot[0]);
-		ap_abstract1_clear(man,&Xpilot[0]);
+		ap_abstract1_clear(man, &Xpilot[0]);
 	}
-	
-	if (ap_abstract1_is_eq(man,main,pilot)) {
-		ap_abstract1_clear(man,pilot);
+
+	if (ap_abstract1_is_eq(man, main, pilot)) {
+		ap_abstract1_clear(man, pilot);
 		delete pilot;
 		pilot = main;
 	}
@@ -219,10 +219,10 @@ void AbstractGopan::join_array_dpUcm(Environment *env, Abstract* n) {
 	(void) env;
 	ap_abstract1_t Xmain;
 	ap_abstract1_t Xpilot;
-	Xmain = ap_abstract1_join(man,false,main,n->main);
-	Xpilot = ap_abstract1_join(man,false,pilot,n->main);
+	Xmain = ap_abstract1_join(man, false, main, n->main);
+	Xpilot = ap_abstract1_join(man, false, pilot, n->main);
 	delete n;
-	
+
 	if (pilot == main) {
 		pilot = new ap_abstract1_t(Xpilot);
 	} else {
