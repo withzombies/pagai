@@ -50,12 +50,9 @@ bool AIGuided::runOnModule(Module &M) {
 		if (F->begin() == F->end()) continue;
 		if (definedMain() && !isMain(F)) continue;
 
-		sys::TimeValue * time = new sys::TimeValue(0,0);
-		*time = sys::TimeValue::now();
-		Total_time[passID][F] = time;
+		TimePoint start_time = time_now();
 
 		initFunction(F);
-
 
 		// we create the new pathtree
 		for (Function::iterator it = F->begin(); it != F->end(); ++it) {
@@ -64,7 +61,7 @@ bool AIGuided::runOnModule(Module &M) {
 		}
 
 		computeFunction(F);
-		*Total_time[passID][F] = sys::TimeValue::now()-*Total_time[passID][F];
+		Total_time[passID][F] = time_now() - start_time;
 
 		TerminateFunction(F);
 		printResult(F);

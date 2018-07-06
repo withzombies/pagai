@@ -11,8 +11,8 @@
 int n_paths;
 int n_totalpaths;
 
-std::map<params, std::map<llvm::Function*, llvm::sys::TimeValue *> > Total_time;
-std::map<params, std::map<llvm::Function*, llvm::sys::TimeValue *> > Total_time_SMT;
+std::map<params, std::map<llvm::Function*, Duration> > Total_time;
+std::map<params, std::map<llvm::Function*, Duration> > Total_time_SMT;
 
 std::map<params, std::map<llvm::Function*, int> > asc_iterations;
 std::map<params, std::map<llvm::Function*, int> > desc_iterations;
@@ -20,22 +20,11 @@ std::map<params, std::map<llvm::Function*, int> > desc_iterations;
 std::map<params, std::set<llvm::Function*> > ignoreFunction;
 std::map<llvm::Function*, int> numNarrowingSeedsInFunction;
 
-void ReleaseTimeArray(std::map<params, std::map<llvm::Function*, llvm::sys::TimeValue *> > & T) {
-	for (auto & map_entry : T) {
-		for (auto & entry : map_entry.second) {
-			delete entry.second;
-		}
-	}
-}
-
-void ReleaseTimingData() {
-	ReleaseTimeArray(Total_time);
-	ReleaseTimeArray(Total_time_SMT);
-}
-
 bool ignored(llvm::Function * F) {
 	for (auto & entry : ignoreFunction) {
-		if (entry.second.count(F)) return true;
+		if (entry.second.count(F)) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -48,6 +37,9 @@ int nb_ignored() {
 	return ignored_funcs.size();
 }
 
-llvm::sys::TimeValue TIMEOUT_LIMIT(3.);
-llvm::sys::TimeValue start_timing;
+TimePoint time_now() {
+	return Clock::now();
+}
 
+TimePoint start_timing;
+Duration TIMEOUT_LIMIT_SEC(3.);

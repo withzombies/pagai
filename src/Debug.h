@@ -33,19 +33,20 @@
 #endif
 
 #include <ctime>
+#include <chrono>
 #include <map>
-
-#include "begin_3rdparty.h"
-#include "llvm/Support/TimeValue.h"
-#include "end_3rdparty.h"
 
 #include "Node.h"
 
 extern int n_paths;
 extern int n_totalpaths;
 
-extern std::map<params,std::map<llvm::Function*, llvm::sys::TimeValue*> > Total_time;
-extern std::map<params,std::map<llvm::Function*, llvm::sys::TimeValue*> > Total_time_SMT;
+typedef std::chrono::high_resolution_clock			Clock;
+typedef std::chrono::duration<double>				Duration;
+typedef std::chrono::time_point<Clock, Duration>	TimePoint;
+
+extern std::map<params, std::map<llvm::Function*, Duration> > Total_time;
+extern std::map<params, std::map<llvm::Function*, Duration> > Total_time_SMT;
 
 /**
  * \brief count the number of ascending iterations
@@ -57,8 +58,6 @@ extern std::map<params,std::map<llvm::Function*,int> > asc_iterations;
  */
 extern std::map<params,std::map<llvm::Function*,int> > desc_iterations;
 
-extern void ReleaseTimingData();
-
 /**
  * \brief Functions ignored by Compare pass (because the analysis failed for
  * one technique)
@@ -68,12 +67,14 @@ extern std::map<llvm::Function*,int> numNarrowingSeedsInFunction;
 
 extern bool ignored(llvm::Function * F);
 extern int nb_ignored();
+extern TimePoint time_now();
 
-extern llvm::sys::TimeValue TIMEOUT_LIMIT;
-extern llvm::sys::TimeValue start_timing;
+extern TimePoint start_timing;
+extern Duration TIMEOUT_LIMIT_SEC;
 
-#define START() do {start_timing = llvm::sys::TimeValue::now();} while (0)
-#define TIMEOUT_COND() (llvm::sys::TimeValue::now() - start_timing > TIMEOUT_LIMIT)
+#define START() do { start_timing = time_now(); } while (0)
+#define TIMEOUT_COND() (time_now() - start_timing > TIMEOUT_LIMIT_SEC)
 
-#define TIMEOUT(X) do {if(hasTimeout() && (TIMEOUT_COND())) {*Out << "ERROR: TIMEOUT\n"; X;}} while (0)
+#define TIMEOUT(X) do { if (hasTimeout() && (TIMEOUT_COND())) { *Out << "ERROR: TIMEOUT\n"; X; } } while (0)
+
 #endif

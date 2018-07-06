@@ -52,8 +52,8 @@ class Compare : public llvm::ModulePass {
 			std::map<Techniques,CmpResults>
 			> results;
 
-		std::map<Techniques, llvm::sys::TimeValue *> Time;
-		std::map<Techniques, llvm::sys::TimeValue *> Time_SMT;
+		std::map<Techniques, Duration> Time;
+		std::map<Techniques, Duration> Time_SMT;
 
 		// count the number of warnings emitted by each technique
 		std::map<Techniques, int> Warnings;

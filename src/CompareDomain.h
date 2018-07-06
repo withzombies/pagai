@@ -28,8 +28,8 @@ class CompareDomain : public llvm::ModulePass {
 	private:
 		SMTpass * LSMT;
 
-		std::map<params, llvm::sys::TimeValue *> Time;
-		std::map<params, llvm::sys::TimeValue *> Time_SMT;
+		std::map<params, Duration> Time;
+		std::map<params, Duration> Time_SMT;
 		void ComputeTime(params P, llvm::Function * F);
 		void CountNumberOfWarnings(params P, llvm::Function * F);
 		void printTime(params P);
@@ -107,57 +107,17 @@ void CompareDomain<T>::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
 
 template<Techniques T>
 void CompareDomain<T>::ComputeTime(params P, llvm::Function * F) {
-
-	if (Total_time[P].count(F) == 0) {
-		llvm::sys::TimeValue * time = new llvm::sys::TimeValue(0,0);
-		Total_time[P][F] = time;
-	}
-
-	if (Time.count(P)) {
-		assert(Time[P] != NULL);
-		assert(Total_time[P][F] != NULL);
-		*Time[P] = *Time[P]+*Total_time[P][F];
-	} else {
-		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
-		Time[P] = zero;
-		assert(Total_time[P][F] != NULL);
-		*Time[P] = *Total_time[P][F];
-	}
-
-	if (Total_time_SMT[P].count(F) == 0) {
-		llvm::sys::TimeValue * time_SMT = new llvm::sys::TimeValue(0,0);
-		Total_time_SMT[P][F] = time_SMT;
-	}
-
-	if (Time_SMT.count(P)) {
-		assert(Time_SMT[P] != NULL);
-		assert(Total_time_SMT[P][F] != NULL);
-		*Time_SMT[P] = *Time_SMT[P]+*Total_time_SMT[P][F];
-	} else {
-		assert(Total_time_SMT[P][F] != NULL);
-		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
-		Time_SMT[P] = zero;
-		*Time_SMT[P] = *Total_time_SMT[P][F];
-	}
+	Time[P] += Total_time[P][F];
+	Time_SMT[P] += Total_time_SMT[P][F];
 }
 
 template<Techniques T>
 void CompareDomain<T>::printTime(params P) {
-	if (!Time.count(P)) {
-		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
-		Time[P] = zero;
-	}
-	if (!Time_SMT.count(P)) {
-		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
-		Time_SMT[P] = zero;
-	}
 	*Out
-		<< Time[P]->seconds()
-		<< " " << Time[P]->microseconds()
-		<< " " << Time_SMT[P]->seconds()
-		<< " " << Time_SMT[P]->microseconds()
+		<< Time[P].count()
+		<< " " << Time_SMT[P].count()
 		<< " " << ApronManagerToString(P.D)
-		<<  "\n";
+		<< "\n";
 }
 
 template<Techniques T>

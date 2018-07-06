@@ -498,7 +498,6 @@ void execute::exec(const std::string & InputFilename, const std::string & Output
 
 	Pr::releaseMemory();
 	SMTpass::releaseMemory();
-	ReleaseTimingData();
 	Expr::clear_exprs();
 
 	if (OutputFilename != "") {

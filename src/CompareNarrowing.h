@@ -30,8 +30,8 @@ class CompareNarrowing : public llvm::ModulePass {
 	private:
 		SMTpass * LSMT;
 
-		std::map<params, llvm::sys::TimeValue *> Time;
-		std::map<params, llvm::sys::TimeValue *> Eq_Time;
+		std::map<params, Duration> Time;
+		std::map<params, Duration> Eq_Time;
 		std::map<params, int> total_asc;
 		std::map<params, int> total_desc;
 
@@ -164,55 +164,31 @@ void CompareNarrowing<T>::printIterations(params P) {
 
 template<Techniques T>
 void CompareNarrowing<T>::AddEqTime(params P, llvm::Function * F) {
-
-	if (Eq_Time.count(P)) {
-		*Eq_Time[P] = *Eq_Time[P]+*Total_time[P][F];
-	} else {
-		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
-		Eq_Time[P] = zero;
-		*Eq_Time[P] = *Total_time[P][F];
-	}
+	Eq_Time[P] += Total_time[P][F];
 }
 
 template<Techniques T>
 void CompareNarrowing<T>::AddTime(params P, llvm::Function * F) {
-
-	if (Time.count(P)) {
-		*Time[P] = *Time[P]+*Total_time[P][F];
-	} else {
-		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
-		Time[P] = zero;
-		*Time[P] = *Total_time[P][F];
-	}
+	Time[P] += Total_time[P][F];
 }
 
 template<Techniques T>
 void CompareNarrowing<T>::printEqTime(params P) {
-	if (!Eq_Time.count(P)) {
-		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
-		Eq_Time[P] = zero;
-	}
 	std::string tname;
 	if (P.N == true) tname = "NEWNARROWING";
 	else tname = "CLASSIC";
 	*Out
-		<< Eq_Time[P]->seconds()
-		<< " " << Eq_Time[P]->microseconds()
+		<< Eq_Time[P].count()
 		<< " // " << tname << "\n";
 }
 
 template<Techniques T>
 void CompareNarrowing<T>::printTime(params P) {
-	if (!Time.count(P)) {
-		llvm::sys::TimeValue * zero = new llvm::sys::TimeValue((double)0);
-		Time[P] = zero;
-	}
 	std::string tname;
 	if (P.N == true) tname = "NEWNARROWING";
 	else tname = "CLASSIC";
 	*Out
-		<< Time[P]->seconds()
-		<< " " << Time[P]->microseconds()
+		<< Time[P].count()
 		<< " // " << tname << "\n";
 }
 

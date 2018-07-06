@@ -49,9 +49,7 @@ bool AIpf::runOnModule(Module &M) {
 		Pr * FPr = Pr::getInstance(F);
 		if (SVComp() && FPr->getAssert().empty()) continue;
 
-		sys::TimeValue * time = new sys::TimeValue(0,0);
-		*time = sys::TimeValue::now();
-		Total_time[passID][F] = time;
+		TimePoint start_time = time_now();
 
 		initFunction(F);
 
@@ -67,7 +65,7 @@ bool AIpf::runOnModule(Module &M) {
 		}
 
 		computeFunction(F);
-		*Total_time[passID][F] = sys::TimeValue::now() - *Total_time[passID][F];
+		Total_time[passID][F] = time_now() - start_time;
 
 		TerminateFunction(F);
 		printResult(F);

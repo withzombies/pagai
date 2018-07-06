@@ -243,7 +243,7 @@ bool setTimeout(std::string d) {
 	}
 	try {
 		double timeout_double = boost::lexical_cast< double >( d );
-		TIMEOUT_LIMIT = llvm::sys::TimeValue(timeout_double);
+		TIMEOUT_LIMIT_SEC = Duration(timeout_double);
 	} catch( const boost::bad_lexical_cast & ) {
 		//unable to convert
 		error = true;

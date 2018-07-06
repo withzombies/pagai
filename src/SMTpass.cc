@@ -833,16 +833,11 @@ int SMTpass::SMTsolve(
 	std::map<BasicBlock*, BasicBlock*> succ;
 	int res;
 
-	sys::TimeValue time(sys::TimeValue::now());
+	TimePoint start_time = time_now();
 
 	res = man->SMT_check(expr, true_booleans);
 
-	if (Total_time_SMT[passID].count(F) == 0) {
-		sys::TimeValue * time_SMT = new sys::TimeValue(0,0);
-		Total_time_SMT[passID][F] = time_SMT;
-	}
-
-	*Total_time_SMT[passID][F] += sys::TimeValue::now()-time;
+	Total_time_SMT[passID][F] += time_now() - start_time;
 
 	if (res != 1) return res;
 	bool isEdge, isIndex, start;

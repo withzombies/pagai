@@ -164,55 +164,16 @@ void Compare::ComputeTime(Techniques t, Function * F) {
 	P.N = useNewNarrowing();
 	P.TH = useThreshold();
 
-	if (Total_time[P].count(F) == 0) {
-		sys::TimeValue * time = new sys::TimeValue(0, 0);
-		Total_time[P][F] = time;
-	}
-
-	if (Time.count(t)) {
-		assert(Time[t] != NULL);
-		assert(Total_time[P][F] != NULL);
-		*Time[t] = *Time[t] + *Total_time[P][F];
-	} else {
-		sys::TimeValue * zero = new sys::TimeValue((double) 0);
-		Time[t] = zero;
-		assert(Total_time[P][F] != NULL);
-		*Time[t] = *Total_time[P][F];
-	}
-
-	if (Total_time_SMT[P].count(F) == 0) {
-		sys::TimeValue * time_SMT = new sys::TimeValue(0, 0);
-		Total_time_SMT[P][F] = time_SMT;
-	}
-
-	if (Time_SMT.count(t)) {
-		assert(Time_SMT[t] != NULL);
-		assert(Total_time_SMT[P][F] != NULL);
-		*Time_SMT[t] = *Time_SMT[t]+*Total_time_SMT[P][F];
-	} else {
-		assert(Total_time_SMT[P][F] != NULL);
-		sys::TimeValue * zero = new sys::TimeValue((double) 0);
-		Time_SMT[t] = zero;
-		*Time_SMT[t] = *Total_time_SMT[P][F];
-	}
+	Time[t] += Total_time[P][F];
+	Time_SMT[t] += Total_time_SMT[P][F];
 }
 
 void Compare::printTime(Techniques t) {
-	if (!Time.count(t)) {
-		sys::TimeValue * zero = new sys::TimeValue((double) 0);
-		Time[t] = zero;
-	}
-	if (!Time_SMT.count(t)) {
-		sys::TimeValue * zero = new sys::TimeValue((double) 0);
-		Time_SMT[t] = zero;
-	}
 	*Dbg
-		<< Time[t]->seconds()
-		<< " " << Time[t]->microseconds()
-		<< " " << Time_SMT[t]->seconds()
-		<< " " << Time_SMT[t]->microseconds()
+		<< Time[t].count()
+		<< " " << Time_SMT[t].count()
 		<< "  \t// " << TechniquesToString(t)
-		<<  "\n";
+		<< "\n";
 }
 
 void Compare::printWarnings(Techniques t) {
